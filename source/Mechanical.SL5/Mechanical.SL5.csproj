@@ -1,0 +1,186 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{A81F2E42-3257-49AE-AA11-1BA66169C71A}</ProjectGuid>
+    <ProjectTypeGuids>{A1591282-1198-4647-A2B1-27E5FF5F6F3B};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Mechanical</RootNamespace>
+    <AssemblyName>Mechanical</AssemblyName>
+    <TargetFrameworkIdentifier>Silverlight</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
+    <SilverlightVersion>$(TargetFrameworkVersion)</SilverlightVersion>
+    <SilverlightApplication>false</SilverlightApplication>
+    <ValidateXaml>true</ValidateXaml>
+    <ThrowErrorsInValidation>true</ThrowErrorsInValidation>
+  </PropertyGroup>
+  <!-- This property group is only here to support building this project using the 
+       MSBuild 3.5 toolset. In order to work correctly with this older toolset, it needs 
+       to set the TargetFrameworkVersion to v3.5 -->
+  <PropertyGroup Condition="'$(MSBuildToolsVersion)' == '3.5'">
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>Bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;TRACE;SILVERLIGHT</DefineConstants>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>Bin\Release</OutputPath>
+    <DefineConstants>TRACE;SILVERLIGHT</DefineConstants>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="system" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Mechanical.NET4CP\CallerInfo.cs">
+      <Link>CallerInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical.NET4CP\Collections\IReadOnlyCollection.cs">
+      <Link>Collections\IReadOnlyCollection.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical.NET4CP\Collections\IReadOnlyDictionary.cs">
+      <Link>Collections\IReadOnlyDictionary.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical.NET4CP\Collections\IReadOnlyList.cs">
+      <Link>Collections\IReadOnlyList.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Collections\Collection.Base.cs">
+      <Link>Collections\Collection.Base.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Collections\Collection.Wrapper.cs">
+      <Link>Collections\Collection.Wrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Collections\CollectionConditions.cs">
+      <Link>Collections\CollectionConditions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Collections\CollectionsExtensions.cs">
+      <Link>Collections\CollectionsExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Collections\Dictionary.Base.cs">
+      <Link>Collections\Dictionary.Base.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Collections\Dictionary.Wrapper.cs">
+      <Link>Collections\Dictionary.Wrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Collections\List.Base.cs">
+      <Link>Collections\List.Base.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Collections\List.Wrapper.cs">
+      <Link>Collections\List.Wrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Collections\ReadOnlyCollection.Base.cs">
+      <Link>Collections\ReadOnlyCollection.Base.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Collections\ReadOnlyCollection.Wrapper.cs">
+      <Link>Collections\ReadOnlyCollection.Wrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Collections\ReadOnlyDictionary.Base.cs">
+      <Link>Collections\ReadOnlyDictionary.Base.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Collections\ReadOnlyDictionary.Wrapper.cs">
+      <Link>Collections\ReadOnlyDictionary.Wrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Collections\ReadOnlyList.Base.cs">
+      <Link>Collections\ReadOnlyList.Base.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Collections\ReadOnlyList.Wrapper.cs">
+      <Link>Collections\ReadOnlyList.Wrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Conditions\BooleanConditions.cs">
+      <Link>Conditions\BooleanConditions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Conditions\ComparisonConditions.cs">
+      <Link>Conditions\ComparisonConditions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Conditions\ConditionsExtensions.cs">
+      <Link>Conditions\ConditionsExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Conditions\Ensure.cs">
+      <Link>Conditions\Ensure.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Conditions\EnumConditions.cs">
+      <Link>Conditions\EnumConditions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Conditions\EqualityConditions.cs">
+      <Link>Conditions\EqualityConditions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Conditions\ExceptionExtensions.cs">
+      <Link>Conditions\ExceptionExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Conditions\IConditionContext.cs">
+      <Link>Conditions\IConditionContext.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Conditions\ObjectConditions.cs">
+      <Link>Conditions\ObjectConditions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Conditions\StringConditions.cs">
+      <Link>Conditions\StringConditions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Core\BitConverterLE.cs">
+      <Link>Core\BitConverterLE.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Core\CoreExtensions.cs">
+      <Link>Core\CoreExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Core\DisposableObject.cs">
+      <Link>Core\DisposableObject.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Core\DisposableObjectConditions.cs">
+      <Link>Core\DisposableObjectConditions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Core\Enum.cs">
+      <Link>Core\Enum.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Core\ObjectExtensions.cs">
+      <Link>Core\ObjectExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Core\SafeString.cs">
+      <Link>Core\SafeString.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Core\StringExtensions.cs">
+      <Link>Core\StringExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\Core\Substring.cs">
+      <Link>Core\Substring.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\DataStores\DataStore.cs">
+      <Link>DataStores\DataStore.cs</Link>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{A1591282-1198-4647-A2B1-27E5FF5F6F3B}">
+        <SilverlightProjectProperties />
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <Import Project="..\..\external\StyleCop\StyleCop.Targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Express 2012 for Web
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mechanical.NET45", "Mechanical.NET45\Mechanical.NET45.csproj", "{EE3AE5F1-D633-468A-A33E-8373CBFCBB2A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mechanical.NET4CP", "Mechanical.NET4CP\Mechanical.NET4CP.csproj", "{E636BA91-D65A-4FB6-A94E-38A847C36179}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mechanical.SL5", "Mechanical.SL5\Mechanical.SL5.csproj", "{A81F2E42-3257-49AE-AA11-1BA66169C71A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mechanical.NET45.Tests", "Mechanical.NET45.Tests\Mechanical.NET45.Tests.csproj", "{ABCE4192-5485-43D9-A5A8-7A2907D1AF04}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EE3AE5F1-D633-468A-A33E-8373CBFCBB2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE3AE5F1-D633-468A-A33E-8373CBFCBB2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE3AE5F1-D633-468A-A33E-8373CBFCBB2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE3AE5F1-D633-468A-A33E-8373CBFCBB2A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E636BA91-D65A-4FB6-A94E-38A847C36179}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E636BA91-D65A-4FB6-A94E-38A847C36179}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E636BA91-D65A-4FB6-A94E-38A847C36179}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E636BA91-D65A-4FB6-A94E-38A847C36179}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A81F2E42-3257-49AE-AA11-1BA66169C71A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A81F2E42-3257-49AE-AA11-1BA66169C71A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A81F2E42-3257-49AE-AA11-1BA66169C71A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A81F2E42-3257-49AE-AA11-1BA66169C71A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABCE4192-5485-43D9-A5A8-7A2907D1AF04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABCE4192-5485-43D9-A5A8-7A2907D1AF04}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABCE4192-5485-43D9-A5A8-7A2907D1AF04}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABCE4192-5485-43D9-A5A8-7A2907D1AF04}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
