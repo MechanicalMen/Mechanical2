@@ -45,11 +45,20 @@
     <Compile Include="Conditions\StringConditionTests.cs" />
     <Compile Include="Conditions\ObjectConditionTests.cs" />
     <Compile Include="Conditions\EnsureTests.cs" />
+    <Compile Include="Core\RevealTests.cs" />
     <Compile Include="Core\EnumTests.cs" />
     <Compile Include="Core\ObjectTests.cs" />
     <Compile Include="Core\SafeStringTests.cs" />
     <Compile Include="Core\StringTests.cs" />
     <Compile Include="Core\SubstringTests.cs" />
+    <Compile Include="FileFormats\CsvReaderTests.cs" />
+    <Compile Include="FileFormats\CsvWriterTests.cs" />
+    <Compile Include="MagicBag\AllocatorTests.cs" />
+    <Compile Include="MagicBag\CacheTests.cs" />
+    <Compile Include="MagicBag\GeneratorTests.cs" />
+    <Compile Include="MagicBag\InitializerTests.cs" />
+    <Compile Include="MagicBag\MagicBagTests.cs" />
+    <Compile Include="MagicBag\ParameterTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Test.cs" />
   </ItemGroup>

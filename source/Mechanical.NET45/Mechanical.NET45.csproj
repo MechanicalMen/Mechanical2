@@ -20,6 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\Mechanical.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -28,12 +29,16 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Mechanical.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Mechanical\Bootstrap.cs">
+      <Link>Bootstrap.cs</Link>
+    </Compile>
     <Compile Include="..\Mechanical\Collections\Collection.Base.cs">
       <Link>Collections\Collection.Base.cs</Link>
     </Compile>
@@ -124,6 +129,9 @@
     <Compile Include="..\Mechanical\Core\ObjectExtensions.cs">
       <Link>Core\ObjectExtensions.cs</Link>
     </Compile>
+    <Compile Include="..\Mechanical\Core\Reveal.cs">
+      <Link>Core\Reveal.cs</Link>
+    </Compile>
     <Compile Include="..\Mechanical\Core\SafeString.cs">
       <Link>Core\SafeString.cs</Link>
     </Compile>
@@ -136,8 +144,102 @@
     <Compile Include="..\Mechanical\DataStores\DataStore.cs">
       <Link>DataStores\DataStore.cs</Link>
     </Compile>
+    <Compile Include="..\Mechanical\FileFormats\CsvFormat.cs">
+      <Link>FileFormats\CsvFormat.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\FileFormats\CsvReader.cs">
+      <Link>FileFormats\CsvReader.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\FileFormats\CsvWriter.cs">
+      <Link>FileFormats\CsvWriter.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MagicBag\Allocators\ConstructorAllocator.cs">
+      <Link>MagicBag\Allocators\ConstructorAllocator.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MagicBag\Allocators\DelegateAllocator.cs">
+      <Link>MagicBag\Allocators\DelegateAllocator.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MagicBag\Allocators\IMagicBagAllocator.cs">
+      <Link>MagicBag\Allocators\IMagicBagAllocator.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MagicBag\Allocators\InitializingAllocatorWrapper.cs">
+      <Link>MagicBag\Allocators\InitializingAllocatorWrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MagicBag\Caches\IMagicBagCache.cs">
+      <Link>MagicBag\Caches\IMagicBagCache.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MagicBag\Caches\SingletonCache.cs">
+      <Link>MagicBag\Caches\SingletonCache.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MagicBag\Caches\ThreadLocalCache.cs">
+      <Link>MagicBag\Caches\ThreadLocalCache.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MagicBag\Caches\TransientCache.cs">
+      <Link>MagicBag\Caches\TransientCache.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MagicBag\Generators\ArrayGenerator.cs">
+      <Link>MagicBag\Generators\ArrayGenerator.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MagicBag\Generators\FuncGenerator.cs">
+      <Link>MagicBag\Generators\FuncGenerator.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MagicBag\Generators\IEnumerableGenerator.cs">
+      <Link>MagicBag\Generators\IEnumerableGenerator.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MagicBag\Generators\IListGenerator.cs">
+      <Link>MagicBag\Generators\IListGenerator.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MagicBag\Generators\IMappingGenerator.cs">
+      <Link>MagicBag\Generators\IMappingGenerator.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MagicBag\Generators\LazyGenerator.cs">
+      <Link>MagicBag\Generators\LazyGenerator.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MagicBag\IMagicBag.cs">
+      <Link>MagicBag\IMagicBag.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MagicBag\Initializers\DelegateInitializer.cs">
+      <Link>MagicBag\Initializers\DelegateInitializer.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MagicBag\Initializers\IMagicBagInitializer.cs">
+      <Link>MagicBag\Initializers\IMagicBagInitializer.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MagicBag\Initializers\MethodInitializer.cs">
+      <Link>MagicBag\Initializers\MethodInitializer.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MagicBag\Initializers\PropertyOrFieldInitializer.cs">
+      <Link>MagicBag\Initializers\PropertyOrFieldInitializer.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MagicBag\MagicBag.cs">
+      <Link>MagicBag\MagicBag.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MagicBag\Map.cs">
+      <Link>MagicBag\Map.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MagicBag\Mapping.cs">
+      <Link>MagicBag\Mapping.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MagicBag\MappingGenerators.cs">
+      <Link>MagicBag\MappingGenerators.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MagicBag\Parameters\ConstParameter.cs">
+      <Link>MagicBag\Parameters\ConstParameter.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MagicBag\Parameters\DelegateParameter.cs">
+      <Link>MagicBag\Parameters\DelegateParameter.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MagicBag\Parameters\IMagicBagParameter.cs">
+      <Link>MagicBag\Parameters\IMagicBagParameter.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MagicBag\Parameters\InjectParameter.cs">
+      <Link>MagicBag\Parameters\InjectParameter.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MagicBag\Parameters\MagicBagParameters.cs">
+      <Link>MagicBag\Parameters\MagicBagParameters.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\external\StyleCop\StyleCop.Targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

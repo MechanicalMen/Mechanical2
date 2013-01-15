@@ -87,24 +87,8 @@ namespace Mechanical.Collections
                 return this.Items.Contains(item);
             }
 
-            /// <summary>
-            /// Adds an item to the <see cref="ICollection{T}"/>.
-            /// </summary>
-            /// <param name="item">The object to add to the <see cref="ICollection{T}"/>.</param>
-            public override void Add( T item )
-            {
-                this.Items.Add(item);
-            }
-
-            /// <summary>
-            /// Removes the first occurrence of a specific object from the <see cref="ICollection{T}"/>.
-            /// </summary>
-            /// <param name="item">The object to remove from the <see cref="ICollection{T}"/>.</param>
-            /// <returns><c>true</c> if <paramref name="item"/> was successfully removed from the <see cref="ICollection{T}"/>; otherwise, <c>false</c>. This method also returns <c>false</c> if <paramref name="item"/> is not found in the original <see cref="ICollection{T}"/>.</returns>
-            public override bool Remove( T item )
-            {
-                return this.Items.Remove(item);
-            }
+            //// NOTE: not overriding Add, so that inheritors only need to override Insert, to affect both methods.
+            ////       Same thing with Remove. Clear however is way more efficient this way.
 
             /// <summary>
             /// Removes all items from the <see cref="ICollection{T}"/>.

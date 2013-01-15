@@ -6,7 +6,7 @@ using Mechanical.Conditions;
 namespace Mechanical.Core
 {
     /// <summary>
-    /// An immutable substring. Generally faster than a <see cref="String.Substring"/> call.
+    /// An immutable substring. Generally faster than a String.Substring calls.
     /// </summary>
     public struct Substring
     {

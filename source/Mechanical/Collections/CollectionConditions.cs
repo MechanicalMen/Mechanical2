@@ -16,8 +16,8 @@ namespace Mechanical.Collections
         /// Throws an exception, if the enumerable is <c>null</c> or empty.
         /// </summary>
         /// <typeparam name="T">The type of the items.</typeparam>
-        /// <param name="site">An <see cref="IValidationSite{T}"/> instance.</param>
-        /// <returns>The <see cref="IValidationSite{T}"/> instance.</returns>
+        /// <param name="site">An <see cref="IConditionContext{T}"/> instance.</param>
+        /// <returns>The <see cref="IConditionContext{T}"/> instance.</returns>
         [DebuggerHidden]
         public static IConditionContext<IEnumerable<T>> NotNullOrEmpty<T>( this IConditionContext<IEnumerable<T>> site )
         {
@@ -28,9 +28,9 @@ namespace Mechanical.Collections
         /// Throws an exception, if the enumerable is <c>null</c> or empty.
         /// </summary>
         /// <typeparam name="T">The type of the items.</typeparam>
-        /// <param name="site">An <see cref="IValidationSite{T}"/> instance.</param>
+        /// <param name="site">An <see cref="IConditionContext{T}"/> instance.</param>
         /// <param name="createException">A delegate used to create the exception, if needed.</param>
-        /// <returns>The <see cref="IValidationSite{T}"/> instance.</returns>
+        /// <returns>The <see cref="IConditionContext{T}"/> instance.</returns>
         [DebuggerHidden]
         public static IConditionContext<IEnumerable<T>> NotNullOrEmpty<T>( this IConditionContext<IEnumerable<T>> site, Func<Exception> createException )
         {
@@ -50,8 +50,8 @@ namespace Mechanical.Collections
         /// Throws an exception, if the enumerable is null, empty, or contains <c>null</c> references.
         /// </summary>
         /// <typeparam name="T">The type of the items.</typeparam>
-        /// <param name="site">An <see cref="IValidationSite{T}"/> instance.</param>
-        /// <returns>The <see cref="IValidationSite{T}"/> instance.</returns>
+        /// <param name="site">An <see cref="IConditionContext{T}"/> instance.</param>
+        /// <returns>The <see cref="IConditionContext{T}"/> instance.</returns>
         [DebuggerHidden]
         public static IConditionContext<IEnumerable<T>> NotNullEmptyOrSparse<T>( this IConditionContext<IEnumerable<T>> site )
         {
@@ -62,9 +62,9 @@ namespace Mechanical.Collections
         /// Throws an exception, if the enumerable is null, empty, or contains <c>null</c> references.
         /// </summary>
         /// <typeparam name="T">The type of the items.</typeparam>
-        /// <param name="site">An <see cref="IValidationSite{T}"/> instance.</param>
+        /// <param name="site">An <see cref="IConditionContext{T}"/> instance.</param>
         /// <param name="createException">A delegate used to create the exception, if needed.</param>
-        /// <returns>The <see cref="IValidationSite{T}"/> instance.</returns>
+        /// <returns>The <see cref="IConditionContext{T}"/> instance.</returns>
         [DebuggerHidden]
         public static IConditionContext<IEnumerable<T>> NotNullEmptyOrSparse<T>( this IConditionContext<IEnumerable<T>> site, Func<Exception> createException )
         {
@@ -84,8 +84,8 @@ namespace Mechanical.Collections
         /// Throws an exception, if the enumerable is null, or contains <c>null</c> references.
         /// </summary>
         /// <typeparam name="T">The type of the items.</typeparam>
-        /// <param name="site">An <see cref="IValidationSite{T}"/> instance.</param>
-        /// <returns>The <see cref="IValidationSite{T}"/> instance.</returns>
+        /// <param name="site">An <see cref="IConditionContext{T}"/> instance.</param>
+        /// <returns>The <see cref="IConditionContext{T}"/> instance.</returns>
         [DebuggerHidden]
         public static IConditionContext<IEnumerable<T>> NotNullOrSparse<T>( this IConditionContext<IEnumerable<T>> site )
         {
@@ -96,9 +96,9 @@ namespace Mechanical.Collections
         /// Throws an exception, if the enumerable is null, empty, or contains <c>null</c> references.
         /// </summary>
         /// <typeparam name="T">The type of the items.</typeparam>
-        /// <param name="site">An <see cref="IValidationSite{T}"/> instance.</param>
+        /// <param name="site">An <see cref="IConditionContext{T}"/> instance.</param>
         /// <param name="createException">A delegate used to create the exception, if needed.</param>
-        /// <returns>The <see cref="IValidationSite{T}"/> instance.</returns>
+        /// <returns>The <see cref="IConditionContext{T}"/> instance.</returns>
         [DebuggerHidden]
         public static IConditionContext<IEnumerable<T>> NotNullOrSparse<T>( this IConditionContext<IEnumerable<T>> site, Func<Exception> createException )
         {

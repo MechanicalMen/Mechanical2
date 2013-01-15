@@ -11,7 +11,7 @@ namespace Mechanical.Collections
     /// Helps working with dictionaries.
     /// </summary>
     /// <content>
-    /// A base class for implementing <see cref="IDictionary{T}"/>.
+    /// A base class for implementing <see cref="IDictionary{TKey, TValue}"/>.
     /// </content>
     public static partial class Dictionary
     {

@@ -89,7 +89,7 @@ namespace Mechanical.Collections
             /// <summary>
             /// Copies the elements of the <see cref="ICollection{T}"/> to an <see cref="Array"/>, starting at a particular <see cref="Array"/> index.
             /// </summary>
-            /// <param name="array">The one-dimensional <paramref name="Array"/> that is the destination of the elements copied from <see cref="ICollection{T}"/>. The <paramref name="Array"/> must have zero-based indexing.</param>
+            /// <param name="array">The one-dimensional <see cref="Array"/> that is the destination of the elements copied from <see cref="ICollection{T}"/>. The <see cref="Array"/> must have zero-based indexing.</param>
             /// <param name="arrayIndex">The zero-based index in <paramref name="array"/> at which copying begins.</param>
             public void CopyTo( T[] array, int arrayIndex )
             {

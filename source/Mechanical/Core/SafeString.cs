@@ -1186,7 +1186,7 @@ namespace Mechanical.Core
         /// Always returns a non-null string.
         /// Throws no exceptions.
         /// </summary>
-        /// <param name="result">The string representation of <paramref name="obj"/> in the specified format.</param>
+        /// <param name="result">A copy of <paramref name="format"/> in which the format items have been replaced by the string representation of the corresponding objects in <paramref name="args"/>.</param>
         /// <param name="format">A composite format string.</param>
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         /// <returns><c>false</c> if <see cref="M:String.Format"/> would have thrown an exception; otherwise <c>true</c>.</returns>

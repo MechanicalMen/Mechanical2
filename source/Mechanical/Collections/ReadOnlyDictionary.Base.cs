@@ -10,7 +10,7 @@ namespace Mechanical.Collections
     /// Helps working with read-only dictionaries.
     /// </summary>
     /// <content>
-    /// A base class for implementing <see cref="IReadOnlyDictionary{T}"/>.
+    /// A base class for implementing <see cref="IReadOnlyDictionary{TKey, TValue}"/>.
     /// </content>
     public static partial class ReadOnlyDictionary
     {

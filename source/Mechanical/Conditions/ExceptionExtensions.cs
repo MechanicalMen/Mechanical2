@@ -141,9 +141,7 @@ namespace Mechanical.Conditions
                 }
 
                 return e.Add("SourceFile", file)
-                        .Add("SourceLine", lineNumber);
-
-                //// TODO: add other useful data (os version, thread id, ... etc.)
+                        .Add("SourceLine", lineNumber); // add other data here...
             }
             else
             {
