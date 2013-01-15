@@ -30,3 +30,13 @@ A framework for preconditions (e.g. testing your parameters) you'll love to use!
 
 ### Collections
 Base classes for implementing your own collections. Make your code more expressive (think: Car.Wheels.Add...), or make generated values more accessible (than IEnumerable).
+
+### MagicBag
+A unique take on IoC containers. It has basic functionality, but is very extendable.
+* Very simple, and strongly typed interface (2 methods only: Pull<T> and IsRegistered<T>)
+* Designed to be easily integrated with other IoC containers
+* Immutable container: no surprises after they are created (when using the implementations provided)
+* Container hierarchy: write less code! Redefine, or pick and choose what and how you want to be able to resolve
+* Constructor, Property, Field and Method injection is possible
+* Mixing custom and injected parameters is also possible
+* Types like Func<T>, Lazy<T>, IEnumerable<T> and others, as well as your own, can be automatically generated
