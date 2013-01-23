@@ -114,7 +114,7 @@ namespace Mechanical.Collections
             /// Removes the element with the specified key from the <see cref="IDictionary{TKey, TValue}"/>.
             /// </summary>
             /// <param name="key">The key of the element to remove.</param>
-            /// <returns><c>true</c> if the element is successfully removed; otherwise, <c>false</c>. This method also returns <c>galse</c> if <paramref name="key"/> was not found in the original <see cref="IDictionary{TKey, TValue}"/>.</returns>
+            /// <returns><c>true</c> if the element is successfully removed; otherwise, <c>false</c>. This method also returns <c>false</c> if <paramref name="key"/> was not found in the original <see cref="IDictionary{TKey, TValue}"/>.</returns>
             public override bool Remove( TKey key )
             {
                 return this.Items.Remove(key);

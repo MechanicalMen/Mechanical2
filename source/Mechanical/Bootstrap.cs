@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using Mechanical.Conditions;
 using Mechanical.MagicBag;
+using Mechanical.MVVM;
 
 namespace Mechanical
 {
@@ -39,10 +40,17 @@ namespace Mechanical
 
         #endregion
 
-        #region Public Static Members
+        #region Initialize
+
+        private static void InitializeCore( IMagicBag magicBag )
+        {
+            Mechanical.MagicBag.MagicBag.CreateDefault(magicBag);
+            isInitialized = true;
+        }
 
         /// <summary>
-        /// Initializes the Mechanical2 library.
+        /// Initializes the Mechanical2 library, for an MVVM application.
+        /// The current dispatcher and scheduler will be used for UI operations.
         /// </summary>
         /// <param name="magicBag">The magic bag to use internally in the library.</param>
         public static void Initialize( IMagicBag magicBag = null )
@@ -52,8 +60,27 @@ namespace Mechanical
                 ThrowIfAlreadyInitialized();
 
                 // not yet initialized
-                Mechanical.MagicBag.MagicBag.CreateDefault(magicBag);
-                isInitialized = true;
+                UI.SetDispatcherFromCurrent();
+                UI.SetSchedulerFromCurrent();
+                InitializeCore(magicBag);
+            }
+        }
+
+        /// <summary>
+        /// Initializes the Mechanical2 library, for a console application.
+        /// Sets the UI dispatcher to <c>null</c>, and the scheduler to <see cref="System.Threading.Tasks.TaskScheduler.Default"/>.
+        /// </summary>
+        /// <param name="magicBag">The magic bag to use internally in the library.</param>
+        public static void InitializeConsole( IMagicBag magicBag = null )
+        {
+            lock( syncLock )
+            {
+                ThrowIfAlreadyInitialized();
+
+                // not yet initialized
+                UI.SetDispatcherForConsole();
+                UI.SetSchedulerForConsole();
+                InitializeCore(magicBag);
             }
         }
 

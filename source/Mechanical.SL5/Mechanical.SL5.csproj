@@ -50,6 +50,7 @@
   <ItemGroup>
     <Reference Include="mscorlib" />
     <Reference Include="system" />
+    <Reference Include="System.Windows" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -265,6 +266,36 @@
     </Compile>
     <Compile Include="..\Mechanical\MagicBag\Parameters\MagicBagParameters.cs">
       <Link>MagicBag\Parameters\MagicBagParameters.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MVVM\ConverterBase.cs">
+      <Link>MVVM\ConverterBase.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MVVM\Converters\BoolToDouble.cs">
+      <Link>MVVM\Converters\BoolToDouble.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MVVM\Converters\BoolToVisibility.cs">
+      <Link>MVVM\Converters\BoolToVisibility.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MVVM\Converters\Not.cs">
+      <Link>MVVM\Converters\Not.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MVVM\DelegateCommand.cs">
+      <Link>MVVM\DelegateCommand.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MVVM\PropertyChangedBase.cs">
+      <Link>MVVM\PropertyChangedBase.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MVVM\PropertyCollection.cs">
+      <Link>MVVM\PropertyCollection.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MVVM\PropertyHandlers.cs">
+      <Link>MVVM\PropertyHandlers.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MVVM\UI.cs">
+      <Link>MVVM\UI.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical\MVVM\ViewModelBase.cs">
+      <Link>MVVM\ViewModelBase.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ThreadLocal.cs" />
