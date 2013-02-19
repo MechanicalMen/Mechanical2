@@ -285,11 +285,11 @@
     <Compile Include="..\Mechanical\MVVM\PropertyChangedBase.cs">
       <Link>MVVM\PropertyChangedBase.cs</Link>
     </Compile>
+    <Compile Include="..\Mechanical\MVVM\PropertyChangedHandlers.cs">
+      <Link>MVVM\PropertyChangedHandlers.cs</Link>
+    </Compile>
     <Compile Include="..\Mechanical\MVVM\PropertyCollection.cs">
       <Link>MVVM\PropertyCollection.cs</Link>
-    </Compile>
-    <Compile Include="..\Mechanical\MVVM\PropertyHandlers.cs">
-      <Link>MVVM\PropertyHandlers.cs</Link>
     </Compile>
     <Compile Include="..\Mechanical\MVVM\UI.cs">
       <Link>MVVM\UI.cs</Link>

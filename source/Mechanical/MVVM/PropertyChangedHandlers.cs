@@ -9,13 +9,13 @@ namespace Mechanical.MVVM
     /// <summary>
     /// Manages handlers of multiple property changed events, from any number of sources.
     /// </summary>
-    public class PropertyHandlers
+    public class PropertyChangedHandlers : DisposableObject
     {
         #region Handler
 
         private class Handler
         {
-            internal Handler( INotifyPropertyChanged eventSource, string propertyName, Action action )
+            internal Handler( INotifyPropertyChanged eventSource, string propertyName, Action<PropertyChangedEventArgs> action )
             {
                 Ensure.Debug(eventSource, e => e.NotNull());
                 Ensure.Debug(propertyName, p => p.NotNullOrLengthy());
@@ -30,7 +30,7 @@ namespace Mechanical.MVVM
 
             private readonly WeakReference weakEventSource;
             private readonly string propertyName;
-            private readonly Action action;
+            private readonly Action<PropertyChangedEventArgs> action;
 
             internal INotifyPropertyChanged EventSource
             {
@@ -40,7 +40,7 @@ namespace Mechanical.MVVM
             private void OnPropertyChanged( object sender, PropertyChangedEventArgs e )
             {
                 if( string.Equals(e.PropertyName, this.propertyName, StringComparison.Ordinal) )
-                    this.action();
+                    this.action(e);
             }
 
             internal void Unsubscribe()
@@ -62,11 +62,36 @@ namespace Mechanical.MVVM
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PropertyHandlers"/> class.
+        /// Initializes a new instance of the <see cref="PropertyChangedHandlers"/> class.
         /// </summary>
-        public PropertyHandlers()
+        public PropertyChangedHandlers()
         {
             this.handlers = new List<Handler>();
+        }
+
+        #endregion
+
+        #region IDisposableObject
+
+        /// <summary>
+        /// Called when the object is being disposed of. Inheritors must call base.OnDispose to be properly disposed.
+        /// </summary>
+        /// <param name="disposing">If set to <c>true</c>, release both managed and unmanaged resources; otherwise release only the unmanaged resources.</param>
+        protected override void OnDispose( bool disposing )
+        {
+            if( disposing )
+            {
+                //// dispose-only (i.e. non-finalizable) logic
+                //// (managed, disposable resources you own)
+
+                this.Clear();
+            }
+
+            //// shared cleanup logic
+            //// (unmanaged resources)
+
+
+            base.OnDispose(disposing);
         }
 
         #endregion
@@ -94,7 +119,7 @@ namespace Mechanical.MVVM
         /// <param name="eventSource">The event source to listen to.</param>
         /// <param name="propertyName">The property change to handle.</param>
         /// <param name="action">The handler to register.</param>
-        public void Handle( INotifyPropertyChanged eventSource, string propertyName, Action action )
+        public void Handle( INotifyPropertyChanged eventSource, string propertyName, Action<PropertyChangedEventArgs> action )
         {
             Ensure.That(eventSource).NotNull();
             Ensure.That(propertyName).NotNullOrLengthy();
@@ -104,10 +129,23 @@ namespace Mechanical.MVVM
         }
 
         /// <summary>
+        /// Registers the specified <see cref="Action"/> to be executed, when the property of the source changes.
+        /// </summary>
+        /// <param name="eventSource">The event source to listen to.</param>
+        /// <param name="propertyName">The property change to handle.</param>
+        /// <param name="action">The handler to register.</param>
+        public void Handle( INotifyPropertyChanged eventSource, string propertyName, Action action )
+        {
+            Ensure.That(action).NotNull();
+
+            this.Handle(eventSource, propertyName, e => action());
+        }
+
+        /// <summary>
         /// Unsubscribes all handlers of the specified source.
         /// </summary>
         /// <param name="eventSource">The source to remove handlers of.</param>
-        public void Unsubscribe( INotifyPropertyChanged eventSource )
+        public void UnsubscribeAll( INotifyPropertyChanged eventSource )
         {
             int at;
             while( (at = this.IndexOf(eventSource)) != -1 )

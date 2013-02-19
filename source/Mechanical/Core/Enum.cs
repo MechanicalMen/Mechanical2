@@ -369,7 +369,7 @@ namespace Mechanical.Core
         //// NOTE: GetNames returns (arguably) unexpected results for negative constants
         ////       see: http://stackoverflow.com/questions/6819348/enum-getnames-results-in-unexpected-order-with-negative-enum-constants
 
-        private static Tuple<IReadOnlyList<string>, IReadOnlyList<Enum<TEnum>>> namesValues = null;
+        private static Tuple<ReadOnlyList.Base<string>, ReadOnlyList.Base<Enum<TEnum>>> namesValues = null;
 
         private class UnderlyingObjectComparer : IComparer<object>
         {
@@ -400,7 +400,7 @@ namespace Mechanical.Core
             }
         }
 
-        private static Tuple<IReadOnlyList<string>, IReadOnlyList<Enum<TEnum>>> GetNamesValues()
+        private static Tuple<ReadOnlyList.Base<string>, ReadOnlyList.Base<Enum<TEnum>>> GetNamesValues()
         {
             var list = new List<KeyValuePair<string, object>>();
             foreach( var field in typeof(TEnum).GetFields(BindingFlags.Public | BindingFlags.Static) )
@@ -419,14 +419,14 @@ namespace Mechanical.Core
             for( int i = 0; i < values.Length; ++i )
                 values[i] = objToValue(list[i].Value);
 
-            return new Tuple<IReadOnlyList<string>, IReadOnlyList<Enum<TEnum>>>(new ReadOnlyList.Wrapper<string>(names), new ReadOnlyList.Wrapper<Enum<TEnum>>(values));
+            return new Tuple<ReadOnlyList.Base<string>, ReadOnlyList.Base<Enum<TEnum>>>(new ReadOnlyList.Wrapper<string>(names), new ReadOnlyList.Wrapper<Enum<TEnum>>(values));
         }
 
         /// <summary>
         /// Gets an array of the names of the constants in the enumeration.
         /// </summary>
         /// <value>An array of the names of the constants in the enumeration.</value>
-        public static IReadOnlyList<string> Names
+        public static ReadOnlyList.Base<string> Names
         {
             get
             {
@@ -444,7 +444,7 @@ namespace Mechanical.Core
         /// Gets an array of the values of the constants in the enumeration.
         /// </summary>
         /// <value>An array of the values of the constants in the enumeration.</value>
-        public static IReadOnlyList<Enum<TEnum>> Values
+        public static ReadOnlyList.Base<Enum<TEnum>> Values
         {
             get
             {
@@ -619,7 +619,7 @@ namespace Mechanical.Core
 
         #region SimpleFlags
 
-        private static IReadOnlyList<Enum<TEnum>> simpleFlags;
+        private static ReadOnlyList.Base<Enum<TEnum>> simpleFlags;
 
         private static List<Enum<TEnum>> GetNonZeroFlags( Enum<TEnum> value )
         {
@@ -663,7 +663,7 @@ namespace Mechanical.Core
         /// Usually they are the single-bit flags.
         /// </summary>
         /// <value>The simple flags of the enumeration.</value>
-        public static IReadOnlyList<Enum<TEnum>> SimpleFlags
+        public static ReadOnlyList.Base<Enum<TEnum>> SimpleFlags
         {
             get
             {

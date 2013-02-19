@@ -618,11 +618,12 @@ namespace Mechanical.Core
                         sb.Append(e.Message);
                     }
 
-                    sb.AppendLine();
-                    sb.Append("Store:"); // no newline here
                     var enumerator = e.Retrieve().GetEnumerator();
                     if( enumerator.MoveNext() )
                     {
+                        sb.AppendLine();
+                        sb.Append("Store:"); // no newline here
+
                         do
                         {
                             sb.AppendLine(); // newline here
@@ -792,6 +793,25 @@ namespace Mechanical.Core
                     }
                     else
                     {
+                        var type = arg.GetType();
+                        if( type.IsEnum )
+                        {
+                            // defer to the Enum<T> handler
+                            var enumWrapper = typeof(Enum<>).MakeGenericType(type);
+                            var wrapperInstance = Activator.CreateInstance(enumWrapper, arg);
+                            return SafeString.Print(wrapperInstance, format, this);
+                        }
+                        else if( type.IsGenericType )
+                        {
+                            var typeDef = type.GetGenericTypeDefinition();
+                            if( typeDef == typeof(Enum<>) )
+                            {
+                                // print the type, and then use the wrapper to print the value
+                                var enumType = type.GetGenericArguments()[0];
+                                return SafeString.Print(enumType, format: null, formatProvider: this) + '.' + arg.ToString();
+                            }
+                        }
+
                         return base.ApplyFormat(format, arg);
                     }
                 }
