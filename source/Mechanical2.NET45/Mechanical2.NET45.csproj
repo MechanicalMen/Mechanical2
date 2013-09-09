@@ -1,0 +1,417 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{EE3AE5F1-D633-468A-A33E-8373CBFCBB2A}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Mechanical</RootNamespace>
+    <AssemblyName>Mechanical</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\Mechanical.xml</DocumentationFile>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Mechanical.xml</DocumentationFile>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Mechanical2\Bootstrap.cs">
+      <Link>Bootstrap.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Collections\Collection.Base.cs">
+      <Link>Collections\Collection.Base.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Collections\Collection.Wrapper.cs">
+      <Link>Collections\Collection.Wrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Collections\CollectionConditions.cs">
+      <Link>Collections\CollectionConditions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Collections\CollectionsExtensions.cs">
+      <Link>Collections\CollectionsExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Collections\Dictionary.Base.cs">
+      <Link>Collections\Dictionary.Base.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Collections\Dictionary.Wrapper.cs">
+      <Link>Collections\Dictionary.Wrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Collections\List.Base.cs">
+      <Link>Collections\List.Base.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Collections\List.Wrapper.cs">
+      <Link>Collections\List.Wrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Collections\ListDictionary.cs">
+      <Link>Collections\ListDictionary.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Collections\ReadOnlyCollection.Base.cs">
+      <Link>Collections\ReadOnlyCollection.Base.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Collections\ReadOnlyCollection.Wrapper.cs">
+      <Link>Collections\ReadOnlyCollection.Wrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Collections\ReadOnlyDictionary.Base.cs">
+      <Link>Collections\ReadOnlyDictionary.Base.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Collections\ReadOnlyDictionary.Wrapper.cs">
+      <Link>Collections\ReadOnlyDictionary.Wrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Collections\ReadOnlyList.Base.cs">
+      <Link>Collections\ReadOnlyList.Base.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Collections\ReadOnlyList.Wrapper.cs">
+      <Link>Collections\ReadOnlyList.Wrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Conditions\BooleanConditions.cs">
+      <Link>Conditions\BooleanConditions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Conditions\ComparisonConditions.cs">
+      <Link>Conditions\ComparisonConditions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Conditions\ConditionsExtensions.cs">
+      <Link>Conditions\ConditionsExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Conditions\Ensure.cs">
+      <Link>Conditions\Ensure.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Conditions\EnumConditions.cs">
+      <Link>Conditions\EnumConditions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Conditions\EqualityConditions.cs">
+      <Link>Conditions\EqualityConditions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Conditions\ExceptionExtensions.cs">
+      <Link>Conditions\ExceptionExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Conditions\IConditionContext.cs">
+      <Link>Conditions\IConditionContext.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Conditions\ObjectConditions.cs">
+      <Link>Conditions\ObjectConditions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Conditions\StringConditions.cs">
+      <Link>Conditions\StringConditions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Core\BitConverterLE.cs">
+      <Link>Core\BitConverterLE.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Core\CoreExtensions.cs">
+      <Link>Core\CoreExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Core\DisposableObject.cs">
+      <Link>Core\DisposableObject.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Core\DisposableObjectConditions.cs">
+      <Link>Core\DisposableObjectConditions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Core\Enum.cs">
+      <Link>Core\Enum.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Core\ObjectExtensions.cs">
+      <Link>Core\ObjectExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Core\Reveal.cs">
+      <Link>Core\Reveal.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Core\SafeString.cs">
+      <Link>Core\SafeString.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Core\StringExtensions.cs">
+      <Link>Core\StringExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Core\Substring.cs">
+      <Link>Core\Substring.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\BasicSerialization.cs">
+      <Link>DataStores\BasicSerialization.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\DataStore.cs">
+      <Link>DataStores\DataStore.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\DataStoreReaderBase.cs">
+      <Link>DataStores\DataStoreReaderBase.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\DataStoresExtensions.cs">
+      <Link>DataStores\DataStoresExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\DataStoreToken.cs">
+      <Link>DataStores\DataStoreToken.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\DelegateSerialization.cs">
+      <Link>DataStores\DelegateSerialization.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\ExceptionInfo.cs">
+      <Link>DataStores\ExceptionInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\IDataStoreObjectDeserializer.cs">
+      <Link>DataStores\IDataStoreObjectDeserializer.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\IDataStoreObjectSerializer.cs">
+      <Link>DataStores\IDataStoreObjectSerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\IDataStoreReader.cs">
+      <Link>DataStores\IDataStoreReader.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\IDataStoreValueDeserializer.cs">
+      <Link>DataStores\IDataStoreValueDeserializer.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\IDataStoreValueSerializer.cs">
+      <Link>DataStores\IDataStoreValueSerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\IDataStoreWriter.cs">
+      <Link>DataStores\IDataStoreWriter.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\ISO8601.cs">
+      <Link>DataStores\ISO8601.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\Node\DataStoreBinaryValue.cs">
+      <Link>DataStores\Node\DataStoreBinaryValue.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\Node\DataStoreNode.cs">
+      <Link>DataStores\Node\DataStoreNode.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\Node\DataStoreNodeReader.cs">
+      <Link>DataStores\Node\DataStoreNodeReader.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\Node\DataStoreNodeWriter.cs">
+      <Link>DataStores\Node\DataStoreNodeWriter.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\Node\DataStoreObject.cs">
+      <Link>DataStores\Node\DataStoreObject.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\Node\DataStoreObjectSerializer.cs">
+      <Link>DataStores\Node\DataStoreObjectSerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\Node\DataStoreTextValue.cs">
+      <Link>DataStores\Node\DataStoreTextValue.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\Node\DataStoreValueSerializer.cs">
+      <Link>DataStores\Node\DataStoreValueSerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\Node\IDataStoreBinaryValue.cs">
+      <Link>DataStores\Node\IDataStoreBinaryValue.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\Node\IDataStoreNode.cs">
+      <Link>DataStores\Node\IDataStoreNode.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\Node\IDataStoreObject.cs">
+      <Link>DataStores\Node\IDataStoreObject.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\Node\IDataStoreTextValue.cs">
+      <Link>DataStores\Node\IDataStoreTextValue.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\Node\IDataStoreValue.cs">
+      <Link>DataStores\Node\IDataStoreValue.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\Xml\XmlDataStoreReader.cs">
+      <Link>DataStores\Xml\XmlDataStoreReader.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\Xml\XmlDataStoreWriter.cs">
+      <Link>DataStores\Xml\XmlDataStoreWriter.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\FileFormats\CsvFormat.cs">
+      <Link>FileFormats\CsvFormat.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\FileFormats\CsvReader.cs">
+      <Link>FileFormats\CsvReader.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\FileFormats\CsvWriter.cs">
+      <Link>FileFormats\CsvWriter.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\IO\Base64WriterLE.cs">
+      <Link>IO\Base64WriterLE.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\IO\BinaryArrayReaderLE.cs">
+      <Link>IO\BinaryArrayReaderLE.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\IO\BinaryStreamReaderLE.cs">
+      <Link>IO\BinaryStreamReaderLE.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\IO\BinaryStreamWriterLE.cs">
+      <Link>IO\BinaryStreamWriterLE.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\IO\BinaryWriterBaseLE.cs">
+      <Link>IO\BinaryWriterBaseLE.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\IO\IBinaryReader.cs">
+      <Link>IO\IBinaryReader.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\IO\IBinaryWriter.cs">
+      <Link>IO\IBinaryWriter.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\IO\ITextReader.cs">
+      <Link>IO\ITextReader.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\IO\ITextWriter.cs">
+      <Link>IO\ITextWriter.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\IO\StringReader.cs">
+      <Link>IO\StringReader.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\IO\StringReaderBase.cs">
+      <Link>IO\StringReaderBase.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\IO\StringWriter.cs">
+      <Link>IO\StringWriter.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MagicBag\Allocators\ConstructorAllocator.cs">
+      <Link>MagicBag\Allocators\ConstructorAllocator.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MagicBag\Allocators\DelegateAllocator.cs">
+      <Link>MagicBag\Allocators\DelegateAllocator.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MagicBag\Allocators\IMagicBagAllocator.cs">
+      <Link>MagicBag\Allocators\IMagicBagAllocator.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MagicBag\Allocators\InitializingAllocatorWrapper.cs">
+      <Link>MagicBag\Allocators\InitializingAllocatorWrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MagicBag\Caches\IMagicBagCache.cs">
+      <Link>MagicBag\Caches\IMagicBagCache.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MagicBag\Caches\SingletonCache.cs">
+      <Link>MagicBag\Caches\SingletonCache.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MagicBag\Caches\ThreadLocalCache.cs">
+      <Link>MagicBag\Caches\ThreadLocalCache.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MagicBag\Caches\TransientCache.cs">
+      <Link>MagicBag\Caches\TransientCache.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MagicBag\Generators\ArrayGenerator.cs">
+      <Link>MagicBag\Generators\ArrayGenerator.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MagicBag\Generators\FuncGenerator.cs">
+      <Link>MagicBag\Generators\FuncGenerator.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MagicBag\Generators\IEnumerableGenerator.cs">
+      <Link>MagicBag\Generators\IEnumerableGenerator.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MagicBag\Generators\IListGenerator.cs">
+      <Link>MagicBag\Generators\IListGenerator.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MagicBag\Generators\IMappingGenerator.cs">
+      <Link>MagicBag\Generators\IMappingGenerator.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MagicBag\Generators\LazyGenerator.cs">
+      <Link>MagicBag\Generators\LazyGenerator.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MagicBag\IMagicBag.cs">
+      <Link>MagicBag\IMagicBag.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MagicBag\Initializers\DelegateInitializer.cs">
+      <Link>MagicBag\Initializers\DelegateInitializer.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MagicBag\Initializers\IMagicBagInitializer.cs">
+      <Link>MagicBag\Initializers\IMagicBagInitializer.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MagicBag\Initializers\MethodInitializer.cs">
+      <Link>MagicBag\Initializers\MethodInitializer.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MagicBag\Initializers\PropertyOrFieldInitializer.cs">
+      <Link>MagicBag\Initializers\PropertyOrFieldInitializer.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MagicBag\MagicBag.cs">
+      <Link>MagicBag\MagicBag.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MagicBag\Map.cs">
+      <Link>MagicBag\Map.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MagicBag\Mapping.cs">
+      <Link>MagicBag\Mapping.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MagicBag\MappingGenerators.cs">
+      <Link>MagicBag\MappingGenerators.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MagicBag\Parameters\ConstParameter.cs">
+      <Link>MagicBag\Parameters\ConstParameter.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MagicBag\Parameters\DelegateParameter.cs">
+      <Link>MagicBag\Parameters\DelegateParameter.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MagicBag\Parameters\IMagicBagParameter.cs">
+      <Link>MagicBag\Parameters\IMagicBagParameter.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MagicBag\Parameters\InjectParameter.cs">
+      <Link>MagicBag\Parameters\InjectParameter.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MagicBag\Parameters\MagicBagParameters.cs">
+      <Link>MagicBag\Parameters\MagicBagParameters.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MVVM\ConverterBase.cs">
+      <Link>MVVM\ConverterBase.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MVVM\Converters\BoolToDouble.cs">
+      <Link>MVVM\Converters\BoolToDouble.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MVVM\Converters\BoolToVisibility.cs">
+      <Link>MVVM\Converters\BoolToVisibility.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MVVM\Converters\Not.cs">
+      <Link>MVVM\Converters\Not.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MVVM\Converters\NullToBool.cs">
+      <Link>MVVM\Converters\NullToBool.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MVVM\Converters\NullToVisibility.cs">
+      <Link>MVVM\Converters\NullToVisibility.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MVVM\DelegateCommand.cs">
+      <Link>MVVM\DelegateCommand.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MVVM\PropertyChangedBase.cs">
+      <Link>MVVM\PropertyChangedBase.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MVVM\PropertyChangedHandlers.cs">
+      <Link>MVVM\PropertyChangedHandlers.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MVVM\PropertyCollection.cs">
+      <Link>MVVM\PropertyCollection.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MVVM\UI.cs">
+      <Link>MVVM\UI.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MVVM\ViewModelBase.cs">
+      <Link>MVVM\ViewModelBase.cs</Link>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\..\external\StyleCop\StyleCop.Targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
