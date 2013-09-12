@@ -365,6 +365,26 @@ namespace Mechanical.DataStores
             writer.Write<T>(name, obj, serializer);
         }
 
+        private static readonly object Dummy = new object();
+
+        /// <summary>
+        /// Writes an object to the data store.
+        /// </summary>
+        /// <param name="writer">The <see cref="IDataStoreWriter"/> to use.</param>
+        /// <param name="name">The name of the serialized object.</param>
+        /// <param name="action">The delegate performing the actual serialization.</param>
+        public static void Write( this IDataStoreWriter writer, string name, Action<IDataStoreWriter> action )
+        {
+            Ensure.Debug(writer, w => w.NotNull());
+
+            if( action.NullReference() )
+                throw new ArgumentNullException("action").Store("name", name);
+
+            var serializer = DelegateSerialization<object>.Default;
+            serializer.WriteDelegate = (obj, w) => action(w);
+            writer.Write<object>(name, Dummy, serializer);
+        }
+
         #endregion
     }
 }

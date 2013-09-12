@@ -846,4 +846,34 @@ namespace Mechanical.Core
 
         #endregion
     }
+
+    /// <content>
+    /// Methods extending the <see cref="Enum{T}"/> type.
+    /// </content>
+    public static partial class CoreExtensions
+    {
+        /// <summary>
+        /// Returns the wrapped enumeration value.
+        /// </summary>
+        /// <typeparam name="TEnum">The type of the enumeration.</typeparam>
+        /// <param name="value">The enumeration value to wrap.</param>
+        /// <returns>The wrapped enumeration value.</returns>
+        public static Enum<TEnum> Wrap<TEnum>( this TEnum value )
+            where TEnum : struct, IFormattable, IConvertible, IComparable
+        {
+            return value;
+        }
+
+        /// <summary>
+        /// Returns the unwrapped enumeration value.
+        /// </summary>
+        /// <typeparam name="TEnum">The type of the enumeration.</typeparam>
+        /// <param name="wrapper">The wrapper to unwrap.</param>
+        /// <returns>The unwrapped enumeration value.</returns>
+        public static TEnum Unwrap<TEnum>( this Enum<TEnum> wrapper )
+            where TEnum : struct, IFormattable, IConvertible, IComparable
+        {
+            return wrapper;
+        }
+    }
 }

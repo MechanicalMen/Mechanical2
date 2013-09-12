@@ -44,6 +44,78 @@ namespace Mechanical.DataStores
     /// </content>
     public static partial class DataStoresExtensions
     {
+        #region Read( name, deserializer )
+
+        /// <summary>
+        /// Deserializes the current value of the data store, and moves to the next token.
+        /// </summary>
+        /// <typeparam name="T">The type to return an instance of.</typeparam>
+        /// <param name="reader">The <see cref="IDataStoreReader"/> to use.</param>
+        /// <param name="name">The expected name of the current value.</param>
+        /// <param name="deserializer">The object handling deserialization.</param>
+        /// <returns>The deserialized data store value.</returns>
+        public static T Read<T>( this IDataStoreReader reader, string name, IDataStoreValueDeserializer<T> deserializer )
+        {
+            Ensure.Debug(reader, r => r.NotNull());
+
+            if( !DataStore.SameNames(name, reader.Name) )
+                throw new FormatException("Name mismatch!").Store("expectedName", name).Store("actualName", reader.Name);
+
+            return reader.Read<T>(deserializer);
+        }
+
+        /// <summary>
+        /// Deserializes the current object of the data store, and moves to the next token.
+        /// </summary>
+        /// <typeparam name="T">The type to return an instance of.</typeparam>
+        /// <param name="reader">The <see cref="IDataStoreReader"/> to use.</param>
+        /// <param name="name">The expected name of the current value.</param>
+        /// <param name="deserializer">The object handling deserialization.</param>
+        /// <returns>The deserialized data store object.</returns>
+        public static T Read<T>( this IDataStoreReader reader, string name, IDataStoreObjectDeserializer<T> deserializer )
+        {
+            Ensure.Debug(reader, r => r.NotNull());
+
+            if( !DataStore.SameNames(name, reader.Name) )
+                throw new FormatException("Name mismatch!").Store("expectedName", name).Store("actualName", reader.Name);
+
+            return reader.Read<T>(deserializer);
+        }
+
+        /// <summary>
+        /// Deserializes the current value of the data store, and moves to the next token.
+        /// </summary>
+        /// <typeparam name="T">The type to return an instance of.</typeparam>
+        /// <param name="reader">The <see cref="IDataStoreReader"/> to use.</param>
+        /// <param name="name">The name of the value read.</param>
+        /// <param name="deserializer">The object handling deserialization.</param>
+        /// <returns>The deserialized data store value.</returns>
+        public static T Read<T>( this IDataStoreReader reader, out string name, IDataStoreValueDeserializer<T> deserializer )
+        {
+            Ensure.Debug(reader, r => r.NotNull());
+
+            name = reader.Name;
+            return reader.Read<T>(deserializer);
+        }
+
+        /// <summary>
+        /// Deserializes the current object of the data store, and moves to the next token.
+        /// </summary>
+        /// <typeparam name="T">The type to return an instance of.</typeparam>
+        /// <param name="reader">The <see cref="IDataStoreReader"/> to use.</param>
+        /// <param name="name">The name of the object read.</param>
+        /// <param name="deserializer">The object handling deserialization.</param>
+        /// <returns>The deserialized data store object.</returns>
+        public static T Read<T>( this IDataStoreReader reader, out string name, IDataStoreObjectDeserializer<T> deserializer )
+        {
+            Ensure.Debug(reader, r => r.NotNull());
+
+            name = reader.Name;
+            return reader.Read<T>(deserializer);
+        }
+
+        #endregion
+
         #region ReadAsValue, ReadAsObject
 
         /// <summary>
@@ -61,11 +133,8 @@ namespace Mechanical.DataStores
             if( magicBag.NullReference() )
                 magicBag = Mechanical.MagicBag.MagicBag.Default;
 
-            if( !DataStore.SameNames(name, reader.Name) )
-                throw new FormatException("Name mismatch!").Store("expectedName", name).Store("actualName", reader.Name);
-
             var deserializer = magicBag.Pull<IDataStoreValueDeserializer<T>>();
-            return reader.Read<T>(deserializer);
+            return reader.Read<T>(name, deserializer);
         }
 
         /// <summary>
@@ -83,9 +152,8 @@ namespace Mechanical.DataStores
             if( magicBag.NullReference() )
                 magicBag = Mechanical.MagicBag.MagicBag.Default;
 
-            name = reader.Name;
             var deserializer = magicBag.Pull<IDataStoreValueDeserializer<T>>();
-            return reader.Read<T>(deserializer);
+            return reader.Read<T>(out name, deserializer);
         }
 
         /// <summary>
@@ -103,11 +171,8 @@ namespace Mechanical.DataStores
             if( magicBag.NullReference() )
                 magicBag = Mechanical.MagicBag.MagicBag.Default;
 
-            if( !DataStore.SameNames(name, reader.Name) )
-                throw new FormatException("Name mismatch!").Store("expectedName", name).Store("actualName", reader.Name);
-
             var deserializer = magicBag.Pull<IDataStoreObjectDeserializer<T>>();
-            return reader.Read<T>(deserializer);
+            return reader.Read<T>(name, deserializer);
         }
 
         /// <summary>
@@ -125,9 +190,8 @@ namespace Mechanical.DataStores
             if( magicBag.NullReference() )
                 magicBag = Mechanical.MagicBag.MagicBag.Default;
 
-            name = reader.Name;
             var deserializer = magicBag.Pull<IDataStoreObjectDeserializer<T>>();
-            return reader.Read<T>(deserializer);
+            return reader.Read<T>(out name, deserializer);
         }
 
         #endregion
@@ -658,9 +722,10 @@ namespace Mechanical.DataStores
         /// </summary>
         /// <typeparam name="T">The type to return an instance of.</typeparam>
         /// <param name="reader">The <see cref="IDataStoreReader"/> to use.</param>
+        /// <param name="name">The name of the object read.</param>
         /// <param name="func">The delegate performing the actual serialization.</param>
         /// <returns>The deserialized data store object.</returns>
-        public static T Read<T>( this IDataStoreReader reader, Func<string, IDataStoreReader, T> func )
+        public static T Read<T>( this IDataStoreReader reader, string name, Func<IDataStoreReader, T> func )
         {
             Ensure.Debug(reader, w => w.NotNull());
 
@@ -669,25 +734,26 @@ namespace Mechanical.DataStores
 
             var deserializer = DelegateSerialization<T>.Default;
             deserializer.ReadDelegate = func;
-            return reader.Read<T>(deserializer);
+            return reader.Read<T>(name, deserializer);
         }
 
         /// <summary>
         /// Deserializes the current object of the data store, and moves to the next token.
         /// </summary>
         /// <param name="reader">The <see cref="IDataStoreReader"/> to use.</param>
+        /// <param name="name">The name of the object read.</param>
         /// <param name="action">The delegate performing the actual serialization.</param>
-        public static void Read( this IDataStoreReader reader, Action<string, IDataStoreReader> action )
+        public static void Read( this IDataStoreReader reader, string name, Action<IDataStoreReader> action )
         {
             if( action.NullReference() )
                 throw new ArgumentNullException("action").StoreDefault();
 
-            Read<object>(reader, ( name, r ) => { action(name, r); return null; });
+            Read<object>(reader, name, r => { action(r); return null; });
         }
 
         #endregion
     }
 
-    //// TODO: TryReadAs*(string name, ...) // check name; check token: object or data store end; value or object
+    //// TODO: TryReadAs*(string name, ...) // check name; check token: object end or data store end; check token: value or object start
     //// TODO: unit tests for extension methods
 }

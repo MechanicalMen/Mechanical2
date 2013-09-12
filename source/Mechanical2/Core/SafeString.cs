@@ -723,6 +723,10 @@ namespace Mechanical.Core
                     {
                         return ((DateTimeOffset)arg).ToString("o", CultureInfo.InvariantCulture);
                     }
+                    else if( arg is TimeSpan )
+                    {
+                        return ((TimeSpan)arg).ToString("c", CultureInfo.InvariantCulture);
+                    }
                     else
                     {
                         var type = arg.GetType();

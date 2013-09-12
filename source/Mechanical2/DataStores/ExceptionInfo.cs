@@ -54,7 +54,7 @@ namespace Mechanical.DataStores
                 exception.StackTrace);
 
             foreach( var pair in exception.Retrieve() )
-                info.store.Add(pair.Key, pair.Value);
+                info.store.Add(pair.Key, pair.Value); // the value being null is perfectly fine for us, but not so much for the serializer
 
             if( exception.InnerException.NotNullReference() )
             {
@@ -162,9 +162,9 @@ namespace Mechanical.DataStores
                 {
                     sb.AppendLine(); // newline here
                     sb.Append(' ', 2);
-                    sb.Append(SafeString.Print(pair.Key));
+                    sb.Append(pair.Key); // valid data store name
                     sb.Append(" = ");
-                    sb.Append(SafeString.Print(pair.Value));
+                    sb.Append(SafeString.DebugPrint(pair.Value));
                     //// no newline here
                 }
             }
@@ -239,6 +239,25 @@ namespace Mechanical.DataStores
                 internal const string InnerExceptions = "InnerExceptions";
             }
 
+            private static string EncodeStoredValue( string str )
+            {
+                if( str.NullReference() )
+                    return string.Empty;
+                else
+                    return '_' + str;
+            }
+
+            private static string DecodeStoredValue( string str )
+            {
+                if( str.NullReference() )
+                    throw new ArgumentNullException().StoreDefault();
+
+                if( str.Length == 0 )
+                    return null;
+                else
+                    return str.Substring(startIndex: 1);
+            }
+
             /// <summary>
             /// Serializes to a data store object.
             /// </summary>
@@ -259,10 +278,10 @@ namespace Mechanical.DataStores
                 writer.Write(
                     Keys.Store,
                     obj,
-                    (info, w) =>
+                    ( info, w ) =>
                     {
                         foreach( var pair in info.Store )
-                            w.Write(pair.Key, pair.Value);
+                            w.Write(pair.Key, EncodeStoredValue(pair.Value));
                     });
 
                 writer.Write(
@@ -291,25 +310,30 @@ namespace Mechanical.DataStores
                 var stackTrace = reader.ReadString(Keys.StackTrace);
                 var info = new ExceptionInfo(type, message, stackTrace);
 
-                reader.Read(( n, r ) =>
-                {
-                    string key, value;
-                    while( r.Token != DataStoreToken.ObjectEnd )
+                reader.Read(
+                    Keys.Store,
+                    r =>
                     {
-                        value = r.ReadString(out key);
-                        info.store.Add(key, value);
-                    }
-                });
+                        string key, value;
+                        while( r.Token != DataStoreToken.ObjectEnd )
+                        {
+                            value = r.ReadString(out key);
+                            value = DecodeStoredValue(value);
+                            info.store.Add(key, value);
+                        }
+                    });
 
-                reader.Read(( n, r ) =>
-                {
-                    ExceptionInfo innerException;
-                    while( r.Token != DataStoreToken.ObjectEnd )
+                reader.Read(
+                    Keys.InnerExceptions,
+                    r =>
                     {
-                        innerException = r.Read(Default);
-                        info.innerExceptions.Add(innerException);
-                    }
-                });
+                        ExceptionInfo innerException;
+                        while( r.Token != DataStoreToken.ObjectEnd )
+                        {
+                            innerException = r.Read(Default);
+                            info.innerExceptions.Add(innerException);
+                        }
+                    });
 
                 return info;
             }

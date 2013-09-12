@@ -155,7 +155,7 @@ namespace Mechanical.FileFormats
                     // try to read new line
                     lastLineRead = this.tr.ReadLine();
                     if( lastLineRead.NullReference() )
-                        throw new FormatException("Unexpected end of stream: a quote was still open!").StoreDefault("LineNumber", this.LineNumber);
+                        throw new FormatException("Unexpected end of stream: a quote was still open!").Store("LineNumber", this.LineNumber);
                     else
                         ++this.lineNumber;
                 }

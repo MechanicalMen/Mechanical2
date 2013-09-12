@@ -73,7 +73,7 @@ namespace Mechanical.Conditions
                 ++i;
             }
 
-            e.Data.Add(actualKey, SafeString.DebugPrint(value));
+            e.Data.Add(actualKey, value); // value being null is perfectly valid
             return e;
         }
 
@@ -85,6 +85,7 @@ namespace Mechanical.Conditions
         /// <param name="key">The data key.</param>
         /// <param name="value">The data value.</param>
         /// <param name="filePath">The full path of the source file that contains the caller.</param>
+        /// <param name="memberName">The method or property name of the caller to the method.</param>
         /// <param name="lineNumber">The line number in the source file at which the method is called.</param>
         /// <returns>The exception data was stored in.</returns>
         public static TException Store<TException>(
@@ -92,11 +93,12 @@ namespace Mechanical.Conditions
             string key,
             object value,
             [CallerFilePath] string filePath = "",
+            [CallerMemberName] string memberName = "",
             [CallerLineNumber] int lineNumber = 0 )
             where TException : Exception
         {
             // make sure the default informations are stored
-            return e.StoreDefault(filePath, lineNumber)
+            return e.StoreDefault(filePath, memberName, lineNumber)
                     .Add(key, value);
         }
 
@@ -110,11 +112,13 @@ namespace Mechanical.Conditions
         /// <typeparam name="TException">The type of the exception.</typeparam>
         /// <param name="e">The exception to store data in.</param>
         /// <param name="filePath">The full path of the source file that contains the caller.</param>
+        /// <param name="memberName">The method or property name of the caller to the method.</param>
         /// <param name="lineNumber">The line number in the source file at which the method is called.</param>
         /// <returns>The exception data was stored in.</returns>
         public static TException StoreDefault<TException>(
             this TException e,
             [CallerFilePath] string filePath = "",
+            [CallerMemberName] string memberName = "",
             [CallerLineNumber] int lineNumber = 0 )
             where TException : Exception
         {
@@ -141,6 +145,7 @@ namespace Mechanical.Conditions
                 }
 
                 return e.Add("SourceFile", file)
+                        .Add("SourceMember", memberName)
                         .Add("SourceLine", lineNumber); // add other data here...
             }
             else
@@ -160,7 +165,7 @@ namespace Mechanical.Conditions
         public static TException StoreDefault<TException, T>( this TException e, IConditionContext<T> context )
             where TException : Exception
         {
-            return e.StoreDefault(context.FilePath, context.LineNumber)
+            return e.StoreDefault(context.FilePath, context.MemberName, context.LineNumber)
                     .Add("Object", context.Object);
         }
 

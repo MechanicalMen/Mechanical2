@@ -334,5 +334,8 @@ namespace Mechanical.DataStores
         //// TODO: binary data store (seekable?! - what about network streams?)
         //// TODO: json data store (do not store number/true/false/null as strings)
         //// TODO: IDataStoreNode & Co. --> default [de]serialization mappings  (instead of reader.ReadNode & Co.)
+        //// TODO: test datastores for attempting to read or write multiple roots
+
+        //// TODO: MVVM.UI -> Scheduler, Dispatcher --> MagicBag ?!?! (or at least a synchronizationContext ?!)
     }
 }

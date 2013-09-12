@@ -164,11 +164,11 @@ namespace Mechanical.DataStores
 #if !MECHANICAL_NET4CP
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-        private void ThrowIfAtDataStoreEnd( [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0 )
+        private void ThrowIfAtDataStoreEnd( [CallerFilePath] string filePath = "", [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0 )
         {
             if( this.Token == DataStoreToken.DataStoreEnd )
             {
-                var exception = new InvalidOperationException("End of data store already reached!").StoreDefault(filePath, lineNumber);
+                var exception = new InvalidOperationException("End of data store already reached!").StoreDefault(filePath, memberName, lineNumber);
                 this.StoreReaderInfo(exception);
                 throw exception;
             }

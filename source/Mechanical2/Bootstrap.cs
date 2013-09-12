@@ -22,20 +22,22 @@ namespace Mechanical
 
         internal static void ThrowIfUninitialized(
             [CallerFilePath] string filePath = "",
+            [CallerMemberName] string memberName = "",
             [CallerLineNumberAttribute] int lineNumber = 0 )
         {
             // NOTE: no locking needed here
             if( !isInitialized )
-                throw new InvalidOperationException("Library not yet initialized! Look at the Mechanical.Bootstrap class.").StoreDefault(filePath, lineNumber);
+                throw new InvalidOperationException("Library not yet initialized! Look at the Mechanical.Bootstrap class.").StoreDefault(filePath, memberName, lineNumber);
         }
 
         internal static void ThrowIfAlreadyInitialized(
             [CallerFilePath] string filePath = "",
+            [CallerMemberName] string memberName = "",
             [CallerLineNumberAttribute] int lineNumber = 0 )
         {
             // NOTE: no locking needed here
             if( isInitialized )
-                throw new InvalidOperationException("Library already initialized!").StoreDefault(filePath, lineNumber);
+                throw new InvalidOperationException("Library already initialized!").StoreDefault(filePath, memberName, lineNumber);
         }
 
         #endregion

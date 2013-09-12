@@ -25,6 +25,12 @@ namespace Mechanical.Conditions
         string FilePath { get; }
 
         /// <summary>
+        /// Gets the method or property name of the caller to the method.
+        /// </summary>
+        /// <value>The method or property name of the caller to the method.</value>
+        string MemberName { get; }
+
+        /// <summary>
         /// Gets the line in the source file where the test originated.
         /// </summary>
         /// <value>The line in the source file where the test originated.</value>
@@ -37,12 +43,14 @@ namespace Mechanical.Conditions
     {
         private readonly T obj;
         private readonly string filePath;
+        private readonly string memberName;
         private readonly int lineNumber;
 
-        internal ConditionContext( T obj, string filePath, int lineNumber )
+        internal ConditionContext( T obj, string filePath, string memberName, int lineNumber )
         {
             this.obj = obj;
             this.filePath = filePath;
+            this.memberName = memberName;
             this.lineNumber = lineNumber;
         }
 
@@ -54,6 +62,11 @@ namespace Mechanical.Conditions
         public string FilePath
         {
             get { return this.filePath; }
+        }
+
+        public string MemberName
+        {
+            get { return this.memberName; }
         }
 
         public int LineNumber
