@@ -114,7 +114,16 @@ namespace Mechanical.DataStores
             if( reader.NullReference() )
                 throw new ArgumentNullException("reader").StoreDefault();
 
-            return sbyte.Parse(reader.ReadToEnd(), NumberStyles.Integer, Culture);
+            string str = reader.ReadToEnd();
+            try
+            {
+                return sbyte.Parse(str, NumberStyles.Integer, Culture);
+            }
+            catch( Exception ex )
+            {
+                ex.Store("str", str);
+                throw;
+            }
         }
 
         sbyte IDataStoreValueDeserializer<sbyte>.Deserialize( string name, IBinaryReader reader )
@@ -150,7 +159,16 @@ namespace Mechanical.DataStores
             if( reader.NullReference() )
                 throw new ArgumentNullException("reader").StoreDefault();
 
-            return byte.Parse(reader.ReadToEnd(), NumberStyles.Integer, Culture);
+            string str = reader.ReadToEnd();
+            try
+            {
+                return byte.Parse(str, NumberStyles.Integer, Culture);
+            }
+            catch( Exception ex )
+            {
+                ex.Store("str", str);
+                throw;
+            }
         }
 
         byte IDataStoreValueDeserializer<byte>.Deserialize( string name, IBinaryReader reader )
@@ -186,7 +204,16 @@ namespace Mechanical.DataStores
             if( reader.NullReference() )
                 throw new ArgumentNullException("reader").StoreDefault();
 
-            return short.Parse(reader.ReadToEnd(), NumberStyles.Integer, Culture);
+            string str = reader.ReadToEnd();
+            try
+            {
+                return short.Parse(str, NumberStyles.Integer, Culture);
+            }
+            catch( Exception ex )
+            {
+                ex.Store("str", str);
+                throw;
+            }
         }
 
         short IDataStoreValueDeserializer<short>.Deserialize( string name, IBinaryReader reader )
@@ -222,7 +249,16 @@ namespace Mechanical.DataStores
             if( reader.NullReference() )
                 throw new ArgumentNullException("reader").StoreDefault();
 
-            return ushort.Parse(reader.ReadToEnd(), NumberStyles.Integer, Culture);
+            string str = reader.ReadToEnd();
+            try
+            {
+                return ushort.Parse(str, NumberStyles.Integer, Culture);
+            }
+            catch( Exception ex )
+            {
+                ex.Store("str", str);
+                throw;
+            }
         }
 
         ushort IDataStoreValueDeserializer<ushort>.Deserialize( string name, IBinaryReader reader )
@@ -258,7 +294,16 @@ namespace Mechanical.DataStores
             if( reader.NullReference() )
                 throw new ArgumentNullException("reader").StoreDefault();
 
-            return int.Parse(reader.ReadToEnd(), NumberStyles.Integer, Culture);
+            string str = reader.ReadToEnd();
+            try
+            {
+                return int.Parse(str, NumberStyles.Integer, Culture);
+            }
+            catch( Exception ex )
+            {
+                ex.Store("str", str);
+                throw;
+            }
         }
 
         int IDataStoreValueDeserializer<int>.Deserialize( string name, IBinaryReader reader )
@@ -294,7 +339,16 @@ namespace Mechanical.DataStores
             if( reader.NullReference() )
                 throw new ArgumentNullException("reader").StoreDefault();
 
-            return uint.Parse(reader.ReadToEnd(), NumberStyles.Integer, Culture);
+            string str = reader.ReadToEnd();
+            try
+            {
+                return uint.Parse(str, NumberStyles.Integer, Culture);
+            }
+            catch( Exception ex )
+            {
+                ex.Store("str", str);
+                throw;
+            }
         }
 
         uint IDataStoreValueDeserializer<uint>.Deserialize( string name, IBinaryReader reader )
@@ -330,7 +384,16 @@ namespace Mechanical.DataStores
             if( reader.NullReference() )
                 throw new ArgumentNullException("reader").StoreDefault();
 
-            return long.Parse(reader.ReadToEnd(), NumberStyles.Integer, Culture);
+            string str = reader.ReadToEnd();
+            try
+            {
+                return long.Parse(str, NumberStyles.Integer, Culture);
+            }
+            catch( Exception ex )
+            {
+                ex.Store("str", str);
+                throw;
+            }
         }
 
         long IDataStoreValueDeserializer<long>.Deserialize( string name, IBinaryReader reader )
@@ -366,7 +429,16 @@ namespace Mechanical.DataStores
             if( reader.NullReference() )
                 throw new ArgumentNullException("reader").StoreDefault();
 
-            return ulong.Parse(reader.ReadToEnd(), NumberStyles.Integer, Culture);
+            string str = reader.ReadToEnd();
+            try
+            {
+                return ulong.Parse(str, NumberStyles.Integer, Culture);
+            }
+            catch( Exception ex )
+            {
+                ex.Store("str", str);
+                throw;
+            }
         }
 
         ulong IDataStoreValueDeserializer<ulong>.Deserialize( string name, IBinaryReader reader )
@@ -402,7 +474,16 @@ namespace Mechanical.DataStores
             if( reader.NullReference() )
                 throw new ArgumentNullException("reader").StoreDefault();
 
-            return float.Parse(reader.ReadToEnd(), NumberStyles.Float, Culture);
+            string str = reader.ReadToEnd();
+            try
+            {
+                return float.Parse(str, NumberStyles.Float, Culture);
+            }
+            catch( Exception ex )
+            {
+                ex.Store("str", str);
+                throw;
+            }
         }
 
         float IDataStoreValueDeserializer<float>.Deserialize( string name, IBinaryReader reader )
@@ -438,7 +519,16 @@ namespace Mechanical.DataStores
             if( reader.NullReference() )
                 throw new ArgumentNullException("reader").StoreDefault();
 
-            return double.Parse(reader.ReadToEnd(), NumberStyles.Float, Culture);
+            string str = reader.ReadToEnd();
+            try
+            {
+                return double.Parse(str, NumberStyles.Float, Culture);
+            }
+            catch( Exception ex )
+            {
+                ex.Store("str", str);
+                throw;
+            }
         }
 
         double IDataStoreValueDeserializer<double>.Deserialize( string name, IBinaryReader reader )
@@ -474,7 +564,16 @@ namespace Mechanical.DataStores
             if( reader.NullReference() )
                 throw new ArgumentNullException("reader").StoreDefault();
 
-            return decimal.Parse(reader.ReadToEnd(), NumberStyles.Float, Culture);
+            string str = reader.ReadToEnd();
+            try
+            {
+                return decimal.Parse(str, NumberStyles.Float, Culture);
+            }
+            catch( Exception ex )
+            {
+                ex.Store("str", str);
+                throw;
+            }
         }
 
         decimal IDataStoreValueDeserializer<decimal>.Deserialize( string name, IBinaryReader reader )
@@ -561,7 +660,7 @@ namespace Mechanical.DataStores
             if( value == -1 )
                 throw new FormatException("Unexpected end of stream!").StoreDefault();
             else if( reader.Read() != -1 )
-                throw new FormatException("Unexpected character(s) in stream!").StoreDefault();
+                throw new FormatException("More than one character in stream!").StoreDefault();
             else
                 return (char)value;
         }
@@ -703,8 +802,17 @@ namespace Mechanical.DataStores
             if( reader.NullReference() )
                 throw new ArgumentNullException("reader").StoreDefault();
 
-            // not using the Culture field on purpose!
-            return DateTime.ParseExact(reader.ReadToEnd(), "o", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind | DateTimeStyles.AllowLeadingWhite | DateTimeStyles.AllowTrailingWhite);
+            string str = reader.ReadToEnd();
+            try
+            {
+                // not using the Culture field on purpose!
+                return DateTime.ParseExact(str, "o", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind | DateTimeStyles.AllowLeadingWhite | DateTimeStyles.AllowTrailingWhite);
+            }
+            catch( Exception ex )
+            {
+                ex.Store("str", str);
+                throw;
+            }
         }
 
         DateTime IDataStoreValueDeserializer<DateTime>.Deserialize( string name, IBinaryReader reader )
@@ -741,8 +849,17 @@ namespace Mechanical.DataStores
             if( reader.NullReference() )
                 throw new ArgumentNullException("reader").StoreDefault();
 
-            // not using the Culture field on purpose!
-            return TimeSpan.ParseExact(reader.ReadToEnd(), "c", CultureInfo.InvariantCulture, TimeSpanStyles.None);
+            string str = reader.ReadToEnd();
+            try
+            {
+                // not using the Culture field on purpose!
+                return TimeSpan.ParseExact(str, "c", CultureInfo.InvariantCulture, TimeSpanStyles.None);
+            }
+            catch( Exception ex )
+            {
+                ex.Store("str", str);
+                throw;
+            }
         }
 
         TimeSpan IDataStoreValueDeserializer<TimeSpan>.Deserialize( string name, IBinaryReader reader )

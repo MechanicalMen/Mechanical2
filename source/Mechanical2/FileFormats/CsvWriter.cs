@@ -252,7 +252,7 @@ namespace Mechanical.FileFormats
         public void Write( string cell )
         {
             if( this.IsDisposed )
-                throw new ObjectDisposedException("this").StoreDefault();
+                throw new ObjectDisposedException(string.Empty).StoreDefault();
 
             if( !this.firstCell )
                 this.tw.Write(this.csvFormat.Separator);

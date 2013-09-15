@@ -96,7 +96,7 @@ namespace Mechanical.DataStores.Node
         private void ThrowIfDisposed()
         {
             if( this.IsDisposed )
-                throw new ObjectDisposedException("this").StoreDefault();
+                throw new ObjectDisposedException(string.Empty).StoreDefault();
         }
 
 #if !MECHANICAL_NET4CP
