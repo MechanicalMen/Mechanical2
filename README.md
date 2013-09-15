@@ -53,3 +53,20 @@ Base classes for implementing your own collections. Make your code more expressi
 Replaces the functionality of StreamReader/Writer and BinaryReader/Writer.
 * Interfaces abstract the handling of raw binary or textual data.
 * Lightweight and reusable implementations
+
+### Events
+Event Queue pattern with a twist (also known as event aggregator, message queue, ... etc.)
+* Strongly typed
+* You can enqueue events in a fire & forget manner, similar to the usual implementation...
+* ... but through tasks you can also be notified when it was handled, and if you wish, you may even intercept any exceptions thrown.
+* In a way, this is similar to standard .NET events.
+* Event handlers can also "piggyback" events unto the one they are currently handling. This results in the event not being handled, until all piggybacked events get handled.
+* Events are processed in a long-running task.
+* A two-stage shutdown process allows all subscribers plenty of opportunities clean up after themselves.
+
+### Log
+A basic logging implementation.
+* Simple but effective interface. A subset of NLog, but has no dependency on it.
+* Designed to be simple to replace with your own logger, should you choose to do so.
+* By default, calls are wrapped into an event.
+* The default log event subscriber, serializes them using a data store, into XML format.

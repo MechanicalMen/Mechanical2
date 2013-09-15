@@ -41,6 +41,7 @@ namespace Mechanical.DataStores.Xml
 
         internal const string RootName = "root";
 
+        private readonly bool hasRootObject;
         private XmlWriter xmlWriter;
         private Mechanical.IO.StringWriter textWriter;
 
@@ -48,14 +49,24 @@ namespace Mechanical.DataStores.Xml
 
         #region Constructors
 
-        private XmlDataStoreWriter( XmlWriter xmlWriter )
+        private XmlDataStoreWriter( XmlWriter xmlWriter, string writeRootObject )
         {
             Ensure.That(xmlWriter).NotNull();
 
             this.xmlWriter = xmlWriter;
             this.textWriter = new Mechanical.IO.StringWriter();
-
             this.xmlWriter.WriteStartElement(RootName);
+
+            if( writeRootObject.NotNullReference() )
+            {
+                if( !DataStore.IsValidName(writeRootObject) )
+                    throw new ArgumentException("Invalid data store name!").Store("writeRootObject", writeRootObject);
+
+                this.xmlWriter.WriteStartElement(writeRootObject);
+                this.hasRootObject = true;
+            }
+            else
+                this.hasRootObject = false;
         }
 
         /// <summary>
@@ -63,8 +74,9 @@ namespace Mechanical.DataStores.Xml
         /// </summary>
         /// <param name="sb">The <see cref="StringBuilder"/> to use.</param>
         /// <param name="indent">Determines whether to indent the xml elements.</param>
-        public XmlDataStoreWriter( StringBuilder sb, bool indent = true )
-            : this(XmlWriter.Create(new StringWriterWithEncoding(sb, DataStore.DefaultEncoding) { NewLine = DataStore.DefaultNewLine }, new XmlWriterSettings() { Encoding = DataStore.DefaultEncoding, NewLineChars = DataStore.DefaultNewLine, Indent = indent }))
+        /// <param name="writeRootObject">The name of the object, to use as the root of the data store, or <c>null</c> to have the root determined by a Write call.</param>
+        public XmlDataStoreWriter( StringBuilder sb, bool indent = true, string writeRootObject = null )
+            : this(XmlWriter.Create(new StringWriterWithEncoding(sb, DataStore.DefaultEncoding) { NewLine = DataStore.DefaultNewLine }, new XmlWriterSettings() { Encoding = DataStore.DefaultEncoding, NewLineChars = DataStore.DefaultNewLine, Indent = indent, CloseOutput = true }), writeRootObject)
         {
         }
 
@@ -73,8 +85,9 @@ namespace Mechanical.DataStores.Xml
         /// </summary>
         /// <param name="stream">The <see cref="Stream"/> to take ownership of.</param>
         /// <param name="indent">Determines whether to indent the xml elements.</param>
-        public XmlDataStoreWriter( Stream stream, bool indent = true )
-            : this(XmlWriter.Create(new StreamWriter(stream, DataStore.DefaultEncoding) { NewLine = DataStore.DefaultNewLine }, new XmlWriterSettings() { Encoding = DataStore.DefaultEncoding, NewLineChars = DataStore.DefaultNewLine, Indent = indent }))
+        /// <param name="writeRootObject">The name of the object, to use as the root of the data store, or <c>null</c> to have the root determined by a Write call.</param>
+        public XmlDataStoreWriter( Stream stream, bool indent = true, string writeRootObject = null )
+            : this(XmlWriter.Create(new StreamWriter(stream, DataStore.DefaultEncoding) { NewLine = DataStore.DefaultNewLine }, new XmlWriterSettings() { Encoding = DataStore.DefaultEncoding, NewLineChars = DataStore.DefaultNewLine, Indent = indent, CloseOutput = true }), writeRootObject)
         {
         }
 
@@ -95,7 +108,12 @@ namespace Mechanical.DataStores.Xml
 
                 if( this.xmlWriter.NotNullReference() )
                 {
-                    this.xmlWriter.WriteFullEndElement(); // closing root element
+                    // close root data store object, if one was specified
+                    // in the constructor
+                    if( this.hasRootObject )
+                        this.xmlWriter.WriteFullEndElement();
+
+                    this.xmlWriter.WriteFullEndElement(); // closing root xml element
 
                     this.xmlWriter.Flush();
                     this.xmlWriter.Close();
@@ -126,7 +144,7 @@ namespace Mechanical.DataStores.Xml
         public void Write<T>( string name, T obj, IDataStoreValueSerializer<T> serializer )
         {
             if( this.IsDisposed )
-                throw new ObjectDisposedException("this").Store("name", name).Store("obj", "obj").Store("serializer", serializer);
+                throw new ObjectDisposedException(string.Empty).Store("name", name).Store("obj", "obj").Store("serializer", serializer);
 
             if( !DataStore.IsValidName(name) )
                 throw new ArgumentException("Invalid data store name!").Store("name", name).Store("obj", "obj").Store("serializer", serializer);
@@ -161,7 +179,7 @@ namespace Mechanical.DataStores.Xml
         public void Write<T>( string name, T obj, IDataStoreObjectSerializer<T> serializer )
         {
             if( this.IsDisposed )
-                throw new ObjectDisposedException("this").Store("name", name).Store("obj", "obj").Store("serializer", serializer);
+                throw new ObjectDisposedException(string.Empty).Store("name", name).Store("obj", "obj").Store("serializer", serializer);
 
             if( !DataStore.IsValidName(name) )
                 throw new ArgumentException("Invalid data store name!").Store("name", name).Store("obj", "obj").Store("serializer", serializer);
@@ -177,6 +195,21 @@ namespace Mechanical.DataStores.Xml
 
             // close the node
             this.xmlWriter.WriteFullEndElement();
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Flushes the buffers of the underlying implementation(s).
+        /// </summary>
+        public void Flush()
+        {
+            if( this.IsDisposed )
+                throw new ObjectDisposedException(string.Empty).StoreDefault();
+
+            this.xmlWriter.Flush();
         }
 
         #endregion

@@ -257,6 +257,33 @@
     <Compile Include="..\Mechanical2\DataStores\Xml\XmlDataStoreWriter.cs">
       <Link>DataStores\Xml\XmlDataStoreWriter.cs</Link>
     </Compile>
+    <Compile Include="..\Mechanical2\Events\EventQueue.cs">
+      <Link>Events\EventQueue.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Events\EventQueueShutDownEvent.cs">
+      <Link>Events\EventQueueShutDownEvent.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Events\EventQueueShuttingDownEvent.cs">
+      <Link>Events\EventQueueShuttingDownEvent.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Events\IEvent.cs">
+      <Link>Events\IEvent.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Events\IEventHandler.cs">
+      <Link>Events\IEventHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Events\IEventHandlerQueue.cs">
+      <Link>Events\IEventHandlerQueue.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Events\IEventQueue.cs">
+      <Link>Events\IEventQueue.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Events\TaskResult.cs">
+      <Link>Events\TaskResult.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Events\UnhandledExceptionEvent.cs">
+      <Link>Events\UnhandledExceptionEvent.cs</Link>
+    </Compile>
     <Compile Include="..\Mechanical2\FileFormats\CsvFormat.cs">
       <Link>FileFormats\CsvFormat.cs</Link>
     </Compile>
@@ -301,6 +328,27 @@
     </Compile>
     <Compile Include="..\Mechanical2\IO\StringWriter.cs">
       <Link>IO\StringWriter.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Log\EventLogger.cs">
+      <Link>Log\EventLogger.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Log\ILog.cs">
+      <Link>Log\ILog.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Log\Log.cs">
+      <Link>Log\Log.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Log\LogEntry.cs">
+      <Link>Log\LogEntry.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Log\LogEvent.cs">
+      <Link>Log\LogEvent.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Log\LogEventSerializer.cs">
+      <Link>Log\LogEventSerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Log\LogLevel.cs">
+      <Link>Log\LogLevel.cs</Link>
     </Compile>
     <Compile Include="..\Mechanical2\MagicBag\Allocators\ConstructorAllocator.cs">
       <Link>MagicBag\Allocators\ConstructorAllocator.cs</Link>

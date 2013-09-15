@@ -410,8 +410,13 @@ namespace Mechanical.MagicBag
 
             // NOTE: specify default mappings here
             var mappings = new List<Mapping>();
+            mappings.Add(Map<DateTime>.To(() => DateTime.UtcNow).AsTransient());
             mappings.AddRange(Mechanical.DataStores.BasicSerialization.GetMappings());
             mappings.AddRange(Mechanical.DataStores.Node.DataStoreNode.GetMappings());
+#if !SILVERLIGHT
+            mappings.AddRange(Mechanical.Events.EventQueue.GetMappings());
+            mappings.AddRange(Mechanical.Log.LogEntry.GetMappings());
+#endif
 
             if( parentBag.NullReference() )
                 Interlocked.CompareExchange(ref defaultBag, new Basic(mappings.ToArray(), MappingGenerators.Defaults), comparand: null);
