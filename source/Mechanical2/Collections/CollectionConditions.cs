@@ -37,7 +37,7 @@ namespace Mechanical.Collections
             Ensure.Debug(site, s => s.NotNull());
 
             if( site.Object.NullOrEmpty() )
-                throw createException().StoreDefault(site);
+                throw createException().Store(site);
             else
                 return site;
         }
@@ -71,7 +71,7 @@ namespace Mechanical.Collections
             Ensure.Debug(site, s => s.NotNull());
 
             if( site.Object.NullEmptyOrSparse() )
-                throw createException().StoreDefault(site);
+                throw createException().Store(site);
             else
                 return site;
         }
@@ -105,7 +105,7 @@ namespace Mechanical.Collections
             Ensure.Debug(site, s => s.NotNull());
 
             if( site.Object.NullOrSparse() )
-                throw createException().StoreDefault(site);
+                throw createException().Store(site);
             else
                 return site;
         }

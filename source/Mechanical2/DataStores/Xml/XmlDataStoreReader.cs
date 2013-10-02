@@ -13,7 +13,7 @@ namespace Mechanical.DataStores.Xml
     /// <summary>
     /// An XML based data store reader.
     /// </summary>
-    public class XmlDataStoreReader : DataStoreReaderBase.Disposable, IDataStoreReader
+    public class XmlDataStoreReader : DataStoreReaderBase.Disposable
     {
         #region Private Fields
 
@@ -111,12 +111,12 @@ namespace Mechanical.DataStores.Xml
 
         private FormatException CreateUnexpectedEndException( [CallerFilePath] string filePath = "", [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0 )
         {
-            return new FormatException("Unexpected end of xml file reached!").StoreDefault(filePath, memberName, lineNumber);
+            return new FormatException("Unexpected end of xml file reached!").StoreFileLine(filePath, memberName, lineNumber);
         }
 
         private FormatException CreateInvalidRootException( [CallerFilePath] string filePath = "", [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0 )
         {
-            return new FormatException("Invalid root node!").StoreDefault(filePath, memberName, lineNumber);
+            return new FormatException("Invalid root node!").StoreFileLine(filePath, memberName, lineNumber);
         }
 
 #if !MECHANICAL_NET4CP

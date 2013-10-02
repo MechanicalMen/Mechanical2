@@ -2,19 +2,17 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Threading.Tasks;
 using Mechanical.Conditions;
 using Mechanical.Core;
 using Mechanical.DataStores;
 using Mechanical.DataStores.Xml;
-using Mechanical.Events;
 
 namespace Mechanical.Log
 {
     /// <summary>
     /// Serializes log events.
     /// </summary>
-    public class LogEventSerializer : DisposableObject, IEventHandler<LogEvent>
+    public class LogEntrySerializer : LogBase
     {
         //// NOTE: We use FileOptions.WriteThrough and frequent flushing,
         ////       to make sure all logs end up on the disk, in case of a crash.
@@ -22,7 +20,6 @@ namespace Mechanical.Log
 
         #region Private Fields
 
-        private IEventQueue eventQueue;
         private XmlDataStoreWriter writer;
         private int logEntryIndex = 0;
 
@@ -30,35 +27,45 @@ namespace Mechanical.Log
 
         #region Constructors
 
-        private LogEventSerializer( XmlDataStoreWriter writer, IEventQueue eventQueue )
+        private LogEntrySerializer( XmlDataStoreWriter writer )
         {
             Ensure.That(writer).NotNull().NotDisposed();
-            Ensure.That(eventQueue).NotNull();
 
             this.writer = writer;
-            this.eventQueue = eventQueue;
-            this.eventQueue.Subscribe(this);
         }
 
         /// <summary>
-        /// Returns a new <see cref="LogEventSerializer"/> instance.
+        /// Returns a new <see cref="LogEntrySerializer"/> instance.
         /// </summary>
-        /// <param name="xmlFilePath">The path to the Xml log file.</param>
-        /// <param name="eventQueue">The <see cref="IEventQueue"/> to subscribe to.</param>
-        /// <returns>The new <see cref="LogEventSerializer"/> instance created.</returns>
-        public static LogEventSerializer FromXml( string xmlFilePath, IEventQueue eventQueue )
+        /// <param name="xmlFilePath">The file to write the Xml contents to.</param>
+        /// <returns>The new <see cref="LogEntrySerializer"/> instance created.</returns>
+        public static LogEntrySerializer ToXmlFile( string xmlFilePath )
         {
             try
             {
+#if !SILVERLIGHT
                 var fs = new FileStream(xmlFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, bufferSize: 4096, options: FileOptions.WriteThrough); // 4K is the default FileStream buffer size. May not be zero.
-                var writer = new XmlDataStoreWriter(fs, writeRootObject: "LogEntries");
-                return new LogEventSerializer(writer, eventQueue);
+#else
+                var fs = new FileStream(xmlFilePath, FileMode.Create, FileAccess.Write, FileShare.Read);
+#endif
+                return ToXmlStream(fs);
             }
             catch( Exception ex )
             {
                 ex.Store("xmlFilePath", xmlFilePath);
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Returns a new <see cref="LogEntrySerializer"/> instance.
+        /// </summary>
+        /// <param name="xmlStream">The <see cref="Stream"/> to write the Xml contents to.</param>
+        /// <returns>The new <see cref="LogEntrySerializer"/> instance created.</returns>
+        public static LogEntrySerializer ToXmlStream( Stream xmlStream )
+        {
+            var writer = new XmlDataStoreWriter(xmlStream, writeRootObject: "LogEntries");
+            return new LogEntrySerializer(writer);
         }
 
         #endregion
@@ -76,12 +83,6 @@ namespace Mechanical.Log
                 //// dispose-only (i.e. non-finalizable) logic
                 //// (managed, disposable resources you own)
 
-                if( this.eventQueue.NotNullReference() )
-                {
-                    this.eventQueue.Unsubscribe(this);
-                    this.eventQueue = null;
-                }
-
                 if( this.writer.NotNullReference() )
                 {
                     this.writer.Dispose();
@@ -98,20 +99,17 @@ namespace Mechanical.Log
 
         #endregion
 
-        #region IEventHandler
+        #region LogBase
 
         /// <summary>
-        /// Handles the specified <see cref="IEvent"/>.
+        /// Logs the specified <see cref="LogEntry"/>.
         /// </summary>
-        /// <param name="evnt">The event to handle.</param>
-        /// <param name="queue">The queue to use, to piggyback events.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation; or <c>null</c> for synchronous operations.</returns>
-        public Task Handle( LogEvent evnt, IEventHandlerQueue queue )
+        /// <param name="entry">The <see cref="LogEntry"/> to log.</param>
+        protected override void Log( LogEntry entry )
         {
-            this.writer.Write("e" + this.logEntryIndex.ToString(CultureInfo.InvariantCulture), evnt.Entry, LogEntry.Serializer.Default);
+            this.writer.Write("e" + this.logEntryIndex.ToString(CultureInfo.InvariantCulture), entry, LogEntry.Serializer.Default);
             this.writer.Flush();
             ++this.logEntryIndex;
-            return null;
         }
 
         #endregion
@@ -121,22 +119,18 @@ namespace Mechanical.Log
         /// <summary>
         /// Deserializes the specified xml log file.
         /// </summary>
-        /// <param name="xmlPath">The path to the xml file.</param>
+        /// <param name="reader">The <see cref="IDataStoreReader"/> to use.</param>
         /// <returns>The deserialized log entries.</returns>
-        public static List<LogEntry> Deserialize( string xmlPath )
+        public static List<LogEntry> Deserialize( IDataStoreReader reader )
         {
             var list = new List<LogEntry>();
-            using( var sr = new StreamReader(xmlPath) )
-            using( var reader = new XmlDataStoreReader(sr) )
-            {
-                reader.Read(
-                    "LogEntries",
-                    r =>
-                    {
-                        while( r.Token != DataStoreToken.ObjectEnd )
-                            list.Add(r.Read(LogEntry.Serializer.Default));
-                    });
-            }
+            reader.Read(
+                "LogEntries",
+                r =>
+                {
+                    while( r.Token != DataStoreToken.ObjectEnd )
+                        list.Add(r.Read(LogEntry.Serializer.Default));
+                });
             return list;
         }
 

@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using Mechanical.Conditions;
+using Mechanical.Core;
 using Mechanical.MagicBag;
 
 namespace Mechanical.Log
@@ -9,12 +12,36 @@ namespace Mechanical.Log
     /// </summary>
     public static class Log
     {
-        private static readonly ILog LogInstance;
+        private static ILog logInstance;
 
         static Log()
         {
             var magicBag = Mechanical.MagicBag.MagicBag.Default;
-            LogInstance = magicBag.Pull<ILog>();
+            if( magicBag.IsRegistered<ILog>() )
+                logInstance = magicBag.Pull<ILog>();
+        }
+
+        /// <summary>
+        /// Sets the <see cref="ILog"/> interface to use.
+        /// </summary>
+        /// <param name="log">The <see cref="ILog"/> interface to use.</param>
+        public static void Set( ILog log )
+        {
+            Ensure.That(log).NotNull();
+
+            Interlocked.Exchange(ref logInstance, log);
+        }
+
+        private static ILog Instance
+        {
+            get
+            {
+                var instance = logInstance;
+                if( instance.NullReference() )
+                    throw new InvalidOperationException("No logger set!").StoreFileLine();
+                else
+                    return instance;
+            }
         }
 
         /// <summary>
@@ -32,7 +59,7 @@ namespace Mechanical.Log
             [CallerMemberName] string memberName = "",
             [CallerLineNumber] int lineNumber = 0 )
         {
-            LogInstance.Debug(message, ex, filePath, memberName, lineNumber);
+            Instance.Debug(message, ex, filePath, memberName, lineNumber);
         }
 
         /// <summary>
@@ -50,7 +77,7 @@ namespace Mechanical.Log
             [CallerMemberName] string memberName = "",
             [CallerLineNumber] int lineNumber = 0 )
         {
-            LogInstance.Info(message, ex, filePath, memberName, lineNumber);
+            Instance.Info(message, ex, filePath, memberName, lineNumber);
         }
 
         /// <summary>
@@ -68,7 +95,7 @@ namespace Mechanical.Log
             [CallerMemberName] string memberName = "",
             [CallerLineNumber] int lineNumber = 0 )
         {
-            LogInstance.Warn(message, ex, filePath, memberName, lineNumber);
+            Instance.Warn(message, ex, filePath, memberName, lineNumber);
         }
 
         /// <summary>
@@ -86,7 +113,7 @@ namespace Mechanical.Log
             [CallerMemberName] string memberName = "",
             [CallerLineNumber] int lineNumber = 0 )
         {
-            LogInstance.Error(message, ex, filePath, memberName, lineNumber);
+            Instance.Error(message, ex, filePath, memberName, lineNumber);
         }
 
         /// <summary>
@@ -104,7 +131,7 @@ namespace Mechanical.Log
             [CallerMemberName] string memberName = "",
             [CallerLineNumber] int lineNumber = 0 )
         {
-            LogInstance.Fatal(message, ex, filePath, memberName, lineNumber);
+            Instance.Fatal(message, ex, filePath, memberName, lineNumber);
         }
     }
 }

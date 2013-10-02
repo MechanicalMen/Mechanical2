@@ -43,7 +43,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object >= right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -77,7 +77,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object >= right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -111,7 +111,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object >= right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -145,7 +145,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object >= right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -179,7 +179,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object >= right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -213,7 +213,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object >= right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -247,7 +247,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object >= right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -281,7 +281,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object >= right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -315,7 +315,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object >= right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -353,7 +353,7 @@ namespace Mechanical.Conditions
 
             if( context.Object >= right
              || Math.Abs(context.Object - right) <= maxError )
-                throw createException().StoreDefault(context).Store("right", right).Store("maxError", maxError);
+                throw createException().Store(context).Store("right", right).Store("maxError", maxError);
             else
                 return context;
         }
@@ -387,7 +387,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object >= right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -425,7 +425,7 @@ namespace Mechanical.Conditions
 
             if( context.Object >= right
              || Math.Abs(context.Object - right) <= maxError )
-                throw createException().StoreDefault(context).Store("right", right).Store("maxError", maxError);
+                throw createException().Store(context).Store("right", right).Store("maxError", maxError);
             else
                 return context;
         }
@@ -459,7 +459,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object >= right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -497,7 +497,7 @@ namespace Mechanical.Conditions
 
             if( context.Object >= right
              || Math.Abs(context.Object - right) <= maxError )
-                throw createException().StoreDefault(context).Store("right", right).Store("maxError", maxError);
+                throw createException().Store(context).Store("right", right).Store("maxError", maxError);
             else
                 return context;
         }
@@ -535,7 +535,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object.CompareTo(right) >= 0 )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -574,7 +574,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(comparer, c => c.NotNull());
 
             if( comparer.Compare(context.Object, right) >= 0 )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -617,7 +617,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object > right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -651,7 +651,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object > right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -685,7 +685,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object > right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -719,7 +719,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object > right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -753,7 +753,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object > right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -787,7 +787,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object > right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -821,7 +821,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object > right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -855,7 +855,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object > right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -889,7 +889,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object > right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -927,7 +927,7 @@ namespace Mechanical.Conditions
 
             if( context.Object > right
              && Math.Abs(context.Object - right) > maxError )
-                throw createException().StoreDefault(context).Store("right", right).Store("maxError", maxError);
+                throw createException().Store(context).Store("right", right).Store("maxError", maxError);
             else
                 return context;
         }
@@ -961,7 +961,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object > right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -999,7 +999,7 @@ namespace Mechanical.Conditions
 
             if( context.Object > right
              && Math.Abs(context.Object - right) > maxError )
-                throw createException().StoreDefault(context).Store("right", right).Store("maxError", maxError);
+                throw createException().Store(context).Store("right", right).Store("maxError", maxError);
             else
                 return context;
         }
@@ -1033,7 +1033,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object > right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -1071,7 +1071,7 @@ namespace Mechanical.Conditions
 
             if( context.Object > right
              && Math.Abs(context.Object - right) > maxError )
-                throw createException().StoreDefault(context).Store("right", right).Store("maxError", maxError);
+                throw createException().Store(context).Store("right", right).Store("maxError", maxError);
             else
                 return context;
         }
@@ -1109,7 +1109,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object.CompareTo(right) > 0 )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -1148,7 +1148,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(comparer, c => c.NotNull());
 
             if( comparer.Compare(context.Object, right) > 0 )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -1191,7 +1191,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object <= right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -1225,7 +1225,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object <= right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -1259,7 +1259,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object <= right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -1293,7 +1293,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object <= right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -1327,7 +1327,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object <= right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -1361,7 +1361,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object <= right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -1395,7 +1395,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object <= right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -1429,7 +1429,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object <= right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -1463,7 +1463,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object <= right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -1501,7 +1501,7 @@ namespace Mechanical.Conditions
 
             if( context.Object <= right
              || Math.Abs(context.Object - right) <= maxError )
-                throw createException().StoreDefault(context).Store("right", right).Store("maxError", maxError);
+                throw createException().Store(context).Store("right", right).Store("maxError", maxError);
             else
                 return context;
         }
@@ -1535,7 +1535,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object <= right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -1573,7 +1573,7 @@ namespace Mechanical.Conditions
 
             if( context.Object <= right
              || Math.Abs(context.Object - right) <= maxError )
-                throw createException().StoreDefault(context).Store("right", right).Store("maxError", maxError);
+                throw createException().Store(context).Store("right", right).Store("maxError", maxError);
             else
                 return context;
         }
@@ -1607,7 +1607,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object <= right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -1645,7 +1645,7 @@ namespace Mechanical.Conditions
 
             if( context.Object <= right
              || Math.Abs(context.Object - right) <= maxError )
-                throw createException().StoreDefault(context).Store("right", right).Store("maxError", maxError);
+                throw createException().Store(context).Store("right", right).Store("maxError", maxError);
             else
                 return context;
         }
@@ -1683,7 +1683,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object.CompareTo(right) <= 0 )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -1722,7 +1722,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(comparer, c => c.NotNull());
 
             if( comparer.Compare(context.Object, right) <= 0 )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -1765,7 +1765,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object < right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -1799,7 +1799,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object < right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -1833,7 +1833,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object < right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -1867,7 +1867,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object < right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -1901,7 +1901,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object < right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -1935,7 +1935,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object < right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -1969,7 +1969,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object < right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -2003,7 +2003,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object < right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -2037,7 +2037,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object < right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -2075,7 +2075,7 @@ namespace Mechanical.Conditions
 
             if( context.Object < right
              && Math.Abs(context.Object - right) > maxError )
-                throw createException().StoreDefault(context).Store("right", right).Store("maxError", maxError);
+                throw createException().Store(context).Store("right", right).Store("maxError", maxError);
             else
                 return context;
         }
@@ -2109,7 +2109,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object < right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -2147,7 +2147,7 @@ namespace Mechanical.Conditions
 
             if( context.Object < right
              && Math.Abs(context.Object - right) > maxError )
-                throw createException().StoreDefault(context).Store("right", right).Store("maxError", maxError);
+                throw createException().Store(context).Store("right", right).Store("maxError", maxError);
             else
                 return context;
         }
@@ -2181,7 +2181,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object < right )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -2219,7 +2219,7 @@ namespace Mechanical.Conditions
 
             if( context.Object < right
              && Math.Abs(context.Object - right) > maxError )
-                throw createException().StoreDefault(context).Store("right", right).Store("maxError", maxError);
+                throw createException().Store(context).Store("right", right).Store("maxError", maxError);
             else
                 return context;
         }
@@ -2257,7 +2257,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object.CompareTo(right) < 0 )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }
@@ -2296,7 +2296,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(comparer, c => c.NotNull());
 
             if( comparer.Compare(context.Object, right) < 0 )
-                throw createException().StoreDefault(context).Store("right", right);
+                throw createException().Store(context).Store("right", right);
             else
                 return context;
         }

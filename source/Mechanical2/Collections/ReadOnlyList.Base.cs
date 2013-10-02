@@ -78,12 +78,12 @@ namespace Mechanical.Collections
 
             int IList.Add( object value )
             {
-                throw new NotSupportedException().StoreDefault();
+                throw new NotSupportedException().StoreFileLine();
             }
 
             void IList.Clear()
             {
-                throw new NotSupportedException().StoreDefault();
+                throw new NotSupportedException().StoreFileLine();
             }
 
             bool IList.Contains( object value )
@@ -106,7 +106,7 @@ namespace Mechanical.Collections
 
             void IList.Insert( int index, object value )
             {
-                throw new NotSupportedException().StoreDefault();
+                throw new NotSupportedException().StoreFileLine();
             }
 
             bool IList.IsFixedSize
@@ -121,18 +121,18 @@ namespace Mechanical.Collections
 
             void IList.Remove( object value )
             {
-                throw new NotSupportedException().StoreDefault();
+                throw new NotSupportedException().StoreFileLine();
             }
 
             void IList.RemoveAt( int index )
             {
-                throw new NotSupportedException().StoreDefault();
+                throw new NotSupportedException().StoreFileLine();
             }
 
             object IList.this[int index]
             {
                 get { return this[index]; }
-                set { throw new NotSupportedException().StoreDefault(); }
+                set { throw new NotSupportedException().StoreFileLine(); }
             }
 
             void ICollection.CopyTo( Array array, int index )

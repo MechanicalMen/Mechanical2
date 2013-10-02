@@ -730,7 +730,7 @@ namespace Mechanical.DataStores
             Ensure.Debug(reader, w => w.NotNull());
 
             if( func.NullReference() )
-                throw new ArgumentNullException("func").StoreDefault();
+                throw new ArgumentNullException("func").StoreFileLine();
 
             var deserializer = DelegateSerialization<T>.Default;
             deserializer.ReadDelegate = func;
@@ -746,7 +746,7 @@ namespace Mechanical.DataStores
         public static void Read( this IDataStoreReader reader, string name, Action<IDataStoreReader> action )
         {
             if( action.NullReference() )
-                throw new ArgumentNullException("action").StoreDefault();
+                throw new ArgumentNullException("action").StoreFileLine();
 
             Read<object>(reader, name, r => { action(r); return null; });
         }

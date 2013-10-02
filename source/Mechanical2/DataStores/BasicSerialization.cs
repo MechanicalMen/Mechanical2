@@ -96,7 +96,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<sbyte>.Serialize( sbyte obj, ITextWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj.ToString("D", Culture));
         }
@@ -104,7 +104,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<sbyte>.Serialize( sbyte obj, IBinaryWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj);
         }
@@ -112,7 +112,7 @@ namespace Mechanical.DataStores
         sbyte IDataStoreValueDeserializer<sbyte>.Deserialize( string name, ITextReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             string str = reader.ReadToEnd();
             try
@@ -129,7 +129,7 @@ namespace Mechanical.DataStores
         sbyte IDataStoreValueDeserializer<sbyte>.Deserialize( string name, IBinaryReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             return reader.ReadSByte();
         }
@@ -141,7 +141,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<byte>.Serialize( byte obj, ITextWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj.ToString("D", Culture));
         }
@@ -149,7 +149,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<byte>.Serialize( byte obj, IBinaryWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj);
         }
@@ -157,7 +157,7 @@ namespace Mechanical.DataStores
         byte IDataStoreValueDeserializer<byte>.Deserialize( string name, ITextReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             string str = reader.ReadToEnd();
             try
@@ -174,7 +174,7 @@ namespace Mechanical.DataStores
         byte IDataStoreValueDeserializer<byte>.Deserialize( string name, IBinaryReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             return reader.ReadByte();
         }
@@ -186,7 +186,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<short>.Serialize( short obj, ITextWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj.ToString("D", Culture));
         }
@@ -194,7 +194,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<short>.Serialize( short obj, IBinaryWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj);
         }
@@ -202,7 +202,7 @@ namespace Mechanical.DataStores
         short IDataStoreValueDeserializer<short>.Deserialize( string name, ITextReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             string str = reader.ReadToEnd();
             try
@@ -219,7 +219,7 @@ namespace Mechanical.DataStores
         short IDataStoreValueDeserializer<short>.Deserialize( string name, IBinaryReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             return reader.ReadInt16();
         }
@@ -231,7 +231,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<ushort>.Serialize( ushort obj, ITextWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj.ToString("D", Culture));
         }
@@ -239,7 +239,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<ushort>.Serialize( ushort obj, IBinaryWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj);
         }
@@ -247,7 +247,7 @@ namespace Mechanical.DataStores
         ushort IDataStoreValueDeserializer<ushort>.Deserialize( string name, ITextReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             string str = reader.ReadToEnd();
             try
@@ -264,7 +264,7 @@ namespace Mechanical.DataStores
         ushort IDataStoreValueDeserializer<ushort>.Deserialize( string name, IBinaryReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             return reader.ReadUInt16();
         }
@@ -276,7 +276,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<int>.Serialize( int obj, ITextWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj.ToString("D", Culture));
         }
@@ -284,7 +284,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<int>.Serialize( int obj, IBinaryWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj);
         }
@@ -292,7 +292,7 @@ namespace Mechanical.DataStores
         int IDataStoreValueDeserializer<int>.Deserialize( string name, ITextReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             string str = reader.ReadToEnd();
             try
@@ -309,7 +309,7 @@ namespace Mechanical.DataStores
         int IDataStoreValueDeserializer<int>.Deserialize( string name, IBinaryReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             return reader.ReadInt32();
         }
@@ -321,7 +321,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<uint>.Serialize( uint obj, ITextWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj.ToString("D", Culture));
         }
@@ -329,7 +329,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<uint>.Serialize( uint obj, IBinaryWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj);
         }
@@ -337,7 +337,7 @@ namespace Mechanical.DataStores
         uint IDataStoreValueDeserializer<uint>.Deserialize( string name, ITextReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             string str = reader.ReadToEnd();
             try
@@ -354,7 +354,7 @@ namespace Mechanical.DataStores
         uint IDataStoreValueDeserializer<uint>.Deserialize( string name, IBinaryReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             return reader.ReadUInt32();
         }
@@ -366,7 +366,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<long>.Serialize( long obj, ITextWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj.ToString("D", Culture));
         }
@@ -374,7 +374,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<long>.Serialize( long obj, IBinaryWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj);
         }
@@ -382,7 +382,7 @@ namespace Mechanical.DataStores
         long IDataStoreValueDeserializer<long>.Deserialize( string name, ITextReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             string str = reader.ReadToEnd();
             try
@@ -399,7 +399,7 @@ namespace Mechanical.DataStores
         long IDataStoreValueDeserializer<long>.Deserialize( string name, IBinaryReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             return reader.ReadInt64();
         }
@@ -411,7 +411,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<ulong>.Serialize( ulong obj, ITextWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj.ToString("D", Culture));
         }
@@ -419,7 +419,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<ulong>.Serialize( ulong obj, IBinaryWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj);
         }
@@ -427,7 +427,7 @@ namespace Mechanical.DataStores
         ulong IDataStoreValueDeserializer<ulong>.Deserialize( string name, ITextReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             string str = reader.ReadToEnd();
             try
@@ -444,7 +444,7 @@ namespace Mechanical.DataStores
         ulong IDataStoreValueDeserializer<ulong>.Deserialize( string name, IBinaryReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             return reader.ReadUInt64();
         }
@@ -456,7 +456,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<float>.Serialize( float obj, ITextWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj.ToString("R", Culture));
         }
@@ -464,7 +464,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<float>.Serialize( float obj, IBinaryWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj);
         }
@@ -472,7 +472,7 @@ namespace Mechanical.DataStores
         float IDataStoreValueDeserializer<float>.Deserialize( string name, ITextReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             string str = reader.ReadToEnd();
             try
@@ -489,7 +489,7 @@ namespace Mechanical.DataStores
         float IDataStoreValueDeserializer<float>.Deserialize( string name, IBinaryReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             return reader.ReadSingle();
         }
@@ -501,7 +501,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<double>.Serialize( double obj, ITextWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj.ToString("R", Culture));
         }
@@ -509,7 +509,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<double>.Serialize( double obj, IBinaryWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj);
         }
@@ -517,7 +517,7 @@ namespace Mechanical.DataStores
         double IDataStoreValueDeserializer<double>.Deserialize( string name, ITextReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             string str = reader.ReadToEnd();
             try
@@ -534,7 +534,7 @@ namespace Mechanical.DataStores
         double IDataStoreValueDeserializer<double>.Deserialize( string name, IBinaryReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             return reader.ReadDouble();
         }
@@ -546,7 +546,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<decimal>.Serialize( decimal obj, ITextWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj.ToString("F", Culture));
         }
@@ -554,7 +554,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<decimal>.Serialize( decimal obj, IBinaryWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj);
         }
@@ -562,7 +562,7 @@ namespace Mechanical.DataStores
         decimal IDataStoreValueDeserializer<decimal>.Deserialize( string name, ITextReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             string str = reader.ReadToEnd();
             try
@@ -579,7 +579,7 @@ namespace Mechanical.DataStores
         decimal IDataStoreValueDeserializer<decimal>.Deserialize( string name, IBinaryReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             return reader.ReadDecimal();
         }
@@ -591,7 +591,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<bool>.Serialize( bool obj, ITextWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj ? "true" : "false");
         }
@@ -599,7 +599,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<bool>.Serialize( bool obj, IBinaryWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj);
         }
@@ -607,7 +607,7 @@ namespace Mechanical.DataStores
         bool IDataStoreValueDeserializer<bool>.Deserialize( string name, ITextReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             string value = reader.ReadToEnd();
             if( value.NullReference() )
@@ -626,7 +626,7 @@ namespace Mechanical.DataStores
         bool IDataStoreValueDeserializer<bool>.Deserialize( string name, IBinaryReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             return reader.ReadBoolean();
         }
@@ -638,7 +638,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<char>.Serialize( char obj, ITextWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj);
         }
@@ -646,7 +646,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<char>.Serialize( char obj, IBinaryWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj);
         }
@@ -654,13 +654,13 @@ namespace Mechanical.DataStores
         char IDataStoreValueDeserializer<char>.Deserialize( string name, ITextReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             var value = reader.Read();
             if( value == -1 )
-                throw new FormatException("Unexpected end of stream!").StoreDefault();
+                throw new FormatException("Unexpected end of stream!").StoreFileLine();
             else if( reader.Read() != -1 )
-                throw new FormatException("More than one character in stream!").StoreDefault();
+                throw new FormatException("More than one character in stream!").StoreFileLine();
             else
                 return (char)value;
         }
@@ -668,7 +668,7 @@ namespace Mechanical.DataStores
         char IDataStoreValueDeserializer<char>.Deserialize( string name, IBinaryReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             return reader.ReadChar();
         }
@@ -680,7 +680,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<string>.Serialize( string obj, ITextWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj);
         }
@@ -688,7 +688,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<string>.Serialize( string obj, IBinaryWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj);
         }
@@ -696,7 +696,7 @@ namespace Mechanical.DataStores
         string IDataStoreValueDeserializer<string>.Deserialize( string name, ITextReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             return reader.ReadToEnd();
         }
@@ -704,7 +704,7 @@ namespace Mechanical.DataStores
         string IDataStoreValueDeserializer<string>.Deserialize( string name, IBinaryReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             return reader.ReadString();
         }
@@ -716,7 +716,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<Substring>.Serialize( Substring obj, ITextWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj);
         }
@@ -724,7 +724,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<Substring>.Serialize( Substring obj, IBinaryWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj);
         }
@@ -732,7 +732,7 @@ namespace Mechanical.DataStores
         Substring IDataStoreValueDeserializer<Substring>.Deserialize( string name, ITextReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             Substring result;
             reader.ReadToEnd(out result);
@@ -742,7 +742,7 @@ namespace Mechanical.DataStores
         Substring IDataStoreValueDeserializer<Substring>.Deserialize( string name, IBinaryReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             return reader.ReadString();
         }
@@ -782,7 +782,7 @@ namespace Mechanical.DataStores
             obj = ConvertDateTime(obj);
 
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj.ToString("o"));
         }
@@ -792,7 +792,7 @@ namespace Mechanical.DataStores
             obj = ConvertDateTime(obj);
 
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj.Ticks);
         }
@@ -800,7 +800,7 @@ namespace Mechanical.DataStores
         DateTime IDataStoreValueDeserializer<DateTime>.Deserialize( string name, ITextReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             string str = reader.ReadToEnd();
             try
@@ -818,7 +818,7 @@ namespace Mechanical.DataStores
         DateTime IDataStoreValueDeserializer<DateTime>.Deserialize( string name, IBinaryReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             var ticks = reader.ReadInt64();
             return new DateTime(ticks, DateTimeKind.Utc);
@@ -831,7 +831,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<TimeSpan>.Serialize( TimeSpan obj, ITextWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj.ToString("c"));
         }
@@ -839,7 +839,7 @@ namespace Mechanical.DataStores
         void IDataStoreValueSerializer<TimeSpan>.Serialize( TimeSpan obj, IBinaryWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj.Ticks);
         }
@@ -847,7 +847,7 @@ namespace Mechanical.DataStores
         TimeSpan IDataStoreValueDeserializer<TimeSpan>.Deserialize( string name, ITextReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             string str = reader.ReadToEnd();
             try
@@ -865,7 +865,7 @@ namespace Mechanical.DataStores
         TimeSpan IDataStoreValueDeserializer<TimeSpan>.Deserialize( string name, IBinaryReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             var ticks = reader.ReadInt64();
             return new TimeSpan(ticks);

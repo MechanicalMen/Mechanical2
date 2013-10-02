@@ -174,7 +174,7 @@ namespace Mechanical.IO
         public void Write( string value )
         {
             if( value.NullReference() )
-                throw new ArgumentNullException("value").StoreDefault();
+                throw new ArgumentNullException("value").StoreFileLine();
 
             this.Write(value.Length);
             for( int i = 0; i < value.Length; ++i )
@@ -188,7 +188,7 @@ namespace Mechanical.IO
         public void Write( Substring value )
         {
             if( value.Origin.NullReference() )
-                throw new ArgumentNullException("value").StoreDefault();
+                throw new ArgumentNullException("value").StoreFileLine();
 
             this.Write(value.Length);
             for( int i = 0; i < value.Length; ++i )

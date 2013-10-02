@@ -73,7 +73,7 @@ namespace Mechanical.MVVM
             protected void RaisePropertyChanged( PropertyChangedEventArgs e )
             {
                 if( e.NullReference() )
-                    throw new ArgumentNullException().StoreDefault();
+                    throw new ArgumentNullException().StoreFileLine();
 
                 UI.Invoke(() =>
                 {
@@ -91,7 +91,7 @@ namespace Mechanical.MVVM
             protected Task RaisePropertyChangedAsync( PropertyChangedEventArgs e )
             {
                 if( e.NullReference() )
-                    throw new ArgumentNullException().StoreDefault();
+                    throw new ArgumentNullException().StoreFileLine();
 
                 return UI.InvokeAsync(() =>
                 {
@@ -108,7 +108,7 @@ namespace Mechanical.MVVM
             protected void RaisePropertyChanged( [CallerMemberName] string property = null )
             {
                 if( property.NullReference() )
-                    throw new ArgumentNullException().StoreDefault();
+                    throw new ArgumentNullException().StoreFileLine();
 
                 this.RaisePropertyChanged(new PropertyChangedEventArgs(property));
             }
@@ -121,7 +121,7 @@ namespace Mechanical.MVVM
             protected Task RaisePropertyChangedAsync( [CallerMemberName] string property = null )
             {
                 if( property.NullReference() )
-                    throw new ArgumentNullException().StoreDefault();
+                    throw new ArgumentNullException().StoreFileLine();
 
                 return this.RaisePropertyChangedAsync(new PropertyChangedEventArgs(property));
             }
@@ -161,7 +161,7 @@ namespace Mechanical.MVVM
         protected void RaisePropertyChanged( PropertyChangedEventArgs e )
         {
             if( e.NullReference() )
-                throw new ArgumentNullException().StoreDefault();
+                throw new ArgumentNullException().StoreFileLine();
 
             UI.Invoke(() =>
             {
@@ -179,7 +179,7 @@ namespace Mechanical.MVVM
         protected Task RaisePropertyChangedAsync( PropertyChangedEventArgs e )
         {
             if( e.NullReference() )
-                throw new ArgumentNullException().StoreDefault();
+                throw new ArgumentNullException().StoreFileLine();
 
             return UI.InvokeAsync(() =>
             {
@@ -196,7 +196,7 @@ namespace Mechanical.MVVM
         protected void RaisePropertyChanged( [CallerMemberName] string property = null )
         {
             if( property.NullReference() )
-                throw new ArgumentNullException().StoreDefault();
+                throw new ArgumentNullException().StoreFileLine();
 
             this.RaisePropertyChanged(new PropertyChangedEventArgs(property));
         }
@@ -209,7 +209,7 @@ namespace Mechanical.MVVM
         protected Task RaisePropertyChangedAsync( [CallerMemberName] string property = null )
         {
             if( property.NullReference() )
-                throw new ArgumentNullException().StoreDefault();
+                throw new ArgumentNullException().StoreFileLine();
 
             return this.RaisePropertyChangedAsync(new PropertyChangedEventArgs(property));
         }

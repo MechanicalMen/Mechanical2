@@ -82,7 +82,7 @@ namespace Mechanical.DataStores.Node
             set
             {
                 if( value.Array.NullReference() )
-                    throw new ArgumentNullException().StoreDefault();
+                    throw new ArgumentNullException().StoreFileLine();
 
                 this.content = value;
             }

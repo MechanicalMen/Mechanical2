@@ -20,7 +20,7 @@ namespace Mechanical.Events
             if( e.NotNullReference() )
                 this.exception = e;
             else
-                this.exception = new ArgumentNullException("e").StoreDefault();
+                this.exception = new ArgumentNullException("e").StoreFileLine();
         }
 
         /// <summary>

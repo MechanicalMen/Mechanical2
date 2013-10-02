@@ -207,7 +207,7 @@ namespace Mechanical.DataStores.Xml
         public void Flush()
         {
             if( this.IsDisposed )
-                throw new ObjectDisposedException(string.Empty).StoreDefault();
+                throw new ObjectDisposedException(string.Empty).StoreFileLine();
 
             this.xmlWriter.Flush();
         }

@@ -48,7 +48,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object != right )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -82,7 +82,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object != right )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -116,7 +116,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object != right )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -150,7 +150,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object != right )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -184,7 +184,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object != right )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -218,7 +218,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object != right )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -252,7 +252,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object != right )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -286,7 +286,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object != right )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -320,7 +320,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object != right )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -357,7 +357,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(!float.IsNaN(maxError) && !float.IsInfinity(maxError) && maxError >= 0, arg => arg.IsTrue(CreateMaxErrorException));
 
             if( Math.Abs(context.Object - right) > maxError )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -391,7 +391,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object != right )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -428,7 +428,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(!double.IsNaN(maxError) && !double.IsInfinity(maxError) && maxError >= 0, arg => arg.IsTrue(CreateMaxErrorException));
 
             if( Math.Abs(context.Object - right) > maxError )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -462,7 +462,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object != right )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -499,7 +499,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(maxError >= 0, arg => arg.IsTrue(CreateMaxErrorException));
 
             if( Math.Abs(context.Object - right) > maxError )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -533,7 +533,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( !string.Equals(context.Object, right) )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -570,7 +570,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(comparisonType, c => c.IsDefined());
 
             if( !string.Equals(context.Object, right, comparisonType) )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -608,7 +608,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( !context.Object.Equals(right) )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -647,7 +647,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(comparer, c => c.NotNull());
 
             if( !comparer.Equals(context.Object, right) )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -690,7 +690,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object == right )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -724,7 +724,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object == right )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -758,7 +758,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object == right )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -792,7 +792,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object == right )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -826,7 +826,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object == right )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -860,7 +860,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object == right )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -894,7 +894,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object == right )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -928,7 +928,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object == right )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -962,7 +962,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object == right )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -999,7 +999,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(!float.IsNaN(maxError) && !float.IsInfinity(maxError) && maxError >= 0, arg => arg.IsTrue(CreateMaxErrorException));
 
             if( Math.Abs(context.Object - right) <= maxError )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -1033,7 +1033,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object == right )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -1070,7 +1070,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(!double.IsNaN(maxError) && !double.IsInfinity(maxError) && maxError >= 0, arg => arg.IsTrue(CreateMaxErrorException));
 
             if( Math.Abs(context.Object - right) <= maxError )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -1104,7 +1104,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object == right )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -1141,7 +1141,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(maxError >= 0, arg => arg.IsTrue(CreateMaxErrorException));
 
             if( Math.Abs(context.Object - right) <= maxError )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -1175,7 +1175,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( string.Equals(context.Object, right) )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -1212,7 +1212,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(comparisonType, c => c.IsDefined());
 
             if( string.Equals(context.Object, right, comparisonType) )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -1250,7 +1250,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object.Equals(right) )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -1289,7 +1289,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(comparer, c => c.NotNull());
 
             if( comparer.Equals(context.Object, right) )
-                throw createException().StoreDefault(context).Store("comparand", right);
+                throw createException().Store(context).Store("comparand", right);
             else
                 return context;
         }
@@ -1716,7 +1716,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( float.IsNaN(context.Object) )
-                throw createException().StoreDefault(context);
+                throw createException().Store(context);
             else
                 return context;
         }
@@ -1748,7 +1748,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( double.IsNaN(context.Object) )
-                throw createException().StoreDefault(context);
+                throw createException().Store(context);
             else
                 return context;
         }

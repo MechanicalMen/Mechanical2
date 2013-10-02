@@ -27,7 +27,7 @@ namespace Mechanical
         {
             // NOTE: no locking needed here
             if( !isInitialized )
-                throw new InvalidOperationException("Library not yet initialized! Look at the Mechanical.Bootstrap class.").StoreDefault(filePath, memberName, lineNumber);
+                throw new InvalidOperationException("Library not yet initialized! Look at the Mechanical.Bootstrap class.").StoreFileLine(filePath, memberName, lineNumber);
         }
 
         internal static void ThrowIfAlreadyInitialized(
@@ -37,7 +37,7 @@ namespace Mechanical
         {
             // NOTE: no locking needed here
             if( isInitialized )
-                throw new InvalidOperationException("Library already initialized!").StoreDefault(filePath, memberName, lineNumber);
+                throw new InvalidOperationException("Library already initialized!").StoreFileLine(filePath, memberName, lineNumber);
         }
 
         #endregion

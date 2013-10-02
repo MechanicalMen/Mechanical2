@@ -63,7 +63,7 @@ namespace Mechanical.MVVM.Converters
         /// <returns>A converted value.</returns>
         public override object ConvertBack( Visibility value, CultureInfo culture )
         {
-            throw new InvalidOperationException().StoreDefault();
+            throw new InvalidOperationException().StoreFileLine();
         }
     }
 }

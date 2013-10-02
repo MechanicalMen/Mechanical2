@@ -168,7 +168,7 @@ namespace Mechanical.DataStores
         {
             if( this.Token == DataStoreToken.DataStoreEnd )
             {
-                var exception = new InvalidOperationException("End of data store already reached!").StoreDefault(filePath, memberName, lineNumber);
+                var exception = new InvalidOperationException("End of data store already reached!").StoreFileLine(filePath, memberName, lineNumber);
                 this.StoreReaderInfo(exception);
                 throw exception;
             }
@@ -261,7 +261,7 @@ namespace Mechanical.DataStores
             }
             catch( Exception e )
             {
-                e.StoreDefault(); // in case it was thrown by the framework
+                e.StoreFileLine();
                 this.StoreReaderInfo(e);
                 throw;
             }
@@ -322,7 +322,7 @@ namespace Mechanical.DataStores
 #if DEBUG
                 if( this.initialized )
                 {
-                    var exception = new InvalidOperationException("Already initialized!").StoreDefault();
+                    var exception = new InvalidOperationException("Already initialized!").StoreFileLine();
                     this.StoreReaderInfo(exception);
                     throw exception;
                 }
@@ -357,7 +357,7 @@ namespace Mechanical.DataStores
 
             if( deserializer.NullReference() )
             {
-                var exception = new ArgumentNullException("deserializer").StoreDefault();
+                var exception = new ArgumentNullException("deserializer").StoreFileLine();
                 this.StoreReaderInfo(exception);
                 throw exception;
             }
@@ -391,7 +391,7 @@ namespace Mechanical.DataStores
             }
             catch( Exception e )
             {
-                e.StoreDefault(); // in case it was thrown by the framework
+                e.StoreFileLine();
                 this.StoreReaderInfo(e);
                 throw;
             }
@@ -411,7 +411,7 @@ namespace Mechanical.DataStores
 
             if( deserializer.NullReference() )
             {
-                var exception = new ArgumentNullException("deserializer").StoreDefault();
+                var exception = new ArgumentNullException("deserializer").StoreFileLine();
                 this.StoreReaderInfo(exception);
                 throw exception;
             }
@@ -440,7 +440,7 @@ namespace Mechanical.DataStores
             }
             catch( Exception e )
             {
-                e.StoreDefault(); // in case it was thrown by the framework
+                e.StoreFileLine();
                 this.StoreReaderInfo(e);
                 throw;
             }

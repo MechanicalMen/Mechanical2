@@ -50,10 +50,10 @@ namespace Mechanical.DataStores.Node
         public void Serialize( IDataStoreObject obj, IDataStoreWriter writer )
         {
             if( obj.NullReference() )
-                throw new ArgumentNullException("obj").StoreDefault();
+                throw new ArgumentNullException("obj").StoreFileLine();
 
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             IDataStoreValue value;
             foreach( var node in obj.Nodes )
@@ -86,7 +86,7 @@ namespace Mechanical.DataStores.Node
                 throw new ArgumentException().Store("name", name);
 
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             var obj = new DataStoreObject(name);
             while( reader.Token != DataStoreToken.ObjectEnd )

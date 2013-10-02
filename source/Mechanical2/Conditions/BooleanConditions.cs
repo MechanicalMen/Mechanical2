@@ -32,10 +32,10 @@ namespace Mechanical.Conditions
         {
 #if DEBUG
             if( object.ReferenceEquals(context, null) )
-                throw new ArgumentNullException("context", "The condition context specified is null!").StoreDefault();
+                throw new ArgumentNullException("context", "The condition context specified is null!").StoreFileLine();
 #endif
             if( !context.Object )
-                throw createException().StoreDefault(context);
+                throw createException().Store(context);
             else
                 return context;
         }
@@ -66,10 +66,10 @@ namespace Mechanical.Conditions
         {
 #if DEBUG
             if( object.ReferenceEquals(context, null) )
-                throw new ArgumentNullException("context", "The condition context specified is null!").StoreDefault();
+                throw new ArgumentNullException("context", "The condition context specified is null!").StoreFileLine();
 #endif
             if( context.Object )
-                throw createException().StoreDefault(context);
+                throw createException().Store(context);
             else
                 return context;
         }

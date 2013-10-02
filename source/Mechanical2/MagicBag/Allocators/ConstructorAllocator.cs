@@ -89,7 +89,7 @@ namespace Mechanical.MagicBag.Allocators
         public T CreateInstance( IMagicBag magicBag )
         {
             if( magicBag.NullReference() )
-                throw new ArgumentNullException("magicBag").StoreDefault();
+                throw new ArgumentNullException("magicBag").StoreFileLine();
 
             return this.method(magicBag);
         }

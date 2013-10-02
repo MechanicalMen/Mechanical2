@@ -51,7 +51,7 @@ namespace Mechanical.IO
         private void FillBuffer( int count )
         {
             if( count > this.arraySegment.Count - this.offset )
-                throw new EndOfStreamException().StoreDefault();
+                throw new EndOfStreamException().StoreFileLine();
 
             if( count == 1 )
             {
@@ -139,7 +139,7 @@ namespace Mechanical.IO
         public int Read( byte[] buffer, int index, int count )
         {
             if( buffer.NullReference() )
-                throw new ArgumentNullException().StoreDefault();
+                throw new ArgumentNullException().StoreFileLine();
 
             if( index < 0
              || count < 0

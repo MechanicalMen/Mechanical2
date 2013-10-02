@@ -40,16 +40,16 @@ namespace Mechanical.DataStores.Node
         public void Serialize( IDataStoreValue obj, ITextWriter writer )
         {
             if( obj.NullReference() )
-                throw new ArgumentNullException("obj").StoreDefault();
+                throw new ArgumentNullException("obj").StoreFileLine();
 
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             var textValue = obj as IDataStoreTextValue;
             if( textValue.NotNullReference() )
                 writer.Write(textValue.Content);
             else
-                throw new InvalidOperationException("Binary values can not be serialized using text writers!").StoreDefault();
+                throw new InvalidOperationException("Binary values can not be serialized using text writers!").StoreFileLine();
         }
 
         /// <summary>
@@ -60,10 +60,10 @@ namespace Mechanical.DataStores.Node
         public void Serialize( IDataStoreValue obj, IBinaryWriter writer )
         {
             if( obj.NullReference() )
-                throw new ArgumentNullException("obj").StoreDefault();
+                throw new ArgumentNullException("obj").StoreFileLine();
 
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             var binary = obj as IDataStoreBinaryValue;
             if( binary.NotNullReference() )
@@ -72,7 +72,7 @@ namespace Mechanical.DataStores.Node
                 writer.Write(bytes.Array, bytes.Offset, bytes.Count);
             }
             else
-                throw new InvalidOperationException("Text values can not be serialized using binary writers!").StoreDefault();
+                throw new InvalidOperationException("Text values can not be serialized using binary writers!").StoreFileLine();
         }
 
         #endregion
@@ -91,7 +91,7 @@ namespace Mechanical.DataStores.Node
                 throw new ArgumentException().Store("name", name);
 
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             Substring value;
             if( this.maxLength < 0 )
@@ -114,7 +114,7 @@ namespace Mechanical.DataStores.Node
                 throw new ArgumentException().Store("name", name);
 
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             ArraySegment<byte> bytes;
             if( this.maxLength < 0 )

@@ -86,7 +86,7 @@ namespace Mechanical.Core
             if( info.NotNullReference() )
                 return info;
             else
-                throw new ArgumentException("Expression is not a member!").StoreDefault();
+                throw new ArgumentException("Expression is not a member!").StoreFileLine();
         }
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace Mechanical.Core
             if( info.NotNullReference() )
                 return info;
             else
-                throw new ArgumentException("Expression is not a member!").StoreDefault();
+                throw new ArgumentException("Expression is not a member!").StoreFileLine();
         }
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace Mechanical.Core
             if( info.NotNullReference() )
                 return info;
             else
-                throw new ArgumentException("Expression is not a member!").StoreDefault();
+                throw new ArgumentException("Expression is not a member!").StoreFileLine();
         }
 
         /// <summary>
@@ -137,7 +137,7 @@ namespace Mechanical.Core
             if( info.NotNullReference() )
                 return info;
             else
-                throw new ArgumentException("Expression is not a member!").StoreDefault();
+                throw new ArgumentException("Expression is not a member!").StoreFileLine();
         }
 
         #endregion
@@ -358,7 +358,7 @@ namespace Mechanical.Core
         public static bool CanAssignTo( Type baseType, Type inheritor )
         {
             if( baseType.NullReference() )
-                throw new ArgumentNullException().StoreDefault();
+                throw new ArgumentNullException().StoreFileLine();
 
             return baseType.IsAssignableFrom(inheritor);
         }

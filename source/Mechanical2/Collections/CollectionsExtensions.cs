@@ -271,7 +271,7 @@ namespace Mechanical.Collections
             where T : struct
         {
             if( sequence.NullReference() )
-                throw new ArgumentNullException("sequence").StoreDefault(); // same as FirstOrDefault
+                throw new ArgumentNullException("sequence").StoreFileLine(); // same as FirstOrDefault
 
             var list = sequence as IList<T>;
             if( list.NotNullReference() )

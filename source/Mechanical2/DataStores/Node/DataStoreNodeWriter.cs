@@ -96,7 +96,7 @@ namespace Mechanical.DataStores.Node
         private void ThrowIfDisposed()
         {
             if( this.IsDisposed )
-                throw new ObjectDisposedException(string.Empty).StoreDefault();
+                throw new ObjectDisposedException(string.Empty).StoreFileLine();
         }
 
 #if !MECHANICAL_NET4CP
@@ -106,7 +106,7 @@ namespace Mechanical.DataStores.Node
         {
             if( this.parents.Count == 0
              && this.root.NotNullReference() )
-                throw new InvalidOperationException("Root node already written! (There can be only one)").StoreDefault();
+                throw new InvalidOperationException("Root node already written! (There can be only one)").StoreFileLine();
         }
 
 #if !MECHANICAL_NET4CP
@@ -140,7 +140,7 @@ namespace Mechanical.DataStores.Node
             this.ThrowIfSecondRoot();
 
             if( serializer.NullReference() )
-                throw new ArgumentNullException("serializer").StoreDefault();
+                throw new ArgumentNullException("serializer").StoreFileLine();
 
             IDataStoreValue value;
             if( this.isBinary )
@@ -183,7 +183,7 @@ namespace Mechanical.DataStores.Node
             this.ThrowIfSecondRoot();
 
             if( serializer.NullReference() )
-                throw new ArgumentNullException("serializer").StoreDefault();
+                throw new ArgumentNullException("serializer").StoreFileLine();
 
             var node = new DataStoreObject(name);
             this.parents.Add(node);

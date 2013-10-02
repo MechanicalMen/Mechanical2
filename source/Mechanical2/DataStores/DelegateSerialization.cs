@@ -15,7 +15,7 @@ namespace Mechanical.DataStores
         public void Serialize( T obj, IDataStoreWriter writer )
         {
             if( this.WriteDelegate.NullReference() )
-                throw new InvalidOperationException("Write delegate not specified!").StoreDefault();
+                throw new InvalidOperationException("Write delegate not specified!").StoreFileLine();
 
             this.WriteDelegate(obj, writer);
         }
@@ -23,7 +23,7 @@ namespace Mechanical.DataStores
         public T Deserialize( string name, IDataStoreReader reader )
         {
             if( this.ReadDelegate.NullReference() )
-                throw new InvalidOperationException("Read delegate not specified!").StoreDefault();
+                throw new InvalidOperationException("Read delegate not specified!").StoreFileLine();
 
             return this.ReadDelegate(reader);
         }

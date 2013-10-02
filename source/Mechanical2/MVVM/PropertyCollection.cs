@@ -80,12 +80,12 @@ namespace Mechanical.MVVM
 
             public void Add( object item )
             {
-                throw new InvalidOperationException().StoreDefault();
+                throw new InvalidOperationException().StoreFileLine();
             }
 
             public void Clear()
             {
-                throw new InvalidOperationException().StoreDefault();
+                throw new InvalidOperationException().StoreFileLine();
             }
 
             public bool Contains( object item )
@@ -116,7 +116,7 @@ namespace Mechanical.MVVM
 
             public bool Remove( object item )
             {
-                throw new InvalidOperationException().StoreDefault();
+                throw new InvalidOperationException().StoreFileLine();
             }
 
             public IEnumerator<object> GetEnumerator()

@@ -73,10 +73,10 @@ namespace Mechanical.MagicBag.Initializers
         {
             if( Reveal.IsByRef<T>()
              && ((object)allocated).NotNullReference() )
-                throw new ArgumentNullException("allocated").StoreDefault();
+                throw new ArgumentNullException("allocated").StoreFileLine();
 
             if( magicBag.NullReference() )
-                throw new ArgumentNullException("magicBag").StoreDefault();
+                throw new ArgumentNullException("magicBag").StoreFileLine();
 
             return this.assign(allocated, magicBag);
         }

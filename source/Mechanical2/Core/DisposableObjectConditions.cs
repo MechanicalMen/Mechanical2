@@ -36,7 +36,7 @@ namespace Mechanical.Core
             Ensure.Debug(context, c => c.NotNull());
 
             if( context.Object.IsDisposed )
-                throw createException().StoreDefault(context);
+                throw createException().Store(context);
             else
                 return context;
         }

@@ -46,7 +46,7 @@ namespace Mechanical.DataStores
         public static ExceptionInfo From( Exception exception )
         {
             if( exception.NullReference() )
-                throw new NullReferenceException().StoreDefault();
+                throw new NullReferenceException().StoreFileLine();
 
             var info = new ExceptionInfo(
                 SafeString.DebugPrint(exception.GetType()),
@@ -250,7 +250,7 @@ namespace Mechanical.DataStores
             private static string DecodeStoredValue( string str )
             {
                 if( str.NullReference() )
-                    throw new ArgumentNullException().StoreDefault();
+                    throw new ArgumentNullException().StoreFileLine();
 
                 if( str.Length == 0 )
                     return null;
@@ -266,10 +266,10 @@ namespace Mechanical.DataStores
             public void Serialize( ExceptionInfo obj, IDataStoreWriter writer )
             {
                 if( obj.NullReference() )
-                    throw new ArgumentNullException("obj").StoreDefault();
+                    throw new ArgumentNullException("obj").StoreFileLine();
 
                 if( writer.NullReference() )
-                    throw new ArgumentNullException("writer").StoreDefault();
+                    throw new ArgumentNullException("writer").StoreFileLine();
 
                 writer.Write(Keys.Type, obj.Type);
                 writer.Write(Keys.Message, obj.Message);
@@ -303,7 +303,7 @@ namespace Mechanical.DataStores
             public ExceptionInfo Deserialize( string name, IDataStoreReader reader )
             {
                 if( reader.NullReference() )
-                    throw new ArgumentNullException("reader").StoreDefault();
+                    throw new ArgumentNullException("reader").StoreFileLine();
 
                 var type = reader.ReadString(Keys.Type);
                 var message = reader.ReadString(Keys.Message);

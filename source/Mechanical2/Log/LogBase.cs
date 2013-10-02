@@ -1,41 +1,18 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using Mechanical.Conditions;
 using Mechanical.Core;
 using Mechanical.DataStores;
-using Mechanical.Events;
 
 namespace Mechanical.Log
 {
     /// <summary>
-    /// Enqueues logged messages as events.
+    /// A base class implementing <see cref="ILog"/>.
     /// </summary>
-    public class EventLogger : ILog
+    public abstract class LogBase : DisposableObject, ILog
     {
-        #region Private Fields
-
-        private readonly IEventQueue eventQueue;
-
-        #endregion
-
-        #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EventLogger"/> class.
-        /// </summary>
-        /// <param name="eventQueue">The <see cref="IEventQueue"/> to use.</param>
-        public EventLogger( IEventQueue eventQueue )
-        {
-            Ensure.That(eventQueue).NotNull();
-
-            this.eventQueue = eventQueue;
-        }
-
-        #endregion
-
         #region Private Methods
 
-        private void Enqueue(
+        private void Log(
             LogLevel level,
             string message,
             Exception ex = null,
@@ -45,9 +22,18 @@ namespace Mechanical.Log
         {
             var info = ex.NullReference() ? null : ExceptionInfo.From(ex);
             var entry = new LogEntry(level, message, info, filePath, memberName, lineNumber);
-            var evnt = new LogEvent(entry);
-            this.eventQueue.Enqueue(evnt, TaskResult.Null);
+            this.Log(entry);
         }
+
+        #endregion
+
+        #region Protected Abstract Methods
+
+        /// <summary>
+        /// Logs the specified <see cref="LogEntry"/>.
+        /// </summary>
+        /// <param name="entry">The <see cref="LogEntry"/> to log.</param>
+        protected abstract void Log( LogEntry entry );
 
         #endregion
 
@@ -68,7 +54,7 @@ namespace Mechanical.Log
             [CallerMemberName] string memberName = "",
             [CallerLineNumber] int lineNumber = 0 )
         {
-            this.Enqueue(LogLevel.Debug, message, ex, filePath, memberName, lineNumber);
+            this.Log(LogLevel.Debug, message, ex, filePath, memberName, lineNumber);
         }
 
         /// <summary>
@@ -86,7 +72,7 @@ namespace Mechanical.Log
             [CallerMemberName] string memberName = "",
             [CallerLineNumber] int lineNumber = 0 )
         {
-            this.Enqueue(LogLevel.Information, message, ex, filePath, memberName, lineNumber);
+            this.Log(LogLevel.Information, message, ex, filePath, memberName, lineNumber);
         }
 
         /// <summary>
@@ -104,7 +90,7 @@ namespace Mechanical.Log
             [CallerMemberName] string memberName = "",
             [CallerLineNumber] int lineNumber = 0 )
         {
-            this.Enqueue(LogLevel.Warning, message, ex, filePath, memberName, lineNumber);
+            this.Log(LogLevel.Warning, message, ex, filePath, memberName, lineNumber);
         }
 
         /// <summary>
@@ -122,7 +108,7 @@ namespace Mechanical.Log
             [CallerMemberName] string memberName = "",
             [CallerLineNumber] int lineNumber = 0 )
         {
-            this.Enqueue(LogLevel.Error, message, ex, filePath, memberName, lineNumber);
+            this.Log(LogLevel.Error, message, ex, filePath, memberName, lineNumber);
         }
 
         /// <summary>
@@ -140,7 +126,7 @@ namespace Mechanical.Log
             [CallerMemberName] string memberName = "",
             [CallerLineNumber] int lineNumber = 0 )
         {
-            this.Enqueue(LogLevel.Fatal, message, ex, filePath, memberName, lineNumber);
+            this.Log(LogLevel.Fatal, message, ex, filePath, memberName, lineNumber);
         }
 
         #endregion

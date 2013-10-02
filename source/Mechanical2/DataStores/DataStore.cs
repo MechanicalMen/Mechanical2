@@ -337,5 +337,7 @@ namespace Mechanical.DataStores
         //// TODO: test datastores for attempting to read or write multiple roots
 
         //// TODO: MVVM.UI -> Scheduler, Dispatcher --> MagicBag ?!?! (or at least a synchronizationContext ?!)
+
+        //// TODO: replace StoreDefault with StoreFileLine (resource heavy data should rather be logged separately)
     }
 }

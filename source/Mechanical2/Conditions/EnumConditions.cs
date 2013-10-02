@@ -51,7 +51,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( !((Enum<TEnum>)context.Object).IsDefined )
-                throw createException().StoreDefault(context);
+                throw createException().Store(context);
             else
                 return context;
         }
@@ -70,7 +70,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( !context.Object.IsDefined )
-                throw createException().StoreDefault(context);
+                throw createException().Store(context);
             else
                 return context;
         }
@@ -119,7 +119,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( !((Enum<TEnum>)context.Object).IsValid )
-                throw createException().StoreDefault(context);
+                throw createException().Store(context);
             else
                 return context;
         }
@@ -138,7 +138,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( !context.Object.IsValid )
-                throw createException().StoreDefault(context);
+                throw createException().Store(context);
             else
                 return context;
         }

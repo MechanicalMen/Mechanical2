@@ -29,10 +29,10 @@ namespace Mechanical.MagicBag.Caches
         public T GetInstance( IMagicBagAllocator<T> allocator, IMagicBag magicBag )
         {
             if( allocator.NullReference() )
-                throw new ArgumentNullException("allocator").StoreDefault();
+                throw new ArgumentNullException("allocator").StoreFileLine();
 
             if( magicBag.NullReference() )
-                throw new ArgumentNullException("magicBag").StoreDefault();
+                throw new ArgumentNullException("magicBag").StoreFileLine();
 
             var oldState = this.state;
             if( !oldState.Item1 )

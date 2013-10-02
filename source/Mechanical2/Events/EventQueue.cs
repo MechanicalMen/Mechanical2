@@ -132,7 +132,7 @@ namespace Mechanical.Events
             internal UnhandledExceptionEvent SetCompletedOrExceptionAsync( List<Exception> unhandledExceptions )
             {
                 if( unhandledExceptions.NullReference() )
-                    throw new ArgumentNullException("unhandledExceptions").StoreDefault();
+                    throw new ArgumentNullException("unhandledExceptions").StoreFileLine();
 
                 if( unhandledExceptions.Count == 0 )
                 {
@@ -145,7 +145,7 @@ namespace Mechanical.Events
                     if( unhandledExceptions.Count == 1 )
                         ex = unhandledExceptions[0];
                     else
-                        ex = new AggregateException("Event handlers threw exceptions!", unhandledExceptions).StoreDefault();
+                        ex = new AggregateException("Event handlers threw exceptions!", unhandledExceptions).StoreFileLine();
 
                     if( this.taskResult == TaskResult.CompletedOrException )
                     {

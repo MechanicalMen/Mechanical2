@@ -142,7 +142,7 @@ namespace Mechanical.MVVM
         public static void Invoke( Action action )
         {
             if( action.NullReference() )
-                throw new ArgumentNullException().StoreDefault();
+                throw new ArgumentNullException().StoreFileLine();
 
             if( IsConsole
              || Dispatcher.CheckAccess() )
@@ -187,7 +187,7 @@ namespace Mechanical.MVVM
         public static TResult Invoke<TResult>( Func<TResult> func )
         {
             if( func.NullReference() )
-                throw new ArgumentNullException().StoreDefault();
+                throw new ArgumentNullException().StoreFileLine();
 
             if( IsConsole
              || Dispatcher.CheckAccess() )
@@ -235,7 +235,7 @@ namespace Mechanical.MVVM
         public static Task InvokeAsync( Action action )
         {
             if( action.NullReference() )
-                throw new ArgumentNullException().StoreDefault();
+                throw new ArgumentNullException().StoreFileLine();
 
             return Task.Factory.StartNew(action, CancellationToken.None, TaskCreationOptions.None, Scheduler);
         }
@@ -249,7 +249,7 @@ namespace Mechanical.MVVM
         public static Task<TResult> InvokeAsync<TResult>( Func<TResult> func )
         {
             if( func.NullReference() )
-                throw new ArgumentNullException().StoreDefault();
+                throw new ArgumentNullException().StoreFileLine();
 
             return Task.Factory.StartNew(func, CancellationToken.None, TaskCreationOptions.None, Scheduler);
         }

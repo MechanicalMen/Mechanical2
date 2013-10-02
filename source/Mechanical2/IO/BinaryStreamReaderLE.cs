@@ -64,7 +64,7 @@ namespace Mechanical.IO
             return;
 
         endOfStream:
-            throw new EndOfStreamException().StoreDefault();
+            throw new EndOfStreamException().StoreFileLine();
         }
 
 #if !MECHANICAL_NET4CP
@@ -137,7 +137,7 @@ namespace Mechanical.IO
         public int Read( byte[] buffer, int index, int count )
         {
             if( buffer.NullReference() )
-                throw new ArgumentNullException().StoreDefault();
+                throw new ArgumentNullException().StoreFileLine();
 
             if( index < 0
              || count < 0

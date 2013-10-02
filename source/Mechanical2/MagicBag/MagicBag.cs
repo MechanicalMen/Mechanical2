@@ -415,7 +415,6 @@ namespace Mechanical.MagicBag
             mappings.AddRange(Mechanical.DataStores.Node.DataStoreNode.GetMappings());
 #if !SILVERLIGHT
             mappings.AddRange(Mechanical.Events.EventQueue.GetMappings());
-            mappings.AddRange(Mechanical.Log.LogEntry.GetMappings());
 #endif
 
             if( parentBag.NullReference() )

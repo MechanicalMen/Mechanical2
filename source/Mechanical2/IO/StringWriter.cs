@@ -78,7 +78,7 @@ namespace Mechanical.IO
         public void Write( Substring substr )
         {
             if( substr.Origin.NullReference() )
-                throw new ArgumentNullException().StoreDefault();
+                throw new ArgumentNullException().StoreFileLine();
 
             this.sb.Append(substr.Origin, substr.StartIndex, substr.Length);
         }

@@ -35,7 +35,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(object.ReferenceEquals(context, null), isNull => isNull.IsFalse(() => new ArgumentNullException("The condition context specified is null!")));
 
             if( object.ReferenceEquals(context.Object, null) )
-                throw createException().StoreDefault(context);
+                throw createException().Store(context);
             else
                 return context;
         }
@@ -69,7 +69,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( !object.ReferenceEquals(context.Object, null) )
-                throw createException().StoreDefault(context);
+                throw createException().Store(context);
             else
                 return context;
         }
@@ -107,7 +107,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( !object.ReferenceEquals(context.Object, obj) )
-                throw createException().StoreDefault(context).Store("OtherObject", obj);
+                throw createException().Store(context).Store("OtherObject", obj);
             else
                 return context;
         }
@@ -145,7 +145,7 @@ namespace Mechanical.Conditions
             Ensure.Debug(context, c => c.NotNull());
 
             if( object.ReferenceEquals(context.Object, obj) )
-                throw createException().StoreDefault(context).Store("OtherObject", obj);
+                throw createException().Store(context).Store("OtherObject", obj);
             else
                 return context;
         }

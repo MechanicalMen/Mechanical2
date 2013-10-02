@@ -42,7 +42,7 @@ namespace Mechanical.DataStores
             obj = BasicSerialization.ConvertDateTime(obj);
 
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             writer.Write(obj.ToString(DateTimeFormat, CultureInfo.InvariantCulture));
         }
@@ -66,7 +66,7 @@ namespace Mechanical.DataStores
         DateTime IDataStoreValueDeserializer<DateTime>.Deserialize( string name, ITextReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             return DateTime.ParseExact(reader.ReadToEnd(), DateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.AllowLeadingWhite | DateTimeStyles.AllowTrailingWhite | DateTimeStyles.RoundtripKind);
         }
@@ -98,7 +98,7 @@ namespace Mechanical.DataStores
         public void Serialize( TimeSpan obj, ITextWriter writer )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreDefault();
+                throw new ArgumentNullException("writer").StoreFileLine();
 
             if( obj > MaxTimeSpan )
                 obj = MaxTimeSpan;
@@ -125,7 +125,7 @@ namespace Mechanical.DataStores
         TimeSpan IDataStoreValueDeserializer<TimeSpan>.Deserialize( string name, ITextReader reader )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreDefault();
+                throw new ArgumentNullException("reader").StoreFileLine();
 
             return TimeSpan.ParseExact(reader.ReadToEnd(), TimeSpanFormat, CultureInfo.InvariantCulture, TimeSpanStyles.None);
         }

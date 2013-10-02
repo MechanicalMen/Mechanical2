@@ -3,7 +3,6 @@ using System.Runtime.CompilerServices;
 using Mechanical.Conditions;
 using Mechanical.Core;
 using Mechanical.DataStores;
-using Mechanical.MagicBag;
 
 namespace Mechanical.Log
 {
@@ -45,10 +44,10 @@ namespace Mechanical.Log
                 message = string.Empty;
 
             if( fileName.NullReference() )
-                throw new ArgumentNullException("filePath").StoreDefault();
+                throw new ArgumentNullException("filePath").StoreFileLine();
 
             if( memberName.NullReference() )
-                throw new ArgumentNullException("memberName").StoreDefault();
+                throw new ArgumentNullException("memberName").StoreFileLine();
 
             this.timestamp = timestamp;
             this.level = level;
@@ -181,10 +180,10 @@ namespace Mechanical.Log
             public void Serialize( LogEntry obj, IDataStoreWriter writer )
             {
                 if( obj.NullReference() )
-                    throw new ArgumentNullException("obj").StoreDefault();
+                    throw new ArgumentNullException("obj").StoreFileLine();
 
                 if( writer.NullReference() )
-                    throw new ArgumentNullException("writer").StoreDefault();
+                    throw new ArgumentNullException("writer").StoreFileLine();
 
                 writer.Write(Keys.Timestamp, obj.timestamp);
                 writer.Write(Keys.Level, obj.Level.Wrap().ToString());
@@ -209,7 +208,7 @@ namespace Mechanical.Log
             public LogEntry Deserialize( string name, IDataStoreReader reader )
             {
                 if( reader.NullReference() )
-                    throw new ArgumentNullException("reader").StoreDefault();
+                    throw new ArgumentNullException("reader").StoreFileLine();
 
                 var timestamp = reader.ReadDateTime(Keys.Timestamp);
                 var level = Enum<LogLevel>.Parse(reader.ReadString(Keys.Level));
@@ -228,21 +227,6 @@ namespace Mechanical.Log
 
                 return new LogEntry(timestamp, level, message, info, fileName, memberName, lineNumber);
             }
-        }
-
-        #endregion
-
-        #region Mappings
-
-        //// NOTE: we can not put this in Log.cs, since it's static constructor would throw an exception
-
-        internal static Mapping[] GetMappings()
-        {
-            return new Mapping[]
-            {
-                // TODO: investigate whether a Reveal member could be written for static reflection on Constructor(Info)s
-                Map<ILog>.ToInject<EventLogger>(typeof(EventLogger).GetConstructors()[0]).AsSingleton(),
-            };
         }
 
         #endregion

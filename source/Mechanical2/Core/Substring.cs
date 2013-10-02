@@ -327,7 +327,7 @@ namespace Mechanical.Core
         {
             // the original implementation throws too
             if( comparand.NullReference() )
-                throw new ArgumentNullException("comparand").StoreDefault();
+                throw new ArgumentNullException("comparand").StoreFileLine();
 
             if( this.Origin.NullReference() )
                 return false;
@@ -351,7 +351,7 @@ namespace Mechanical.Core
         {
             // the original implementation throws too
             if( comparand.Origin.NullReference() )
-                throw new ArgumentNullException("comparand").StoreDefault();
+                throw new ArgumentNullException("comparand").StoreFileLine();
 
             if( this.Origin.NullReference() )
                 return false;
@@ -379,7 +379,7 @@ namespace Mechanical.Core
         {
             // the original implementation throws too
             if( comparand.NullReference() )
-                throw new ArgumentNullException("comparand").StoreDefault();
+                throw new ArgumentNullException("comparand").StoreFileLine();
 
             if( this.Origin.NullReference() )
                 return false;
@@ -403,7 +403,7 @@ namespace Mechanical.Core
         {
             // the original implementation throws too
             if( comparand.Origin.NullReference() )
-                throw new ArgumentNullException("comparand").StoreDefault();
+                throw new ArgumentNullException("comparand").StoreFileLine();
 
             if( this.Origin.NullReference() )
                 return false;
@@ -646,7 +646,7 @@ namespace Mechanical.Core
         public Substring[] Split( char[] separator = null, StringSplitOptions options = StringSplitOptions.None )
         {
             if( this.Origin.NullReference() )
-                throw new NullReferenceException().StoreDefault();
+                throw new NullReferenceException().StoreFileLine();
 
             var list = new List<Substring>();
             var rest = this;

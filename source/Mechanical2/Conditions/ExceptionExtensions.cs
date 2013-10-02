@@ -17,14 +17,14 @@ namespace Mechanical.Conditions
     public static partial class ConditionsExtensions
     {
         //// NOTE: Store() adds the string representation of the specified object to Exception.Data using a DataStore compatible key.
-        ////       Retrieve() the stored data in a type-safe manner.
+        ////       Retrieve() gets the stored data in a type-safe manner.
         ////       (storing strings should keep exceptions serializable)
 
         //// NOTE: The first call to Store or StoreDefault adds default information as well (e.g. file and line info, ... etc.)
 
         //// NOTE: We throw exceptions in debug mode, if the specified key is unacceptable;
-        ////       but generate unique (DS compatible) ids in release mode: not knowing
-        ////       what it's called is still better than not knowing anything at all! 
+        ////       but generate unique (DatStore compatible) IDs in release mode: not knowing
+        ////       what it's called is still better than not knowing anything at all. (or at least, it's not worse :) 
 
         #region Store (general use)
 
@@ -38,35 +38,21 @@ namespace Mechanical.Conditions
 
         private static SearchResult Contains( Exception e, string key, string value )
         {
-            bool keyFound = false;
             foreach( DictionaryEntry entry in e.Data )
             {
                 string str = entry.Key as string;
                 if( str.NotNullReference()
                  && DataStore.SameNames(str, key) )
                 {
-                    keyFound = true;
-
                     if( (entry.Value.NullReference() && value.NullReference())
                      || string.Equals(entry.Value as string, value, StringComparison.Ordinal) )
                         return SearchResult.KeyAndValueFound;
+                    else
+                        return SearchResult.KeyFound;
                 }
             }
 
-            return keyFound ? SearchResult.KeyFound : SearchResult.NotFound;
-        }
-
-        private static bool ContainsKey( Exception e, string key )
-        {
-            foreach( DictionaryEntry entry in e.Data )
-            {
-                string str = entry.Key as string;
-                if( str.NotNullReference()
-                 && DataStore.SameNames(str, key) )
-                    return true;
-            }
-
-            return false;
+            return SearchResult.NotFound;
         }
 
 #if !DEBUG
@@ -76,7 +62,7 @@ namespace Mechanical.Conditions
         }
 #endif
 
-        private static TException Add<TException>( this TException e, string key, object value )
+        private static TException Add<TException>( this TException e, string key, object value, bool forceNewKey = false )
             where TException : Exception
         {
             if( e.NullReference() )
@@ -94,17 +80,19 @@ namespace Mechanical.Conditions
 #endif
             // convert 'value' to string
             // no quotes for now
-            string stringValue;
-            if( value is string )
-                stringValue = (string)value;
-            else if( value is char
-                  || value is Substring )
-                stringValue = value.ToString();
-            else
-                stringValue = SafeString.DebugPrint(value);
+            var stringValue = value as string;
+            if( stringValue.NullReference()
+             && value.NotNullReference() )
+            {
+                if( value is char
+                 || value is Substring )
+                    stringValue = value.ToString();
+                else
+                    stringValue = SafeString.DebugPrint(value);
+            }
 
             // we do not allow overwriting of earlier exception data
-            // and we also avoid data duplication (though we are very conservative about it)
+            // and we also avoid data duplication (though we are very conservative about detecting it)
             string actualKey = key;
             int i = 2;
             bool done = false;
@@ -113,8 +101,18 @@ namespace Mechanical.Conditions
                 switch( Contains(e, actualKey, stringValue) )
                 {
                 case SearchResult.KeyAndValueFound:
-                    // already added both: skip
-                    return e;
+                    // already added both:
+                    if( forceNewKey )
+                    {
+                        actualKey = key + i.ToString(CultureInfo.InvariantCulture);
+                        ++i;
+                    }
+                    else
+                    {
+                        // skip
+                        return e;
+                    }
+                    break;
 
                 case SearchResult.KeyFound:
                     // same key, different value: try again with another key
@@ -123,7 +121,7 @@ namespace Mechanical.Conditions
                     break;
 
                 default:
-                    // key not found: add
+                    // unused key found
                     done = true;
                     break;
                 }
@@ -153,33 +151,42 @@ namespace Mechanical.Conditions
             [CallerLineNumber] int lineNumber = 0 )
             where TException : Exception
         {
-            // make sure the default informations are stored
-            return e.StoreDefault(filePath, memberName, lineNumber)
+            return e.StoreFileLine_OnFirstCall(filePath, memberName, lineNumber)
                     .Add(key, value);
         }
 
         #endregion
 
-        #region Store (first call)
+        #region StoreFileLine, Store( IConditionContext )
+
+        private const string File = "SourceFile";
+        private const string Member = "SourceMember";
+        private const string Line = "SourceLine";
+
+        private static readonly char[] DirectorySeparatorChars = new char[] { '\\', '/' };
 
         internal static string SanitizeFilePath( [CallerFilePath] string filePath = "" )
         {
             // let's not expose the developer's directory structure!
             // (may contain sensitive information, like user names, ... etc.)
-            try
+            if( filePath.NotNullReference() )
             {
-                return Path.GetFileName(filePath);
+                // System.IO.Path expects the directory separators 
+                // of the platform this code is being run on. But code may
+                // have been compiled on a different platform! (e.g. building Android apps on Windows)
+                int directorySeparatorAt = filePath.LastIndexOfAny(DirectorySeparatorChars);
+                if( directorySeparatorAt != -1 )
+                    return filePath.Substring(startIndex: directorySeparatorAt + 1);
             }
-            catch
-            {
-                // invalid character?! null?!
-                // only if this string was not generated by the compiler!
-                return filePath;
-            }
+
+            // no directory separator?! null?!
+            // only if this string was not generated by the compiler!
+            // In that case, let the user deal with whatever this is
+            return filePath;
         }
 
         /// <summary>
-        /// Stores default data in the exception.
+        /// Stores the current source file position. If they are already present, then - unlike other Store calls - duplicates will(!) be produced.
         /// </summary>
         /// <typeparam name="TException">The type of the exception.</typeparam>
         /// <param name="e">The exception to store data in.</param>
@@ -187,29 +194,26 @@ namespace Mechanical.Conditions
         /// <param name="memberName">The method or property name of the caller to the method.</param>
         /// <param name="lineNumber">The line number in the source file at which the method is called.</param>
         /// <returns>The exception data was stored in.</returns>
-        public static TException StoreDefault<TException>(
+        public static TException StoreFileLine<TException>(
             this TException e,
             [CallerFilePath] string filePath = "",
             [CallerMemberName] string memberName = "",
             [CallerLineNumber] int lineNumber = 0 )
             where TException : Exception
         {
-#if DEBUG
-            if( e.NullReference() )
-                throw new ArgumentNullException("e");
-#endif
+            return e.Add(File, SanitizeFilePath(filePath), forceNewKey: true)
+                    .Add(Member, memberName, forceNewKey: true)
+                    .Add(Line, lineNumber, forceNewKey: true);
+        }
 
-            if( !string.IsNullOrEmpty(filePath)
-             && !ContainsKey(e, "SourceFile") )
+        private static TException StoreFileLine_OnFirstCall<TException>( this TException e, string filePath, string memberName, int lineNumber )
+            where TException : Exception
+        {
+            if( Contains(e, File, null) != SearchResult.NotFound )
             {
-                //// NOTE: Instead of using ContainsKey, we could simply always 'Store' values
-                ////       since duplicates are not saved.
-                ////       We don't do this, in case at a later time, we want to add some more resource
-                ////       intensive (default) data here (e.g. user or network data; ... etc.)
-
-                return e.Add("SourceFile", SanitizeFilePath(filePath))
-                        .Add("SourceMember", memberName)
-                        .Add("SourceLine", lineNumber); // add other data here...
+                return e.Add(File, SanitizeFilePath(filePath))
+                        .Add(Member, memberName)
+                        .Add(Line, lineNumber);
             }
             else
             {
@@ -218,17 +222,17 @@ namespace Mechanical.Conditions
         }
 
         /// <summary>
-        /// Stores default data in the exception.
+        /// Stores data from the specified <see cref="IConditionContext{T}"/>.
         /// </summary>
         /// <typeparam name="TException">The type of the exception.</typeparam>
         /// <typeparam name="T">The type of the object being validated.</typeparam>
         /// <param name="e">The exception to store data in.</param>
         /// <param name="context">The <see cref="IConditionContext{T}"/> instance to store.</param>
         /// <returns>The exception data was stored in.</returns>
-        public static TException StoreDefault<TException, T>( this TException e, IConditionContext<T> context )
+        public static TException Store<TException, T>( this TException e, IConditionContext<T> context )
             where TException : Exception
         {
-            return e.StoreDefault(context.FilePath, context.MemberName, context.LineNumber)
+            return e.StoreFileLine(context.FilePath, context.MemberName, context.LineNumber)
                     .Add("Object", context.Object);
         }
 
