@@ -15,6 +15,21 @@ namespace Mechanical.DataStores
     /// </summary>
     public static class DataStore
     {
+        //// NOTE: Data store names have strict restrictions
+        ////         - they may not be null
+        ////         - they may not be empty
+        ////         - they may only contain english letters of either case, digits, or underscores
+        ////         - they may not start with a digit
+        ////         - they are considered case-sensitive
+        ////         - they may be no longer than 255 characters
+
+        //// NOTE: In contrast, data store paths have a few more restrictions:
+        ////         - all valid data store names are valid data store paths
+        ////         - a path separator may only occur between valid data store names (so paths may not start or end with them, and they may not be next to each other)
+        ////       but are also more forgiving:
+        ////         - empty strings are valid paths as well (they represent the parent "directory" of the root node)
+        ////         - there is no length restriction
+
         #region IsValidName
 
         /// <summary>
@@ -219,7 +234,7 @@ namespace Mechanical.DataStores
 
         #endregion
 
-        #region DefaultEncoding, DefaultNewLine, PathSeparator
+        #region DefaultEncoding, DefaultNewLine, PathSeparator, Comparer
 
         /// <summary>
         /// The default <see cref="Encoding"/> of data stores.
@@ -235,6 +250,11 @@ namespace Mechanical.DataStores
         /// The character separating data store identifiers in a data store path.
         /// </summary>
         public const char PathSeparator = '/';
+
+        /// <summary>
+        /// The comparer used for data store names and paths.
+        /// </summary>
+        public static readonly StringComparer Comparer = StringComparer.Ordinal;
 
         #endregion
 
@@ -311,22 +331,65 @@ namespace Mechanical.DataStores
 
         #endregion
 
-        #region Combine
+        #region Combine, GetNodeName, GetParentPath
 
         /// <summary>
         /// Combines two data store paths. The result is NOT a valid data store name.
         /// </summary>
-        /// <param name="str1">The first data store name or path.</param>
-        /// <param name="str2">The second data store name or path.</param>
+        /// <param name="path1">The first data store path.</param>
+        /// <param name="path2">The second data store path.</param>
         /// <returns>The combined data store path.</returns>
-        public static string Combine( string str1, string str2 )
+        public static string Combine( string path1, string path2 )
         {
-            return str1 + PathSeparator + str2;
+            if( path1.NullReference()
+             || path2.NullOrEmpty() )
+                throw new ArgumentNullException().Store("path1", path1).Store("path2", path2);
+
+            if( path1.Length == 0 )
+                return path2;
+            else
+                return path1 + PathSeparator + path2;
+        }
+
+        /// <summary>
+        /// Gets the name of the node, the data store path points to.
+        /// </summary>
+        /// <param name="path">The data store path to look at.</param>
+        /// <returns>The data store name found.</returns>
+        public static string GetNodeName( string path )
+        {
+            if( path.NullOrEmpty() )
+                throw new ArgumentException().Store("path", path);
+
+            int index = path.LastIndexOf(PathSeparator);
+            if( index != -1 )
+                return path.Substring(startIndex: index + 1);
+            else
+                return path;
+        }
+
+        /// <summary>
+        /// Gets the path to the parent data store object of the specified node.
+        /// </summary>
+        /// <param name="path">The data store path to look at.</param>
+        /// <returns>The data store path found.</returns>
+        public static string GetParentPath( string path )
+        {
+            if( path.NullReference() )
+                throw new ArgumentNullException().StoreFileLine();
+
+            if( path.Length != 0 )
+            {
+                int index = path.LastIndexOf(PathSeparator);
+                if( index != -1 )
+                    return path.Substring(startIndex: 0, length: index);
+            }
+
+            return path;
         }
 
         #endregion
 
-        //// TODO: data store paths
         //// TODO: [un]escape paths
         //// TODO: unit tests
         //// TODO: seekable reader/writer
@@ -336,8 +399,7 @@ namespace Mechanical.DataStores
         //// TODO: IDataStoreNode & Co. --> default [de]serialization mappings  (instead of reader.ReadNode & Co.)
         //// TODO: test datastores for attempting to read or write multiple roots
 
-        //// TODO: MVVM.UI -> Scheduler, Dispatcher --> MagicBag ?!?! (or at least a synchronizationContext ?!)
-
-        //// TODO: replace StoreDefault with StoreFileLine (resource heavy data should rather be logged separately)
+        //// TODO: refactor IDataStoreReader, DataStoreReaderBase, into a "token reader", and perhaps extension methods to replace them (introduce DataStoreStart token!)
+        //// TODO: optimize ensure.debug from datastore reading/writing extension methods (private static method + ConditionalAttribute + Inlining)
     }
 }

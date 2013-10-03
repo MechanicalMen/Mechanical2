@@ -159,9 +159,9 @@ namespace Mechanical.Conditions
 
         #region StoreFileLine, Store( IConditionContext )
 
-        private const string File = "SourceFile";
-        private const string Member = "SourceMember";
-        private const string Line = "SourceLine";
+        internal const string File = "SourceFile";
+        internal const string Member = "SourceMember";
+        internal const string Line = "SourceLine";
 
         private static readonly char[] DirectorySeparatorChars = new char[] { '\\', '/' };
 
@@ -209,7 +209,7 @@ namespace Mechanical.Conditions
         private static TException StoreFileLine_OnFirstCall<TException>( this TException e, string filePath, string memberName, int lineNumber )
             where TException : Exception
         {
-            if( Contains(e, File, null) != SearchResult.NotFound )
+            if( Contains(e, File, null) == SearchResult.NotFound )
             {
                 return e.Add(File, SanitizeFilePath(filePath))
                         .Add(Member, memberName)

@@ -171,6 +171,21 @@
     <Compile Include="..\Mechanical2\DataStores\ExceptionInfo.cs">
       <Link>DataStores\ExceptionInfo.cs</Link>
     </Compile>
+    <Compile Include="..\Mechanical2\DataStores\File\FileDataStoreEntry.cs">
+      <Link>DataStores\File\FileDataStoreEntry.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\File\FileDataStoreReader.cs">
+      <Link>DataStores\File\FileDataStoreReader.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\File\FileDataStoreReaderBase.cs">
+      <Link>DataStores\File\FileDataStoreReaderBase.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\File\FileDataStoreWriter.cs">
+      <Link>DataStores\File\FileDataStoreWriter.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\File\FileDataStoreWriterBase.cs">
+      <Link>DataStores\File\FileDataStoreWriterBase.cs</Link>
+    </Compile>
     <Compile Include="..\Mechanical2\DataStores\IDataStoreObjectDeserializer.cs">
       <Link>DataStores\IDataStoreObjectDeserializer.cs</Link>
     </Compile>
@@ -188,6 +203,9 @@
     </Compile>
     <Compile Include="..\Mechanical2\DataStores\IDataStoreWriter.cs">
       <Link>DataStores\IDataStoreWriter.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\ISeekableDataStore.cs">
+      <Link>DataStores\ISeekableDataStore.cs</Link>
     </Compile>
     <Compile Include="..\Mechanical2\DataStores\ISO8601.cs">
       <Link>DataStores\ISO8601.cs</Link>
@@ -293,6 +311,9 @@
     </Compile>
     <Compile Include="..\Mechanical2\IO\IBinaryWriter.cs">
       <Link>IO\IBinaryWriter.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\IO\IOWrapper.cs">
+      <Link>IO\IOWrapper.cs</Link>
     </Compile>
     <Compile Include="..\Mechanical2\IO\ITextReader.cs">
       <Link>IO\ITextReader.cs</Link>

@@ -214,4 +214,6 @@ namespace Mechanical.FileFormats
 
         #endregion
     }
+
+    //// TODO: switch to ITextWriter, and read and produce substrings
 }

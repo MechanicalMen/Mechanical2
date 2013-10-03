@@ -115,8 +115,11 @@ namespace Mechanical.IO
             }
             set
             {
-                Ensure.That(value).NotNull();
-                Ensure.That(value.CanRead).IsTrue(() => new InvalidOperationException("Stream is not readable!"));
+                if( value.NullReference() )
+                    throw new ArgumentNullException().StoreFileLine();
+
+                if( !value.CanRead )
+                    throw new InvalidOperationException("Stream is not readable!").StoreFileLine();
 
                 if( !object.ReferenceEquals(this.stream, value) )
                     this.stream = value;

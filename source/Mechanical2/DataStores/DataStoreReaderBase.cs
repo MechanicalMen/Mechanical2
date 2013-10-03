@@ -191,7 +191,9 @@ namespace Mechanical.DataStores
 
             this.currentToken = this.ReadToken(out this.currentName);
 #if DEBUG
-            if( !DataStore.IsValidName(this.currentName) )
+            if( this.currentToken != DataStoreToken.ObjectEnd
+             && this.currentToken != DataStoreToken.DataStoreEnd
+             && !DataStore.IsValidName(this.currentName) )
                 throw new Exception("Data store implementation returned invalid name!").Store("currentToken", this.currentToken).Store("currentName", this.currentName);
 #endif
 
@@ -282,6 +284,15 @@ namespace Mechanical.DataStores
         protected abstract void ReadValue( out ITextReader textReader, out IBinaryReader binaryReader );
 
         /// <summary>
+        /// Invoked after the value has been read. Used to release resources.
+        /// </summary>
+        /// <param name="textReader">The <see cref="ITextReader"/> used; or <c>null</c>.</param>
+        /// <param name="binaryReader">The <see cref="IBinaryReader"/> used; or <c>null</c>.</param>
+        protected virtual void OnValueRead( ITextReader textReader, IBinaryReader binaryReader )
+        {
+        }
+
+        /// <summary>
         /// Begins reading the data store object the reader is currently at.
         /// </summary>
         protected abstract void ReadObjectStart();
@@ -346,6 +357,38 @@ namespace Mechanical.DataStores
         }
 
         /// <summary>
+        /// Gets the absolute path to the current object or value.
+        /// </summary>
+        /// <value>The absolute path to the current object or value.</value>
+        public string Path
+        {
+            get
+            {
+                this.ThrowIfAtDataStoreEnd();
+
+                if( this.currentPath.NullReference() )
+                {
+                    if( this.parents.Count == 0 )
+                        this.currentPath = this.currentName;
+                    else
+                    {
+                        var sb = new StringBuilder();
+                        for( int i = 0; i < this.parents.Count; ++i )
+                        {
+                            sb.Append(this.parents[i]);
+                            sb.Append(DataStore.PathSeparator);
+                        }
+                        sb.Append(this.currentName);
+
+                        this.currentPath = sb.ToString();
+                    }
+                }
+
+                return this.currentPath;
+            }
+        }
+
+        /// <summary>
         /// Deserializes the current value of the data store, and moves to the next token.
         /// </summary>
         /// <typeparam name="T">The type to return an instance of.</typeparam>
@@ -385,6 +428,9 @@ namespace Mechanical.DataStores
                     obj = deserializer.Deserialize(this.currentName, binaryReader);
                 else
                     obj = deserializer.Deserialize(this.currentName, textReader);
+
+                // close reader
+                this.OnValueRead(textReader, binaryReader);
 
                 // move to next sibling, if there is one
                 this.MoveToNextToken();
@@ -459,38 +505,6 @@ namespace Mechanical.DataStores
         public int Depth
         {
             get { return this.parents.Count; }
-        }
-
-        /// <summary>
-        /// Gets the current data store path.
-        /// </summary>
-        /// <value>The current data store path.</value>
-        public string Path
-        {
-            get
-            {
-                this.ThrowIfAtDataStoreEnd();
-
-                if( this.currentPath.NullReference() )
-                {
-                    if( this.parents.Count == 0 )
-                        this.currentPath = this.currentName;
-                    else
-                    {
-                        var sb = new StringBuilder();
-                        for( int i = 0; i < this.parents.Count; ++i )
-                        {
-                            sb.Append(this.parents[i]);
-                            sb.Append(DataStore.PathSeparator);
-                        }
-                        sb.Append(this.currentName);
-
-                        this.currentPath = sb.ToString();
-                    }
-                }
-
-                return this.currentPath;
-            }
         }
 
         #endregion

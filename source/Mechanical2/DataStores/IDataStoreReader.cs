@@ -23,6 +23,12 @@ namespace Mechanical.DataStores
         string Name { get; }
 
         /// <summary>
+        /// Gets the absolute path to the current object or value.
+        /// </summary>
+        /// <value>The absolute path to the current object or value.</value>
+        string Path { get; }
+
+        /// <summary>
         /// Deserializes the current value of the data store, and moves to the next token.
         /// </summary>
         /// <typeparam name="T">The type to return an instance of.</typeparam>
