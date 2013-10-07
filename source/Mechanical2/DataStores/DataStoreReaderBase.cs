@@ -26,6 +26,7 @@ namespace Mechanical.DataStores
             /// Initializes a new instance of the <see cref="Disposable"/> class.
             /// </summary>
             protected Disposable()
+                : base()
             {
             }
 
@@ -40,7 +41,7 @@ namespace Mechanical.DataStores
             /// Gets a value indicating whether this object has been disposed of.
             /// </summary>
             /// <value><c>true</c> if this object has been disposed of; otherwise, <c>false</c>.</value>
-            public bool IsDisposed
+            public new bool IsDisposed
             {
                 get { return this.isDisposed; }
             }
@@ -91,13 +92,7 @@ namespace Mechanical.DataStores
                     //// dispose-only (i.e. non-finalizable) logic
                     //// (managed, disposable resources you own)
 
-                    /*
-                    if( resource.NotNullReference() )
-                    {
-                        resource.Dispose();
-                        resource = null;
-                    }
-                    */
+                    this.CloseReaders();
                 }
 
                 //// shared cleanup logic
@@ -133,17 +128,18 @@ namespace Mechanical.DataStores
 
         #endregion
 
-
         #region Private Fields
 
+        private readonly IDisposableObject asDisposableObject;
         private readonly List<string> parents = new List<string>();
-
-        private DataStoreToken currentToken = (DataStoreToken)(-1); // so that our first read call does not "follow" a valid token
+        private DataStoreToken currentToken = DataStoreToken.DataStoreStart;
         private string currentName;
         private string currentPath;
+        private IBinaryReader currentBinaryReader;
+        private ITextReader currentTextReader;
 
 #if DEBUG
-        private bool initialized = false;
+        private bool rootNodeRead = false;
 #endif
 
         #endregion
@@ -155,6 +151,7 @@ namespace Mechanical.DataStores
         /// </summary>
         protected DataStoreReaderBase()
         {
+            this.asDisposableObject = this as IDisposableObject;
         }
 
         #endregion
@@ -164,163 +161,171 @@ namespace Mechanical.DataStores
 #if !MECHANICAL_NET4CP
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-        private void ThrowIfAtDataStoreEnd( [CallerFilePath] string filePath = "", [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0 )
+        private bool IsDisposed()
         {
-            if( this.Token == DataStoreToken.DataStoreEnd )
-            {
-                var exception = new InvalidOperationException("End of data store already reached!").StoreFileLine(filePath, memberName, lineNumber);
-                this.StoreReaderInfo(exception);
-                throw exception;
-            }
+            return this.asDisposableObject.NotNullReference() && this.asDisposableObject.IsDisposed;
         }
 
 #if !MECHANICAL_NET4CP
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-        private void MoveToNextToken()
+        private void ThrowIfDisposed()
         {
-            // we leave the token --> our name changes
-            this.currentPath = null;
-
-            // leaving object start --> new parent
-            if( this.currentToken == DataStoreToken.ObjectStart )
-            {
-                this.ReadObjectStart();
-                this.parents.Add(this.currentName);
-            }
-
-            this.currentToken = this.ReadToken(out this.currentName);
-#if DEBUG
-            if( this.currentToken != DataStoreToken.ObjectEnd
-             && this.currentToken != DataStoreToken.DataStoreEnd
-             && !DataStore.IsValidName(this.currentName) )
-                throw new Exception("Data store implementation returned invalid name!").Store("currentToken", this.currentToken).Store("currentName", this.currentName);
-#endif
-
-            switch( this.currentToken )
-            {
-            case DataStoreToken.DataStoreEnd:
-                this.currentName = null;
-
-                if( this.parents.Count != 0 )
-                    this.ThrowIfAtDataStoreEnd();
-                break;
-
-            case DataStoreToken.ObjectStart:
-                break;
-
-            case DataStoreToken.ObjectEnd:
-                {
-                    // clean up
-                    this.ReadObjectEnd();
-
-                    // decrease depth
-                    int lastAt = this.parents.Count - 1;
-                    this.currentName = this.parents[lastAt];
-                    this.parents.RemoveAt(lastAt);
-                }
-                break;
-
-            case DataStoreToken.Value:
-                break;
-
-            default:
-                throw new Exception("Data store reader implementation returned invalid token!");
-            }
+            if( this.IsDisposed() )
+                throw new ObjectDisposedException(null).StoreFileLine();
         }
 
 #if !MECHANICAL_NET4CP
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-        private void ReadUntilObjectEnd( int depth )
+        private void CloseReaders()
         {
-            while( !(this.currentToken == DataStoreToken.ObjectEnd && this.Depth == depth) )
+            if( this.currentBinaryReader.NotNullReference() )
             {
-                this.MoveToNextToken();
+                this.CloseReader(this.currentBinaryReader);
+                this.currentBinaryReader = null;
+            }
+
+            if( this.currentTextReader.NotNullReference() )
+            {
+                this.CloseReader(this.currentTextReader);
+                this.currentTextReader = null;
             }
         }
 
         #endregion
 
-        #region Protected Methods
+        #region Protected Abstract Methods
 
         /// <summary>
-        /// Initializes the reader.
+        /// Reads the next name and token.
         /// </summary>
-        protected void Initialize()
-        {
-            //// NOTE: we can't put this into the constructor,
-            ////       since that is called before the actual constructor
-            ////       and that would not allow us to process it's parameters
-
-            try
-            {
-#if DEBUG
-                if( this.initialized )
-                    throw new InvalidOperationException("Already initialized!");
-#endif
-                this.MoveToNextToken();
-            }
-            catch( Exception e )
-            {
-                e.StoreFileLine();
-                this.StoreReaderInfo(e);
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Moves the reader to the next <see cref="DataStoreToken"/>.
-        /// </summary>
-        /// <param name="name">The name of the data store node found; or <c>null</c>.</param>
+        /// <param name="name">The name of the data store node found. Ignored for ObjectEnd, DataStoreEnd tokens.</param>
         /// <returns>The <see cref="DataStoreToken"/> found.</returns>
         protected abstract DataStoreToken ReadToken( out string name );
 
         /// <summary>
-        /// Reads the data store value the reader is currently at.
+        /// Returns the reader of the value.
+        /// If possible, a new reader should not be created.
         /// </summary>
-        /// <param name="textReader">The <see cref="ITextReader"/> to use; or <c>null</c>.</param>
-        /// <param name="binaryReader">The <see cref="IBinaryReader"/> to use; or <c>null</c>.</param>
-        protected abstract void ReadValue( out ITextReader textReader, out IBinaryReader binaryReader );
+        /// <returns>The reader of the value.</returns>
+        protected abstract IBinaryReader OpenBinaryReader();
 
         /// <summary>
-        /// Invoked after the value has been read. Used to release resources.
+        /// Returns the reader of the value.
+        /// If possible, a new reader should not be created.
         /// </summary>
-        /// <param name="textReader">The <see cref="ITextReader"/> used; or <c>null</c>.</param>
-        /// <param name="binaryReader">The <see cref="IBinaryReader"/> used; or <c>null</c>.</param>
-        protected virtual void OnValueRead( ITextReader textReader, IBinaryReader binaryReader )
-        {
-        }
+        /// <returns>The reader of the value.</returns>
+        protected abstract ITextReader OpenTextReader();
 
         /// <summary>
-        /// Begins reading the data store object the reader is currently at.
+        /// Releases any resources held by an open reader.
         /// </summary>
-        protected abstract void ReadObjectStart();
+        /// <param name="reader">The reader of the value.</param>
+        protected abstract void CloseReader( IBinaryReader reader );
 
         /// <summary>
-        /// Ends reading the data store object the reader is currently at.
+        /// Releases any resources held by an open reader.
         /// </summary>
-        protected abstract void ReadObjectEnd();
-
-        /// <summary>
-        /// Stores additional information about the state of the reader, on exceptions being thrown.
-        /// </summary>
-        /// <typeparam name="TException">The type of the exception being thrown.</typeparam>
-        /// <param name="exception">The exception being thrown.</param>
-        protected virtual void StoreReaderInfo<TException>( TException exception )
-            where TException : Exception
-        {
-            exception.Store("Token", this.Token);
-            exception.Store("Name", this.Name);
-            exception.Store("Depth", this.Depth);
-
-            if( this.Token != DataStoreToken.DataStoreEnd ) // prevent StackOverflow
-                exception.Store("Path", this.Path);
-        }
+        /// <param name="reader">The reader of the value.</param>
+        protected abstract void CloseReader( ITextReader reader );
 
         #endregion
 
         #region IDataStoreReader
+
+        /// <summary>
+        /// Reads the next data store token.
+        /// </summary>
+        /// <returns><c>false</c> if the end of the data store was reached; otherwise, <c>true</c>.</returns>
+        public bool Read()
+        {
+            this.ThrowIfDisposed();
+
+            try
+            {
+                // data store end already reached, no need do anything else
+                if( this.currentToken == DataStoreToken.DataStoreEnd )
+                    return false;
+
+                // we leave the token --> our name changes
+                this.currentPath = null;
+
+                // leaving object start --> new parent
+                if( this.currentToken == DataStoreToken.ObjectStart )
+                    this.parents.Add(this.currentName);
+
+                // leaving value --> close any open readers
+                this.CloseReaders();
+
+                // read next token and name
+                this.currentToken = this.ReadToken(out this.currentName);
+
+#if DEBUG
+                if( !this.currentToken.Wrap().IsDefined
+                 || this.currentToken == DataStoreToken.DataStoreStart )
+                    throw new Exception("Data store implementation returned invalid token!").StoreFileLine();
+
+                if( this.currentToken != DataStoreToken.ObjectEnd
+                 && this.currentToken != DataStoreToken.DataStoreEnd
+                 && !DataStore.IsValidName(this.currentName) )
+                    throw new Exception("Data store implementation returned invalid name!").StoreFileLine();
+
+                if( this.parents.Count == 0
+                 && this.currentToken != DataStoreToken.DataStoreEnd )
+                {
+                    if( !this.rootNodeRead )
+                        this.rootNodeRead = true;
+                    else if( this.currentToken != DataStoreToken.ObjectEnd ) // first object end token gets a pass, any others throw an exception later
+                        throw new FormatException("There can be at most one root node!").StoreFileLine();
+                }
+#endif
+                // process the token read
+                switch( this.currentToken )
+                {
+                case DataStoreToken.DataStoreEnd:
+                    // release any resources
+                    this.currentName = null;
+                    this.currentPath = null;
+
+                    if( this.parents.Count != 0 )
+                        throw new FormatException("Data store ended unexpectedly: there are still objects open!").Store("Depth", this.parents.Count); // not stored automatically, since Depth would throw an exception
+                    break;
+
+                case DataStoreToken.ObjectStart:
+                    // next Read increases Depth (see above)
+                    break;
+
+                case DataStoreToken.ObjectEnd:
+                    {
+                        if( this.parents.Count == 0 )
+                            throw new FormatException("Unexpected object end token found: there are no objects open!").StoreFileLine();
+
+                        // decrease depth
+                        int lastAt = this.parents.Count - 1;
+                        this.currentName = this.parents[lastAt];
+                        this.parents.RemoveAt(lastAt);
+                    }
+                    break;
+
+                case DataStoreToken.BinaryValue:
+                case DataStoreToken.TextValue:
+                    // we don't create the readers if we don't have to
+                    break;
+
+                default:
+                    throw new Exception("Data store reader implementation returned invalid token!").StoreFileLine();
+                }
+
+                return this.currentToken != DataStoreToken.DataStoreEnd;
+            }
+            catch( Exception ex )
+            {
+                ex.StoreFileLine();
+                this.StorePosition(ex);
+                throw;
+            }
+        }
 
         /// <summary>
         /// Gets the current data store token.
@@ -330,14 +335,10 @@ namespace Mechanical.DataStores
         {
             get
             {
-#if DEBUG
-                if( this.initialized )
-                {
-                    var exception = new InvalidOperationException("Already initialized!").StoreFileLine();
-                    this.StoreReaderInfo(exception);
-                    throw exception;
-                }
-#endif
+                // NOTE: we don't throw any exceptions from here, in case this property is stored as some exception's data
+                if( this.IsDisposed() )
+                    return (DataStoreToken)(-1);
+
                 return this.currentToken;
             }
         }
@@ -350,9 +351,31 @@ namespace Mechanical.DataStores
         {
             get
             {
-                this.ThrowIfAtDataStoreEnd();
+                // NOTE: we don't throw any exceptions from here, in case this property is stored as some exception's data
+                if( this.IsDisposed()
+                 || this.currentToken == DataStoreToken.DataStoreStart
+                 || this.currentToken == DataStoreToken.DataStoreEnd )
+                    return null;
 
                 return this.currentName;
+            }
+        }
+
+        /// <summary>
+        /// Gets the zero-based depth of the current object or value.
+        /// </summary>
+        /// <value>The zero-based depth of the current object or value.</value>
+        public int Depth
+        {
+            get
+            {
+                // NOTE: we don't throw any exceptions from here, in case this property is stored as some exception's data
+                if( this.IsDisposed()
+                 || this.currentToken == DataStoreToken.DataStoreStart
+                 || this.currentToken == DataStoreToken.DataStoreEnd )
+                    return -1;
+
+                return this.parents.Count;
             }
         }
 
@@ -364,12 +387,18 @@ namespace Mechanical.DataStores
         {
             get
             {
-                this.ThrowIfAtDataStoreEnd();
+                // NOTE: we don't throw any exceptions from here, in case this property is stored as some exception's data
+                if( this.IsDisposed()
+                 || this.currentToken == DataStoreToken.DataStoreStart
+                 || this.currentToken == DataStoreToken.DataStoreEnd )
+                    return null;
 
                 if( this.currentPath.NullReference() )
                 {
                     if( this.parents.Count == 0 )
+                    {
                         this.currentPath = this.currentName;
+                    }
                     else
                     {
                         var sb = new StringBuilder();
@@ -389,122 +418,91 @@ namespace Mechanical.DataStores
         }
 
         /// <summary>
-        /// Deserializes the current value of the data store, and moves to the next token.
+        /// Gets the reader of a binary value.
+        /// There is exactly one - binary or text - reader for each value.
+        /// Calling more than once, returns either the same reader, reset to the start of the value; or a new reader, while releasing the resources of the old one.
         /// </summary>
-        /// <typeparam name="T">The type to return an instance of.</typeparam>
-        /// <param name="deserializer">The object handling deserialization.</param>
-        /// <returns>The deserialized data store value.</returns>
-        public T Read<T>( IDataStoreValueDeserializer<T> deserializer )
+        /// <value>The reader of a binary value.</value>
+        public IBinaryReader BinaryValueReader
         {
-            this.ThrowIfAtDataStoreEnd();
-
-            if( deserializer.NullReference() )
+            get
             {
-                var exception = new ArgumentNullException("deserializer").StoreFileLine();
-                this.StoreReaderInfo(exception);
-                throw exception;
+                try
+                {
+                    this.ThrowIfDisposed();
+
+                    if( this.currentToken != DataStoreToken.BinaryValue )
+                        throw new InvalidOperationException("Invalid token!").StoreFileLine();
+
+                    // already open? close!
+                    this.CloseReaders();
+
+                    // open reader
+                    this.currentBinaryReader = this.OpenBinaryReader();
+                    return this.currentBinaryReader;
+                }
+                catch( Exception ex )
+                {
+                    ex.StoreFileLine();
+                    this.StorePosition(ex);
+                    throw;
+                }
             }
-
-            if( this.currentToken != DataStoreToken.Value )
-            {
-                var exception = new FormatException("Data store value expected!");
-                this.StoreReaderInfo(exception);
-                throw exception;
-            }
-
-            // deserialize
-            T obj;
-            ITextReader textReader;
-            IBinaryReader binaryReader;
-            try
-            {
-                this.ReadValue(out textReader, out binaryReader);
-#if DEBUG
-                if( (textReader.NullReference() && binaryReader.NullReference())
-                 || (textReader.NotNullReference() && binaryReader.NotNullReference()) )
-                    throw new Exception("Data store reader implementation must return exactly one value-reader!");
-#endif
-                if( textReader.NullReference() )
-                    obj = deserializer.Deserialize(this.currentName, binaryReader);
-                else
-                    obj = deserializer.Deserialize(this.currentName, textReader);
-
-                // close reader
-                this.OnValueRead(textReader, binaryReader);
-
-                // move to next sibling, if there is one
-                this.MoveToNextToken();
-            }
-            catch( Exception e )
-            {
-                e.StoreFileLine();
-                this.StoreReaderInfo(e);
-                throw;
-            }
-
-            return obj;
         }
 
         /// <summary>
-        /// Deserializes the current object of the data store, and moves to the next token.
+        /// Gets the reader of a text value.
+        /// There is exactly one - binary or text - reader for each value.
+        /// Calling more than once, returns either the same reader, reset to the start of the value; or a new reader, while releasing the resources of the old one.
         /// </summary>
-        /// <typeparam name="T">The type to return an instance of.</typeparam>
-        /// <param name="deserializer">The object handling deserialization.</param>
-        /// <returns>The deserialized data store object.</returns>
-        public T Read<T>( IDataStoreObjectDeserializer<T> deserializer )
+        /// <value>The reader of a text value.</value>
+        public ITextReader TextValueReader
         {
-            this.ThrowIfAtDataStoreEnd();
-
-            if( deserializer.NullReference() )
+            get
             {
-                var exception = new ArgumentNullException("deserializer").StoreFileLine();
-                this.StoreReaderInfo(exception);
-                throw exception;
+                try
+                {
+                    this.ThrowIfDisposed();
+
+                    if( this.currentToken != DataStoreToken.TextValue )
+                        throw new InvalidOperationException("Invalid token!").StoreFileLine();
+
+                    // already open? close!
+                    this.CloseReaders();
+
+                    // open reader
+                    this.currentTextReader = this.OpenTextReader();
+                    return this.currentTextReader;
+                }
+                catch( Exception ex )
+                {
+                    ex.StoreFileLine();
+                    this.StorePosition(ex);
+                    throw;
+                }
             }
-
-            if( this.currentToken != DataStoreToken.ObjectStart )
-            {
-                var exception = new FormatException("Data store object start expected!");
-                this.StoreReaderInfo(exception);
-                throw exception;
-            }
-
-            // deserialize
-            int originalDepth = this.parents.Count;
-            T obj;
-            try
-            {
-                var name = this.currentName;
-                this.MoveToNextToken(); // move to first child or object end
-                obj = deserializer.Deserialize(name, this);
-
-                // read object to end (in case the deserializer didn't)
-                this.ReadUntilObjectEnd(originalDepth);
-
-                // move to next sibling, if there is one
-                this.MoveToNextToken();
-            }
-            catch( Exception e )
-            {
-                e.StoreFileLine();
-                this.StoreReaderInfo(e);
-                throw;
-            }
-
-            return obj;
         }
 
-        #endregion
-
-        #region Public Members
-
         /// <summary>
-        /// Gets the current depth of the reader.
+        /// Stores debug information about the current state of the reader, into the specified <see cref="Exception"/>.
         /// </summary>
-        /// <value>The current depth of the reader.</value>
-        public int Depth
+        /// <param name="exception">The exception to store the state of the reader in.</param>
+        public virtual void StorePosition( Exception exception )
         {
-            get { return this.parents.Count; }
+            // NOTE: we don't throw any exceptions from here, in case this property is used to store as some exception's data
+            if( exception.NotNullReference() )
+            {
+                exception.Store("Token", this.Token);
+                exception.Store("Name", this.Name);
+
+                // prevent stack overflow (these properties throw exceptions)
+                if( this.Token != DataStoreToken.DataStoreStart
+                 || this.Token != DataStoreToken.DataStoreEnd )
+                {
+                    exception.Store("Depth", this.Depth);
+                    exception.Store("Path", this.Path);
+                }
+            }
         }
 
         #endregion

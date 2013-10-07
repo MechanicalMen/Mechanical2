@@ -1,17 +1,10 @@
 ﻿using System;
 using Mechanical.Conditions;
-using Mechanical.Core;
 using Mechanical.FileFormats;
 using Mechanical.IO;
 
 namespace Mechanical.DataStores.File
 {
-    //// NOTE: - escape invalid (non-english, ... etc.) characters
-    ////       - zip is case sensitive, but the host system may not be
-    ////       - System.IO.Compression.ZipArchiveEntry.Name.get:  Path.GetFileName(this.FullName)
-
-    //// TODO: method to explicitly check CSV file for correct raw path character casing
-
     //// NOTE: this data store does not search for files, instead it looks at
     ////       the declarations in the file entry CSV file.
 
@@ -37,13 +30,12 @@ namespace Mechanical.DataStores.File
         /// </summary>
         /// <param name="csvFilePath">The path of the CSV file to use.</param>
         public FileDataStoreReader( string csvFilePath )
+            : base()
         {
             try
             {
-                this.csvFilePath = csvFilePath;
-                this.baseDirectory = System.IO.Path.GetFullPath(System.IO.Path.GetDirectoryName(csvFilePath));
-
-                this.Initialize();
+                this.csvFilePath = System.IO.Path.GetFullPath(csvFilePath);
+                this.baseDirectory = System.IO.Path.GetDirectoryName(this.csvFilePath);
             }
             catch( Exception ex )
             {
@@ -57,36 +49,36 @@ namespace Mechanical.DataStores.File
         #region Protected Methods
 
         /// <summary>
-        /// Gets all file data store entries. Children are placed after their parents, in the correct order.
+        /// Loads the file data store entries. Children are placed after their parents, in the correct order.
         /// </summary>
         /// <returns>The file data store entries found.</returns>
-        protected override FileDataStoreEntry[] GetAllEntries()
+        protected override FileDataStoreEntryList LoadEntries()
         {
             using( var sr = new System.IO.StreamReader(this.csvFilePath) )
             using( var reader = new CsvReader(sr, CsvFormat.International) )
-            {
-                return this.LoadEntries(reader);
-            }
+                return FileDataStoreEntryList.LoadFrom(reader);
         }
 
         /// <summary>
         /// Opens the specified file for reading.
         /// </summary>
-        /// <param name="rawPath">The file path.</param>
+        /// <param name="entries">The entries of the file data store.</param>
+        /// <param name="entry">The file data store entry to open for reading.</param>
         /// <returns>The <see cref="ITextReader"/> representing the file contents.</returns>
-        protected override ITextReader OpenTextFile( string rawPath )
+        protected override ITextReader OpenTextFile( FileDataStoreEntryList entries, FileDataStoreEntry entry )
         {
-            string path = null;
+            string absolutePath = null;
             try
             {
-                path = System.IO.Path.Combine(this.baseDirectory, rawPath);
-                var sr = new System.IO.StreamReader(path);
+                var relativePath = entries.BuildFilePath(entry, System.IO.Path.DirectorySeparatorChar);
+                absolutePath = System.IO.Path.Combine(this.baseDirectory, relativePath);
+                var sr = new System.IO.StreamReader(absolutePath);
                 return IOWrapper.Wrap(sr);
             }
             catch( Exception ex )
             {
-                ex.Store("rawPath", rawPath);
-                ex.Store("path", path);
+                ex.Store("entry", entry);
+                ex.Store("absolutePath", absolutePath);
                 throw;
             }
         }
@@ -94,39 +86,43 @@ namespace Mechanical.DataStores.File
         /// <summary>
         /// Opens the specified file for reading.
         /// </summary>
-        /// <param name="rawPath">The file path.</param>
+        /// <param name="entries">The entries of the file data store.</param>
+        /// <param name="entry">The file data store entry to open for reading.</param>
         /// <returns>The <see cref="IBinaryReader"/> representing the file contents.</returns>
-        protected override IBinaryReader OpenBinaryFile( string rawPath )
+        protected override IBinaryReader OpenBinaryFile( FileDataStoreEntryList entries, FileDataStoreEntry entry )
         {
-            string path = null;
+            string absolutePath = null;
             try
             {
-                path = System.IO.Path.Combine(this.baseDirectory, rawPath);
-                var stream = System.IO.File.OpenRead(path);
+                var relativePath = entries.BuildFilePath(entry, System.IO.Path.DirectorySeparatorChar);
+                absolutePath = System.IO.Path.Combine(this.baseDirectory, relativePath);
+                var stream = System.IO.File.OpenRead(absolutePath);
                 return IOWrapper.ToBinaryReader(stream);
             }
             catch( Exception ex )
             {
-                ex.Store("rawPath", rawPath);
-                ex.Store("path", path);
+                ex.Store("entry", entry);
+                ex.Store("absolutePath", absolutePath);
                 throw;
             }
         }
 
         /// <summary>
-        /// Invoked after the value has been read. Used to release resources.
+        /// Releases any resources held by an open reader.
         /// </summary>
-        /// <param name="textReader">The <see cref="ITextReader"/> used; or <c>null</c>.</param>
-        /// <param name="binaryReader">The <see cref="IBinaryReader"/> used; or <c>null</c>.</param>
-        protected override void OnValueRead( ITextReader textReader, IBinaryReader binaryReader )
+        /// <param name="reader">The reader of the value.</param>
+        protected override void CloseReader( IBinaryReader reader )
         {
-            base.OnValueRead(textReader, binaryReader);
+            ((IDisposable)reader).Dispose();
+        }
 
-            if( textReader.NotNullReference() )
-                ((IDisposable)textReader).Dispose();
-
-            if( binaryReader.NotNullReference() )
-                ((IDisposable)binaryReader).Dispose();
+        /// <summary>
+        /// Releases any resources held by an open reader.
+        /// </summary>
+        /// <param name="reader">The reader of the value.</param>
+        protected override void CloseReader( ITextReader reader )
+        {
+            ((IDisposable)reader).Dispose();
         }
 
         #endregion

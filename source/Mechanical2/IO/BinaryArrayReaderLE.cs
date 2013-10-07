@@ -99,7 +99,15 @@ namespace Mechanical.IO
 
         #endregion
 
-        #region Public Properties
+        #region Public Members
+
+        /// <summary>
+        /// Assigns an empty byte array to the reader.
+        /// </summary>
+        public void Clear()
+        {
+            this.Bytes = default(ArraySegment<byte>);
+        }
 
         /// <summary>
         /// Gets or sets the byte array to read from.
@@ -113,7 +121,8 @@ namespace Mechanical.IO
             }
             set
             {
-                Ensure.That(value.Array).NotNull();
+                if( value.Array.NullReference() )
+                    value = new ArraySegment<byte>(EmptyBytes, 0, 0);
 
                 if( !object.ReferenceEquals(this.arraySegment.Array, value.Array)
                  || this.arraySegment.Offset != value.Offset

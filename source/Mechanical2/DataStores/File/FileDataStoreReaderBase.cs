@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Mechanical.Collections;
 using Mechanical.Conditions;
 using Mechanical.Core;
@@ -8,13 +7,13 @@ using Mechanical.IO;
 namespace Mechanical.DataStores.File
 {
     /// <summary>
-    /// A base class for file (or archive) based data stores.
+    /// A base class for file (or archive) based data store readers.
     /// </summary>
     public abstract class FileDataStoreReaderBase : DataStoreReaderBase.Disposable
     {
         #region Private Fields
 
-        private FileDataStoreEntry[] entries = null;
+        private FileDataStoreEntryList entries = null;
         private int currentEntryAt = -1;
         private int nextEntryAt = -1;
 
@@ -60,73 +59,45 @@ namespace Mechanical.DataStores.File
         #region Protected Abstract Methods
 
         /// <summary>
-        /// Gets all file data store entries. Children are placed after their parents, in the correct order.
+        /// Loads the file data store entries. Children are placed after their parents, in the correct order.
         /// </summary>
         /// <returns>The file data store entries found.</returns>
-        protected abstract FileDataStoreEntry[] GetAllEntries();
+        protected abstract FileDataStoreEntryList LoadEntries();
 
         /// <summary>
         /// Opens the specified file for reading.
         /// </summary>
-        /// <param name="rawPath">The file path.</param>
+        /// <param name="entries">The entries of the file data store.</param>
+        /// <param name="entry">The file data store entry to open for reading.</param>
         /// <returns>The <see cref="ITextReader"/> representing the file contents.</returns>
-        protected abstract ITextReader OpenTextFile( string rawPath );
+        protected abstract ITextReader OpenTextFile( FileDataStoreEntryList entries, FileDataStoreEntry entry );
 
         /// <summary>
         /// Opens the specified file for reading.
         /// </summary>
-        /// <param name="rawPath">The file path.</param>
+        /// <param name="entries">The entries of the file data store.</param>
+        /// <param name="entry">The file data store entry to open for reading.</param>
         /// <returns>The <see cref="IBinaryReader"/> representing the file contents.</returns>
-        protected abstract IBinaryReader OpenBinaryFile( string rawPath );
+        protected abstract IBinaryReader OpenBinaryFile( FileDataStoreEntryList entries, FileDataStoreEntry entry );
 
         #endregion
 
         #region Protected Methods
 
         /// <summary>
-        /// Initializes the reader.
+        /// Reads the next name and token.
         /// </summary>
-        protected new void Initialize()
-        {
-            try
-            {
-                this.entries = this.GetAllEntries();
-                this.currentEntryAt = -1;
-                this.nextEntryAt = this.entries.NullOrEmpty() ? -1 : 0;
-
-                base.Initialize();
-            }
-            catch( Exception e )
-            {
-                e.StoreFileLine();
-                this.StoreReaderInfo(e);
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Loads file data store entries from a CSV reader.
-        /// </summary>
-        /// <param name="reader">The CSV reader to use.</param>
-        /// <returns>The file data store entries found.</returns>
-        protected FileDataStoreEntry[] LoadEntries( Mechanical.FileFormats.CsvReader reader )
-        {
-            reader.Read(); // skip headers
-
-            var list = new List<FileDataStoreEntry>();
-            while( reader.Read() )
-                list.Add(FileDataStoreEntry.FromCsvLine(reader));
-
-            return list.ToArray();
-        }
-
-        /// <summary>
-        /// Moves the reader to the next <see cref="DataStoreToken"/>.
-        /// </summary>
-        /// <param name="name">The name of the data store node found; or <c>null</c>.</param>
+        /// <param name="name">The name of the data store node found. Ignored for ObjectEnd, DataStoreEnd tokens.</param>
         /// <returns>The <see cref="DataStoreToken"/> found.</returns>
         protected sealed override DataStoreToken ReadToken( out string name )
         {
+            if( this.Token == DataStoreToken.DataStoreStart )
+            {
+                this.entries = this.LoadEntries();
+                this.currentEntryAt = -1;
+                this.nextEntryAt = this.entries.NullOrEmpty() ? -1 : 0;
+            }
+
             if( this.currentEntryAt == -1
              && this.nextEntryAt == -1 )
             {
@@ -173,12 +144,12 @@ namespace Mechanical.DataStores.File
                     //  dir1/dir2/b
                     this.currentEntryAt = this.nextEntryAt;
                     ++this.nextEntryAt;
-                    if( this.nextEntryAt == this.entries.Length )
+                    if( this.nextEntryAt == this.entries.Count )
                         this.nextEntryAt = -1;
 
                     var currEntry = this.entries[this.currentEntryAt];
                     name = DataStore.GetNodeName(currEntry.DataStorePath);
-                    result = currEntry.IsFile ? DataStoreToken.Value : DataStoreToken.ObjectStart;
+                    result = currEntry.Token;
                 }
                 else
                 {
@@ -197,64 +168,90 @@ namespace Mechanical.DataStores.File
         }
 
         /// <summary>
-        /// Reads the data store value the reader is currently at.
+        /// Returns the reader of the value.
+        /// If possible, a new reader should not be created.
         /// </summary>
-        /// <param name="textReader">The <see cref="ITextReader"/> to use; or <c>null</c>.</param>
-        /// <param name="binaryReader">The <see cref="IBinaryReader"/> to use; or <c>null</c>.</param>
-        protected sealed override void ReadValue( out ITextReader textReader, out IBinaryReader binaryReader )
+        /// <returns>The reader of the value.</returns>
+        protected sealed override IBinaryReader OpenBinaryReader()
         {
             var currEntry = this.entries[this.currentEntryAt];
-            if( currEntry.IsBinary )
-            {
-                textReader = null;
-                binaryReader = this.OpenBinaryFile(currEntry.RawPath);
-            }
-            else
-            {
-                textReader = this.OpenTextFile(currEntry.RawPath);
-                binaryReader = null;
-            }
+            return this.OpenBinaryFile(this.entries, currEntry);
         }
 
         /// <summary>
-        /// Begins reading the data store object the reader is currently at.
+        /// Returns the reader of the value.
+        /// If possible, a new reader should not be created.
         /// </summary>
-        protected sealed override void ReadObjectStart()
+        /// <returns>The reader of the value.</returns>
+        protected sealed override ITextReader OpenTextReader()
         {
+            var currEntry = this.entries[this.currentEntryAt];
+            return this.OpenTextFile(this.entries, currEntry);
         }
 
         /// <summary>
-        /// Ends reading the data store object the reader is currently at.
+        /// Stores debug information about the current state of the reader, into the specified <see cref="Exception"/>.
         /// </summary>
-        protected sealed override void ReadObjectEnd()
+        /// <param name="exception">The exception to store the state of the reader in.</param>
+        public override void StorePosition( Exception exception )
         {
-        }
+            base.StorePosition(exception);
 
-        /// <summary>
-        /// Stores additional information about the state of the reader, on exceptions being thrown.
-        /// </summary>
-        /// <typeparam name="TException">The type of the exception being thrown.</typeparam>
-        /// <param name="exception">The exception being thrown.</param>
-        protected override void StoreReaderInfo<TException>( TException exception )
-        {
-            base.StoreReaderInfo<TException>(exception);
-
-            exception.Store("CurrentEntryAt", this.currentEntryAt);
-            exception.Store("NextEntryAt", this.currentEntryAt);
-            if( this.entries.NotNullReference() )
+            if( exception.NotNullReference() )
             {
-                if( 0 <= this.currentEntryAt && this.currentEntryAt < this.entries.Length )
+                exception.Store("CurrentEntryAt", this.currentEntryAt);
+                exception.Store("NextEntryAt", this.currentEntryAt);
+                if( this.entries.NotNullReference() )
                 {
-                    var entry = this.entries[this.currentEntryAt];
-                    exception.Store("CurrentRawPath", entry.RawPath);
-                    exception.Store("CurrentDataStorePath", entry.DataStorePath);
+                    if( 0 <= this.currentEntryAt && this.currentEntryAt < this.entries.Count )
+                    {
+                        var entry = this.entries[this.currentEntryAt];
+                        exception.Store("CurrentEntry", entry);
+                    }
+
+                    if( 0 <= this.nextEntryAt && this.nextEntryAt < this.entries.Count )
+                    {
+                        var entry = this.entries[this.nextEntryAt];
+                        exception.Store("NextEntry", entry);
+                    }
                 }
+            }
+        }
 
-                if( 0 <= this.nextEntryAt && this.nextEntryAt < this.entries.Length )
+        #endregion
+
+        #region Public Properties
+
+        /// <summary>
+        /// Gets the name of the file (or directory).
+        /// </summary>
+        /// <value>The name of the file (or directory).</value>
+        public string FileName
+        {
+            get
+            {
+                try
                 {
-                    var entry = this.entries[this.nextEntryAt];
-                    exception.Store("NextRawPath", entry.RawPath);
-                    exception.Store("NextDataStorePath", entry.DataStorePath);
+                    if( this.IsDisposed )
+                        throw new ObjectDisposedException(null).StoreFileLine();
+
+                    var token = this.Token;
+                    if( token == DataStoreToken.DataStoreStart
+                     || token == DataStoreToken.DataStoreEnd
+                     || token == DataStoreToken.ObjectEnd )
+                        throw new InvalidOperationException("Invalid token!").StoreFileLine();
+
+                    var currEntry = this.entries[this.currentEntryAt];
+                    if( currEntry.FileName.NullOrEmpty() )
+                        return this.Name;
+                    else
+                        return currEntry.FileName;
+                }
+                catch( Exception ex )
+                {
+                    ex.StoreFileLine();
+                    this.StorePosition(ex);
+                    throw;
                 }
             }
         }

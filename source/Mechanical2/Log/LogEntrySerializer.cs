@@ -64,7 +64,8 @@ namespace Mechanical.Log
         /// <returns>The new <see cref="LogEntrySerializer"/> instance created.</returns>
         public static LogEntrySerializer ToXmlStream( Stream xmlStream )
         {
-            var writer = new XmlDataStoreWriter(xmlStream, writeRootObject: "LogEntries");
+            var writer = new XmlDataStoreWriter(xmlStream);
+            writer.WriteObjectStart("LogEntries");
             return new LogEntrySerializer(writer);
         }
 
@@ -85,6 +86,7 @@ namespace Mechanical.Log
 
                 if( this.writer.NotNullReference() )
                 {
+                    this.writer.WriteObjectEnd();
                     this.writer.Dispose();
                     this.writer = null;
                 }
@@ -126,10 +128,11 @@ namespace Mechanical.Log
             var list = new List<LogEntry>();
             reader.Read(
                 "LogEntries",
-                r =>
+                () =>
                 {
-                    while( r.Token != DataStoreToken.ObjectEnd )
-                        list.Add(r.Read(LogEntry.Serializer.Default));
+                    while( reader.Read()
+                        && reader.Token == DataStoreToken.ObjectStart )
+                        list.Add(reader.Deserialize(LogEntry.Serializer.Default));
                 });
             return list;
         }

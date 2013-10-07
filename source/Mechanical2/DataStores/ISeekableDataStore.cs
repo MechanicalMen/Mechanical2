@@ -14,18 +14,12 @@ namespace Mechanical.DataStores
 
         /// <summary>
         /// Seeks the specified data store path.
-        /// Data store readers position themselves before the specified node, so that the next Read call can process it; or the data store end, if the path is not found.
-        /// Data store writers position themselves after the specified node, so that the contents of the next Write call are placed after it; or throw an exception, if the path is not found.
+        /// Data store readers position themselves at the specified node, so no further reading is necessary for deserialization.
+        /// Data store writers can behave in one of two ways: if the name from the next Write call is the same as the one specified,
+        /// the data store node gets overwritten, otherwise it gets a new sibling inserted right after it.
+        /// Both readers and writers throw an exception, if the path does not exist.
         /// </summary>
-        /// <param name="path">The data store path to seek.</param>
-        void Seek( string path );
-
-        // all paths absolute?!
-        // seeking into the middle of an object?!
-
-        // files.csv:
-        //  - rawName
-        //  - alias
-        //  - isBinary
+        /// <param name="absolutePath">The absolute data store path to seek.</param>
+        void Seek( string absolutePath );
     }
 }

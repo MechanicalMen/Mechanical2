@@ -11,9 +11,8 @@ namespace Mechanical.DataStores
         /// <summary>
         /// Deserializes a data store object.
         /// </summary>
-        /// <param name="name">The name of the serialized object.</param>
         /// <param name="reader">The data store reader to use.</param>
         /// <returns>The deserialized object.</returns>
-        T Deserialize( string name, IDataStoreReader reader );
+        T Deserialize( IDataStoreReader reader );
     }
 }

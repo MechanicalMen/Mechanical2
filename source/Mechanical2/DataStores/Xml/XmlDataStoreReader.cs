@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Xml;
 using Mechanical.Conditions;
 using Mechanical.Core;
+using Mechanical.IO;
 
 namespace Mechanical.DataStores.Xml
 {
@@ -19,31 +20,20 @@ namespace Mechanical.DataStores.Xml
 
         private XmlReader xmlReader;
         private Mechanical.IO.StringReader textReader;
+        private string currentValue;
+        private bool needToMoveForNextToken;
 
         #endregion
 
         #region Constructors
 
         private XmlDataStoreReader( XmlReader xmlReader )
+            : base()
         {
             Ensure.That(xmlReader).NotNull();
 
             this.xmlReader = xmlReader;
             this.textReader = new IO.StringReader();
-
-            // jump to root
-            if( !this.MoveToNextStartElement() )
-                throw this.CreateUnexpectedEndException();
-
-            // verify root
-            if( !string.Equals(this.xmlReader.Name, XmlDataStoreWriter.RootName, StringComparison.Ordinal) )
-                throw this.CreateInvalidRootException();
-
-            // jump past root
-            if( !this.MoveToNextStartOrEndElement() )
-                throw this.CreateUnexpectedEndException();
-
-            this.Initialize();
         }
 
         /// <summary>
@@ -67,11 +57,20 @@ namespace Mechanical.DataStores.Xml
         /// <summary>
         /// Initializes a new instance of the <see cref="XmlDataStoreReader"/> class.
         /// </summary>
+        /// <param name="textReader">The <see cref="ITextReader"/> to take ownership of.</param>
+        public XmlDataStoreReader( ITextReader textReader )
+            : this(IOWrapper.Wrap(textReader))
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="XmlDataStoreReader"/> class.
+        /// </summary>
         /// <param name="xml">The xml content to parse.</param>
         /// <returns>A new instance of the <see cref="XmlDataStoreReader"/> class.</returns>
         public static XmlDataStoreReader FromXml( string xml )
         {
-            return new XmlDataStoreReader(new StringReader(xml));
+            return new XmlDataStoreReader(new System.IO.StringReader(xml));
         }
 
         #endregion
@@ -98,9 +97,8 @@ namespace Mechanical.DataStores.Xml
 
             //// shared cleanup logic
             //// (unmanaged resources)
-
+            this.currentValue = null;
             this.textReader = null;
-
 
             base.OnDispose(disposing);
         }
@@ -166,17 +164,38 @@ namespace Mechanical.DataStores.Xml
 
         #endregion
 
-        #region Protected Methods
+        #region DataStoreReaderBase
 
         /// <summary>
-        /// Moves the reader to the next <see cref="DataStoreToken"/>.
+        /// Reads the next name and token.
         /// </summary>
-        /// <param name="name">The name of the data store node found; or <c>null</c>.</param>
+        /// <param name="name">The name of the data store node found. Ignored for ObjectEnd, DataStoreEnd tokens.</param>
         /// <returns>The <see cref="DataStoreToken"/> found.</returns>
         protected override DataStoreToken ReadToken( out string name )
         {
+            if( this.Token == DataStoreToken.DataStoreStart )
+            {
+                // jump to root
+                if( !this.MoveToNextStartElement() )
+                    throw this.CreateUnexpectedEndException();
+
+                // verify root
+                if( !string.Equals(this.xmlReader.Name, XmlDataStoreWriter.RootName, StringComparison.Ordinal) )
+                    throw this.CreateInvalidRootException();
+
+                this.needToMoveForNextToken = true;
+            }
+
+            // file end reached?
             if( this.xmlReader.EOF )
                 throw this.CreateUnexpectedEndException(); // this shouldn't happen, because the root node is always present
+
+            // move to next element
+            if( this.needToMoveForNextToken )
+            {
+                if( !this.MoveToNextStartOrEndElement() )
+                    throw this.CreateUnexpectedEndException(); // this shouldn't happen, because the root node is always present
+            }
 
             name = this.xmlReader.Name;
 
@@ -186,8 +205,9 @@ namespace Mechanical.DataStores.Xml
             case XmlNodeType.Element:
                 if( this.xmlReader.IsEmptyElement )
                 {
-                    result = DataStoreToken.Value;
-                    //// not moving away: empty elements have no EndElement
+                    result = DataStoreToken.TextValue;
+                    this.currentValue = string.Empty;
+                    this.needToMoveForNextToken = true; // not moving away: empty elements have no EndElement
                 }
                 else
                 {
@@ -195,9 +215,17 @@ namespace Mechanical.DataStores.Xml
                         throw this.CreateUnexpectedEndException();
 
                     if( this.xmlReader.NodeType == XmlNodeType.Text )
-                        result = DataStoreToken.Value;
+                    {
+                        result = DataStoreToken.TextValue;
+                        this.currentValue = this.xmlReader.Value;
+                        this.MoveToNextStartOrEndElement(); // moves to EndElement
+                        this.needToMoveForNextToken = true;
+                    }
                     else
+                    {
                         result = DataStoreToken.ObjectStart;
+                        this.needToMoveForNextToken = false;
+                    }
                 }
                 break;
 
@@ -207,72 +235,70 @@ namespace Mechanical.DataStores.Xml
                     if( !string.Equals(this.xmlReader.Name, XmlDataStoreWriter.RootName, StringComparison.Ordinal) )
                         throw this.CreateInvalidRootException();
 
-                    result = DataStoreToken.DataStoreEnd; // TODO: do we need this? doeas it get triggered properly?
+                    result = DataStoreToken.DataStoreEnd;
+                    //// no need to set 'needToMoveForNextToken' anymore
                 }
                 else
                 {
                     result = DataStoreToken.ObjectEnd;
-                    this.MoveToNextStartOrEndElement();
+                    this.needToMoveForNextToken = true;
                 }
                 break;
 
             default:
-                {
-                    var exception = new Exception("Invalid xml reader state!");
-                    this.StoreReaderInfo(exception);
-                    exception.Store("XmlNodeType", this.xmlReader.NodeType);
-                    throw exception;
-                }
+                throw new Exception("Invalid xml reader state!").Store("XmlNodeType", this.xmlReader.NodeType);
             }
 
             return result;
         }
 
         /// <summary>
-        /// Reads the data store value the reader is currently at.
+        /// Returns the reader of the value.
+        /// If possible, a new reader should not be created.
         /// </summary>
-        /// <param name="textReader">The <see cref="Mechanical.IO.ITextReader"/> to use; or <c>null</c>.</param>
-        /// <param name="binaryReader">The <see cref="Mechanical.IO.IBinaryReader"/> to use; or <c>null</c>.</param>
-        protected override void ReadValue( out Mechanical.IO.ITextReader textReader, out Mechanical.IO.IBinaryReader binaryReader )
+        /// <returns>The reader of the value.</returns>
+        protected override IBinaryReader OpenBinaryReader()
         {
-            if( this.xmlReader.NodeType == XmlNodeType.Text )
-            {
-                this.textReader.Set(this.xmlReader.Value);
-                this.MoveToNextStartOrEndElement(); // moves to EndElement
-                this.MoveToNextStartOrEndElement(); // next token
-            }
-            else
-            {
-                this.textReader.Set(Substring.Empty);
-                this.MoveToNextStartOrEndElement(); // moves to next token (currently at Element; empty elements have no EndElement)
-            }
-
-            textReader = this.textReader;
-            binaryReader = null;
+            throw new InvalidOperationException().StoreFileLine();
         }
 
         /// <summary>
-        /// Begins reading the data store object the reader is currently at.
+        /// Returns the reader of the value.
+        /// If possible, a new reader should not be created.
         /// </summary>
-        protected override void ReadObjectStart()
+        /// <returns>The reader of the value.</returns>
+        protected override ITextReader OpenTextReader()
         {
+            this.textReader.Set(this.currentValue);
+            return this.textReader;
         }
 
         /// <summary>
-        /// Ends reading the data store object the reader is currently at.
+        /// Releases any resources held by an open reader.
         /// </summary>
-        protected override void ReadObjectEnd()
+        /// <param name="reader">The reader of the value.</param>
+        protected override void CloseReader( IBinaryReader reader )
         {
+            throw new InvalidOperationException().StoreFileLine();
         }
 
         /// <summary>
-        /// Stores additional information about the state of the reader, on exceptions being thrown.
+        /// Releases any resources held by an open reader.
         /// </summary>
-        /// <typeparam name="TException">The type of the exception being thrown.</typeparam>
-        /// <param name="exception">The exception being thrown.</param>
-        protected override void StoreReaderInfo<TException>( TException exception )
+        /// <param name="reader">The reader of the value.</param>
+        protected override void CloseReader( ITextReader reader )
         {
-            base.StoreReaderInfo<TException>(exception);
+            this.currentValue = null;
+            this.textReader.Set(Substring.Empty); // only necessary if reader was opened, but never used. Unlikely, but we don't know for sure.
+        }
+
+        /// <summary>
+        /// Stores debug information about the current state of the reader, into the specified <see cref="Exception"/>.
+        /// </summary>
+        /// <param name="exception">The exception to store the state of the reader in.</param>
+        public override void StorePosition( Exception exception )
+        {
+            base.StorePosition(exception);
 
             var lineInfo = this.xmlReader as IXmlLineInfo;
             if( lineInfo.NotNullReference()

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -32,6 +33,19 @@ namespace Mechanical.DataStores
 
         #region IsValidName
 
+        private static readonly char[] ValidFirstCharacters;
+
+        static DataStore()
+        {
+            var chars = new List<char>();
+            for( char ch = 'a'; ch <= 'z'; ++ch )
+                chars.Add(ch);
+            for( char ch = 'A'; ch <= 'Z'; ++ch )
+                chars.Add(ch);
+            chars.Add('_');
+            ValidFirstCharacters = chars.ToArray();
+        }
+
         /// <summary>
         /// Determines whether the specified string is a valid data store name.
         /// </summary>
@@ -45,12 +59,12 @@ namespace Mechanical.DataStores
             if( name.Length > 255 ) // max. NTFS file name length
                 return false;
 
-            if( !ValidFirstCharacter(name[0]) )
+            if( !IsValidFirstCharacter(name[0]) )
                 return false;
 
             for( int i = 1; i < name.Length; ++i )
             {
-                if( !ValidMiddleCharacter(name[i]) )
+                if( !IsValidMiddleCharacter(name[i]) )
                     return false;
             }
 
@@ -60,7 +74,7 @@ namespace Mechanical.DataStores
 #if !MECHANICAL_NET4CP
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-        private static bool ValidFirstCharacter( char ch )
+        private static bool IsValidFirstCharacter( char ch )
         {
             return ('a' <= ch && ch <= 'z')
                 || ('A' <= ch && ch <= 'Z')
@@ -70,9 +84,9 @@ namespace Mechanical.DataStores
 #if !MECHANICAL_NET4CP
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-        private static bool ValidMiddleCharacter( char ch )
+        private static bool IsValidMiddleCharacter( char ch )
         {
-            return ValidFirstCharacter(ch)
+            return IsValidFirstCharacter(ch)
                 || ('0' <= ch && ch <= '9');
         }
 
@@ -94,7 +108,7 @@ namespace Mechanical.DataStores
 
         #endregion
 
-        #region Escape, Unescape
+        #region Escape, Unescape, GenerateName
 
         private const char EscapeCharacter = '_';
 
@@ -138,7 +152,7 @@ namespace Mechanical.DataStores
                 ch = str[i];
                 if( i == 0 )
                 {
-                    if( !ValidFirstCharacter(ch) )
+                    if( !IsValidFirstCharacter(ch) )
                     {
                         InitializeEscape(ref sb, str, i);
                         AppendEscaped(sb, ch);
@@ -155,7 +169,7 @@ namespace Mechanical.DataStores
                 }
                 else
                 {
-                    if( !ValidMiddleCharacter(ch) )
+                    if( !IsValidMiddleCharacter(ch) )
                     {
                         InitializeEscape(ref sb, str, i);
                         AppendEscaped(sb, ch);
@@ -232,6 +246,29 @@ namespace Mechanical.DataStores
                 return str;
         }
 
+        private static readonly Random Rnd = new Random();
+
+        /// <summary>
+        /// Generates a data store name. The generated name may still not be valid
+        /// if it is added to a data store object, with a child of the same name.
+        /// </summary>
+        /// <param name="from">The string to generate the name from; or <c>null</c> to generate a GUID based name.</param>
+        /// <returns>The data store name generated.</returns>
+        public static string GenerateName( string from = null )
+        {
+            if( !from.NullOrEmpty() )
+            {
+                var escaped = Escape(from);
+                if( DataStore.IsValidName(escaped) )
+                    return escaped;
+            }
+
+            var guid = Guid.NewGuid().ToString("N");
+            if( !IsValidFirstCharacter(guid[0]) )
+                guid = ValidFirstCharacters[Rnd.Next(ValidFirstCharacters.Length)] + guid.Substring(startIndex: 1);
+            return guid;
+        }
+
         #endregion
 
         #region DefaultEncoding, DefaultNewLine, PathSeparator, Comparer
@@ -255,6 +292,10 @@ namespace Mechanical.DataStores
         /// The comparer used for data store names and paths.
         /// </summary>
         public static readonly StringComparer Comparer = StringComparer.Ordinal;
+
+        //// NOTE: Comparer needs to be able to handle invalid data store names and paths!
+        //// NOTE: carefully review code, if Comparer sensitivity changes, since some code
+        ////       uses it for strict file-data store name, file-file comparisons.
 
         #endregion
 
@@ -385,7 +426,7 @@ namespace Mechanical.DataStores
                     return path.Substring(startIndex: 0, length: index);
             }
 
-            return path;
+            return string.Empty;
         }
 
         #endregion
@@ -399,7 +440,7 @@ namespace Mechanical.DataStores
         //// TODO: IDataStoreNode & Co. --> default [de]serialization mappings  (instead of reader.ReadNode & Co.)
         //// TODO: test datastores for attempting to read or write multiple roots
 
-        //// TODO: refactor IDataStoreReader, DataStoreReaderBase, into a "token reader", and perhaps extension methods to replace them (introduce DataStoreStart token!)
-        //// TODO: optimize ensure.debug from datastore reading/writing extension methods (private static method + ConditionalAttribute + Inlining)
+        //// TODO: switch data store path methods to Substring
+        //// TODO: allow Comparer to work with substrings
     }
 }

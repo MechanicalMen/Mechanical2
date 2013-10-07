@@ -8,9 +8,20 @@ namespace Mechanical.DataStores
     public enum DataStoreToken
     {
         /// <summary>
-        /// The reader is at a value.
+        /// The reader is at the start of the data store. Nothing has been read yet.
+        /// The next reading attempt determines whether the data store is empty or not.
         /// </summary>
-        Value,
+        DataStoreStart,
+
+        /// <summary>
+        /// The reader is at a binary value.
+        /// </summary>
+        BinaryValue,
+
+        /// <summary>
+        /// The reader is at a text value.
+        /// </summary>
+        TextValue,
 
         /// <summary>
         /// The reader is at the start of an object.

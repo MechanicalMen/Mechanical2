@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Mechanical.Conditions;
 using Mechanical.Core;
 using Mechanical.DataStores.Node;
+using Mechanical.IO;
 using Mechanical.MagicBag;
 
 namespace Mechanical.DataStores
@@ -12,22 +15,24 @@ namespace Mechanical.DataStores
     public interface IDataStoreWriter
     {
         /// <summary>
-        /// Writes an object to the data store.
+        /// Writes a BinaryValue or TextValue token. The writer implementation chooses which one.
+        /// There is exactly one - binary or text - reader for each value.
         /// </summary>
-        /// <typeparam name="T">The type of object to write.</typeparam>
-        /// <param name="name">The name of the serialized object.</param>
-        /// <param name="obj">The object to serialize.</param>
-        /// <param name="serializer">The serializer to use.</param>
-        void Write<T>( string name, T obj, IDataStoreValueSerializer<T> serializer );
+        /// <param name="name">The name of the data store value.</param>
+        /// <param name="binaryWriter">The <see cref="IBinaryWriter"/> that can be used to write the value; or <c>null</c>.</param>
+        /// <param name="textWriter">The <see cref="ITextWriter"/> that can be used to write the value; or <c>null</c>.</param>
+        void WriteValue( string name, out IBinaryWriter binaryWriter, out ITextWriter textWriter );
 
         /// <summary>
-        /// Writes an object to the data store.
+        /// Writes an ObjectStart token.
         /// </summary>
-        /// <typeparam name="T">The type of object to write.</typeparam>
-        /// <param name="name">The name of the serialized object.</param>
-        /// <param name="obj">The object to serialize.</param>
-        /// <param name="serializer">The serializer to use.</param>
-        void Write<T>( string name, T obj, IDataStoreObjectSerializer<T> serializer );
+        /// <param name="name">The name of the data store object.</param>
+        void WriteObjectStart( string name );
+
+        /// <summary>
+        /// Writes an ObjectEnd token.
+        /// </summary>
+        void WriteObjectEnd();
     }
 
     /// <content>
@@ -35,6 +40,74 @@ namespace Mechanical.DataStores
     /// </content>
     public static partial class DataStoresExtensions
     {
+        #region ThrowIfNull
+
+#if !MECHANICAL_NET4CP
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        [Conditional("DEBUG")]
+        private static void ThrowIfNull(
+            IDataStoreWriter writer,
+            [CallerFilePath] string filePath = "",
+            [CallerMemberName] string memberName = "",
+            [CallerLineNumber] int lineNumber = 0 )
+        {
+            if( writer.NullReference() )
+                throw new ArgumentNullException("writer").StoreFileLine(filePath, memberName, lineNumber);
+        }
+
+        #endregion
+
+        #region Write( name, obj, serializer )
+
+        /// <summary>
+        /// Writes an object to the data store.
+        /// </summary>
+        /// <typeparam name="T">The type of object to write.</typeparam>
+        /// <param name="writer">The <see cref="IDataStoreWriter"/> to use.</param>
+        /// <param name="name">The name of the serialized object.</param>
+        /// <param name="obj">The object to serialize.</param>
+        /// <param name="serializer">The serializer to use.</param>
+        public static void Write<T>( this IDataStoreWriter writer, string name, T obj, IDataStoreValueSerializer<T> serializer )
+        {
+            ThrowIfNull(writer);
+
+            if( serializer.NullReference() )
+                throw new ArgumentNullException("serializer").StoreFileLine();
+
+            IBinaryWriter binaryWriter;
+            ITextWriter textWriter;
+            writer.WriteValue(name, out binaryWriter, out textWriter);
+            if( binaryWriter.NotNullReference() )
+                serializer.Serialize(obj, binaryWriter);
+            else if( textWriter.NotNullReference() )
+                serializer.Serialize(obj, textWriter);
+            else
+                throw new Exception("Both data store value writers are null!").StoreFileLine();
+        }
+
+        /// <summary>
+        /// Writes an object to the data store.
+        /// </summary>
+        /// <typeparam name="T">The type of object to write.</typeparam>
+        /// <param name="writer">The <see cref="IDataStoreWriter"/> to use.</param>
+        /// <param name="name">The name of the serialized object.</param>
+        /// <param name="obj">The object to serialize.</param>
+        /// <param name="serializer">The serializer to use.</param>
+        public static void Write<T>( this IDataStoreWriter writer, string name, T obj, IDataStoreObjectSerializer<T> serializer )
+        {
+            ThrowIfNull(writer);
+
+            if( serializer.NullReference() )
+                throw new ArgumentNullException("serializer").StoreFileLine();
+
+            writer.WriteObjectStart(name);
+            serializer.Serialize(obj, writer);
+            writer.WriteObjectEnd();
+        }
+
+        #endregion
+
         #region WriteAsValue, WriteAsObject
 
         /// <summary>
@@ -47,13 +120,13 @@ namespace Mechanical.DataStores
         /// <param name="magicBag">The <see cref="IMagicBag"/> to use for serialization; or <c>null</c> for the default magic bag.</param>
         public static void WriteAsValue<T>( this IDataStoreWriter writer, string name, T obj, IMagicBag magicBag = null )
         {
-            Ensure.Debug(writer, w => w.NotNull());
+            ThrowIfNull(writer);
 
             if( magicBag.NullReference() )
                 magicBag = Mechanical.MagicBag.MagicBag.Default;
 
             var serializer = magicBag.Pull<IDataStoreValueSerializer<T>>();
-            writer.Write<T>(name, obj, serializer);
+            Write<T>(writer, name, obj, serializer);
         }
 
         /// <summary>
@@ -66,13 +139,13 @@ namespace Mechanical.DataStores
         /// <param name="magicBag">The <see cref="IMagicBag"/> to use for serialization; or <c>null</c> for the default magic bag.</param>
         public static void WriteAsObject<T>( this IDataStoreWriter writer, string name, T obj, IMagicBag magicBag = null )
         {
-            Ensure.Debug(writer, w => w.NotNull());
+            ThrowIfNull(writer);
 
             if( magicBag.NullReference() )
                 magicBag = Mechanical.MagicBag.MagicBag.Default;
 
             var serializer = magicBag.Pull<IDataStoreObjectSerializer<T>>();
-            writer.Write<T>(name, obj, serializer);
+            Write<T>(writer, name, obj, serializer);
         }
 
         #endregion
@@ -353,16 +426,14 @@ namespace Mechanical.DataStores
         /// <param name="name">The name of the serialized object.</param>
         /// <param name="obj">The object to serialize.</param>
         /// <param name="action">The delegate performing the actual serialization.</param>
-        public static void Write<T>( this IDataStoreWriter writer, string name, T obj, Action<T, IDataStoreWriter> action )
+        public static void Write<T>( this IDataStoreWriter writer, string name, T obj, Action<T> action )
         {
-            Ensure.Debug(writer, w => w.NotNull());
-
             if( action.NullReference() )
                 throw new ArgumentNullException("action").Store("name", name).Store("obj", obj);
 
             var serializer = DelegateSerialization<T>.Default;
             serializer.WriteDelegate = action;
-            writer.Write<T>(name, obj, serializer);
+            Write<T>(writer, name, obj, serializer);
         }
 
         private static readonly object Dummy = new object();
@@ -373,16 +444,14 @@ namespace Mechanical.DataStores
         /// <param name="writer">The <see cref="IDataStoreWriter"/> to use.</param>
         /// <param name="name">The name of the serialized object.</param>
         /// <param name="action">The delegate performing the actual serialization.</param>
-        public static void Write( this IDataStoreWriter writer, string name, Action<IDataStoreWriter> action )
+        public static void Write( this IDataStoreWriter writer, string name, Action action )
         {
-            Ensure.Debug(writer, w => w.NotNull());
-
             if( action.NullReference() )
                 throw new ArgumentNullException("action").Store("name", name);
 
             var serializer = DelegateSerialization<object>.Default;
-            serializer.WriteDelegate = (obj, w) => action(w);
-            writer.Write<object>(name, Dummy, serializer);
+            serializer.WriteDelegate = obj => action();
+            Write<object>(writer, name, Dummy, serializer);
         }
 
         #endregion

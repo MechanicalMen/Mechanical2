@@ -55,13 +55,6 @@ namespace Mechanical.Conditions
             return SearchResult.NotFound;
         }
 
-#if !DEBUG
-        private static string GenerateKey()
-        {
-            return "GUID_" + Guid.NewGuid().ToString("N");
-        }
-#endif
-
         private static TException Add<TException>( this TException e, string key, object value, bool forceNewKey = false )
             where TException : Exception
         {
@@ -73,7 +66,7 @@ namespace Mechanical.Conditions
 #else
             if( !DataStore.IsValidName(key) )
             {
-                var newKey = GenerateKey();
+                var newKey = DataStore.GenerateName();
                 Add(e, newKey + "_OriginalKey", key);
                 key = newKey;
             }

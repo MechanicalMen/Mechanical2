@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Mechanical.Conditions;
 using Mechanical.Core;
 using Mechanical.IO;
@@ -29,8 +30,6 @@ namespace Mechanical.DataStores.Node
         private readonly StringReader textReader = new StringReader();
         private readonly IDataStoreNode rootNode;
         private readonly List<NodeInfo> parents = new List<NodeInfo>();
-        private bool rootStartRead = false;
-        private bool rootEndRead = false;
         private IDataStoreNode currentNode;
 
         #endregion
@@ -42,9 +41,31 @@ namespace Mechanical.DataStores.Node
         /// </summary>
         /// <param name="rootNode">The node representing the data store root; or <c>null</c> for empty data stores.</param>
         public DataStoreNodeReader( IDataStoreNode rootNode )
+            : base()
         {
             this.rootNode = rootNode;
-            this.Initialize();
+        }
+
+        #endregion
+
+        #region Private Methods
+
+#if !MECHANICAL_NET4CP
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        private void PushObject()
+        {
+            var info = new NodeInfo((IDataStoreObject)this.currentNode);
+            this.parents.Add(info);
+        }
+
+#if !MECHANICAL_NET4CP
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        private void PopObject()
+        {
+            if( this.parents.Count != 0 )
+                this.parents.RemoveAt(this.parents.Count - 1);
         }
 
         #endregion
@@ -58,24 +79,26 @@ namespace Mechanical.DataStores.Node
         /// <returns>The <see cref="DataStoreToken"/> found.</returns>
         protected override DataStoreToken ReadToken( out string name )
         {
-            if( this.parents.Count == 0 )
+            if( this.Token == DataStoreToken.DataStoreStart )
             {
-                //// we are at root level
-
-                if( this.rootNode.NullReference()
-                 || this.rootEndRead )
+                if( this.rootNode.NullReference() )
                 {
                     this.currentNode = null;
                     name = null;
                     return DataStoreToken.DataStoreEnd;
                 }
-                else if( this.rootStartRead )
+                else
+                    this.currentNode = this.rootNode;
+            }
+            else
+            {
+                if( this.parents.Count == 0 )
                 {
-                    this.rootEndRead = true;
                     if( this.rootNode is IDataStoreObject )
                     {
                         this.currentNode = this.rootNode;
                         name = this.currentNode.Name;
+                        this.PopObject();
                         return DataStoreToken.ObjectEnd;
                     }
                     else
@@ -87,83 +110,81 @@ namespace Mechanical.DataStores.Node
                 }
                 else
                 {
-                    this.currentNode = this.rootNode;
-                    this.rootStartRead = true;
-                }
-            }
-            else
-            {
-                //// we may or may not be at root level
+                    //// not at root level
 
-                int infoAt = this.parents.Count - 1;
-                var info = this.parents[infoAt];
-                if( info.Index == info.Object.Nodes.Count )
-                {
-                    this.currentNode = info.Object;
-                    name = this.currentNode.Name;
-                    return DataStoreToken.ObjectEnd;
-                }
-                else
-                {
-                    this.currentNode = info.Object.Nodes[info.Index];
-                    ++info.Index;
-                    this.parents[infoAt] = info;
+                    int infoAt = this.parents.Count - 1;
+                    var info = this.parents[infoAt];
+                    if( info.Index == info.Object.Nodes.Count )
+                    {
+                        this.currentNode = info.Object;
+                        name = this.currentNode.Name;
+                        this.PopObject();
+                        return DataStoreToken.ObjectEnd;
+                    }
+                    else
+                    {
+                        this.currentNode = info.Object.Nodes[info.Index];
+                        ++info.Index;
+                        this.parents[infoAt] = info;
+                    }
                 }
             }
 
+            // proces current node
             name = this.currentNode.Name;
             if( this.currentNode is IDataStoreObject )
+            {
+                this.PushObject();
                 return DataStoreToken.ObjectStart;
-            else
-                return DataStoreToken.Value;
-        }
-
-        /// <summary>
-        /// Reads the data store value the reader is currently at.
-        /// </summary>
-        /// <param name="textReader">The <see cref="ITextReader"/> to use; or <c>null</c>.</param>
-        /// <param name="binaryReader">The <see cref="IBinaryReader"/> to use; or <c>null</c>.</param>
-        protected override void ReadValue( out ITextReader textReader, out IBinaryReader binaryReader )
-        {
-            var textValue = this.currentNode as IDataStoreTextValue;
-            if( textValue.NotNullReference() )
-            {
-                this.textReader.Set(textValue.Content);
-                textReader = this.textReader;
-                binaryReader = null;
             }
+            else if( this.currentNode is IDataStoreTextValue )
+                return DataStoreToken.TextValue;
+            else if( this.currentNode is IDataStoreBinaryValue )
+                return DataStoreToken.BinaryValue;
             else
-            {
-                var binaryValue = this.currentNode as IDataStoreBinaryValue;
-                if( binaryValue.NullReference() )
-                {
-                    var exception = new Exception("Invalid data store node!").Store("nodeType", this.currentNode.GetType());
-                    this.StoreReaderInfo(exception);
-                    throw exception;
-                }
-
-                this.binaryReader.Bytes = binaryValue.Content;
-                textReader = null;
-                binaryReader = this.binaryReader;
-            }
+                throw new Exception("Invalid data store node type!").Store("nodeType", this.currentNode.GetType());
         }
 
         /// <summary>
-        /// Begins reading the data store object the reader is currently at.
+        /// Returns the reader of the value.
+        /// If possible, a new reader should not be created.
         /// </summary>
-        protected override void ReadObjectStart()
+        /// <returns>The reader of the value.</returns>
+        protected override IBinaryReader OpenBinaryReader()
         {
-            var info = new NodeInfo((IDataStoreObject)this.currentNode);
-            this.parents.Add(info);
+            var binaryValue = (IDataStoreBinaryValue)this.currentNode;
+            this.binaryReader.Bytes = binaryValue.Content;
+            return this.binaryReader;
         }
 
         /// <summary>
-        /// Ends reading the data store object the reader is currently at.
+        /// Returns the reader of the value.
+        /// If possible, a new reader should not be created.
         /// </summary>
-        protected override void ReadObjectEnd()
+        /// <returns>The reader of the value.</returns>
+        protected override ITextReader OpenTextReader()
         {
-            if( this.parents.Count != 0 )
-                this.parents.RemoveAt(this.parents.Count - 1);
+            var textValue = (IDataStoreTextValue)this.currentNode;
+            this.textReader.Set(textValue.Content);
+            return this.textReader;
+        }
+
+        /// <summary>
+        /// Releases any resources held by an open reader.
+        /// </summary>
+        /// <param name="reader">The reader of the value.</param>
+        protected override void CloseReader( IBinaryReader reader )
+        {
+            this.binaryReader.Clear();
+        }
+
+        /// <summary>
+        /// Releases any resources held by an open reader.
+        /// </summary>
+        /// <param name="reader">The reader of the value.</param>
+        protected override void CloseReader( ITextReader reader )
+        {
+            this.textReader.Set(Substring.Empty); // only necessary if reader was opened, but never used. Unlikely, but we don't know for sure.
         }
 
         #endregion

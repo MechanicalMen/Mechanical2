@@ -202,10 +202,9 @@ namespace Mechanical.Log
             /// <summary>
             /// Deserializes a data store object.
             /// </summary>
-            /// <param name="name">The name of the serialized object.</param>
             /// <param name="reader">The data store reader to use.</param>
             /// <returns>The deserialized object.</returns>
-            public LogEntry Deserialize( string name, IDataStoreReader reader )
+            public LogEntry Deserialize( IDataStoreReader reader )
             {
                 if( reader.NullReference() )
                     throw new ArgumentNullException("reader").StoreFileLine();

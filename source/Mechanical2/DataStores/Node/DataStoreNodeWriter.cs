@@ -10,7 +10,7 @@ namespace Mechanical.DataStores.Node
     /// <summary>
     /// A data store writer, which writes to an <see cref="IDataStoreNode"/>.
     /// </summary>
-    public class DataStoreNodeWriter : DisposableObject, IDataStoreWriter
+    public class DataStoreNodeWriter : DataStoreWriterBase.Disposable
     {
         #region Private Fields
 
@@ -22,6 +22,7 @@ namespace Mechanical.DataStores.Node
         private BinaryStreamWriterLE binaryWriter;
         private StringWriter textWriter;
         private bool isBinary = true;
+        private string currentValueNodeName;
 
         #endregion
 
@@ -102,20 +103,15 @@ namespace Mechanical.DataStores.Node
 #if !MECHANICAL_NET4CP
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-        private void ThrowIfSecondRoot()
-        {
-            if( this.parents.Count == 0
-             && this.root.NotNullReference() )
-                throw new InvalidOperationException("Root node already written! (There can be only one)").StoreFileLine();
-        }
-
-#if !MECHANICAL_NET4CP
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         private void AddChild( IDataStoreNode node )
         {
             if( this.parents.Count == 0 )
-                this.root = node;
+            {
+                if( this.root.NotNullReference() )
+                    throw new InvalidOperationException("There can be at most one root node!").StoreFileLine();
+                else
+                    this.root = node;
+            }
             else
             {
                 var parent = this.parents[this.parents.Count - 1];
@@ -125,73 +121,109 @@ namespace Mechanical.DataStores.Node
 
         #endregion
 
-        #region IDataStoreWriter
+        #region DataStoreWriterBase
 
         /// <summary>
-        /// Writes an object to the data store.
+        /// Writes an ObjectStart, ObjectEnd, or a value.
         /// </summary>
-        /// <typeparam name="T">The type of object to write.</typeparam>
-        /// <param name="name">The name assigned to the serialized object.</param>
-        /// <param name="obj">The object to serialize.</param>
-        /// <param name="serializer">The serializer to use.</param>
-        public void Write<T>( string name, T obj, IDataStoreValueSerializer<T> serializer )
+        /// <param name="name">The data store name to use; or <c>null</c> for the ObjectEnd token.</param>
+        /// <param name="isObjectStart"><c>true</c> if an ObjectStart token is to be written, <c>false</c> for ObjectEnd, and <c>null</c> for a binary or text value.</param>
+        /// <returns>A value determining whether the value to be written is binary or not. <c>null</c> if an object was written.</returns>
+        protected override bool? Write( string name, bool? isObjectStart )
         {
-            this.ThrowIfDisposed();
-            this.ThrowIfSecondRoot();
-
-            if( serializer.NullReference() )
-                throw new ArgumentNullException("serializer").StoreFileLine();
-
-            IDataStoreValue value;
-            if( this.isBinary )
+            try
             {
-                if( this.memoryStream.NullReference() )
+                if( isObjectStart != false
+                 && !DataStore.IsValidName(name) )
+                    throw new ArgumentException("Invalid data store name!").StoreFileLine();
+
+                bool? isBinary;
+                if( isObjectStart.HasValue )
                 {
-                    this.memoryStream = new System.IO.MemoryStream();
-                    this.binaryWriter = new BinaryStreamWriterLE(this.memoryStream);
+                    if( isObjectStart.Value )
+                    {
+                        var node = new DataStoreObject(name);
+                        this.parents.Add(node);
+                    }
+                    else
+                    {
+                        var index = this.parents.Count - 1;
+                        var node = this.parents[index];
+                        this.parents.RemoveAt(index);
+                        this.AddChild(node);
+                    }
+
+                    isBinary = null;
+                }
+                else
+                {
+                    this.currentValueNodeName = name;
+                    isBinary = this.IsBinary;
                 }
 
-                serializer.Serialize(obj, this.binaryWriter);
-
-                value = new DataStoreBinaryValue(name, this.memoryStream.ToArray());
-                this.memoryStream.SetLength(0);
+                return isBinary;
             }
-            else
+            catch( Exception ex )
             {
-                if( this.textWriter.NullReference() )
-                    this.textWriter = new StringWriter();
-
-                serializer.Serialize(obj, this.textWriter);
-
-                value = new DataStoreTextValue(name, this.textWriter.ToString());
-                this.textWriter.Clear();
+                ex.StoreFileLine();
+                ex.Store("name", name);
+                ex.Store("isObjectStart", isObjectStart);
+                throw;
             }
-
-            this.AddChild(value);
         }
 
         /// <summary>
-        /// Writes an object to the data store.
+        /// Returns the writer of the value.
+        /// If possible, a new reader should not be created.
         /// </summary>
-        /// <typeparam name="T">The type of object to write.</typeparam>
-        /// <param name="name">The name assigned to the serialized object.</param>
-        /// <param name="obj">The object to serialize.</param>
-        /// <param name="serializer">The serializer to use.</param>
-        public void Write<T>( string name, T obj, IDataStoreObjectSerializer<T> serializer )
+        /// <returns>The writer of the value.</returns>
+        protected override IBinaryWriter OpenBinaryWriter()
         {
-            this.ThrowIfDisposed();
-            this.ThrowIfSecondRoot();
+            if( this.memoryStream.NullReference() )
+            {
+                this.memoryStream = new System.IO.MemoryStream();
+                this.binaryWriter = new BinaryStreamWriterLE(this.memoryStream);
+            }
 
-            if( serializer.NullReference() )
-                throw new ArgumentNullException("serializer").StoreFileLine();
+            return this.binaryWriter;
+        }
 
-            var node = new DataStoreObject(name);
-            this.parents.Add(node);
+        /// <summary>
+        /// Returns the writer of the value.
+        /// If possible, a new reader should not be created.
+        /// </summary>
+        /// <returns>The writer of the value.</returns>
+        protected override ITextWriter OpenTextWriter()
+        {
+            if( this.textWriter.NullReference() )
+                this.textWriter = new StringWriter();
 
-            serializer.Serialize(obj, this);
+            return this.textWriter;
+        }
 
-            this.parents.RemoveAt(this.parents.Count - 1);
-            this.AddChild(node);
+        /// <summary>
+        /// Releases any resources held by an open writer.
+        /// </summary>
+        /// <param name="writer">The writer of the value.</param>
+        protected override void CloseWriter( IBinaryWriter writer )
+        {
+            var valueNode = new DataStoreBinaryValue(this.currentValueNodeName, this.memoryStream.ToArray());
+            this.memoryStream.SetLength(0);
+
+            this.AddChild(valueNode);
+        }
+
+        /// <summary>
+        /// Releases any resources held by an open reader.
+        /// </summary>
+        /// <param name="writer">The writer of the value.</param>
+        protected override void CloseWriter( ITextWriter writer )
+        {
+            var valueNode = new DataStoreTextValue(this.currentValueNodeName, this.textWriter.ToString());
+            this.currentValueNodeName = null;
+            this.textWriter.Clear();
+
+            this.AddChild(valueNode);
         }
 
         #endregion
@@ -199,9 +231,9 @@ namespace Mechanical.DataStores.Node
         #region Public Members
 
         /// <summary>
-        /// Gets or sets a value indicating whether values should be binary or text based.
+        /// Gets or sets a value indicating whether the next value written should be binary or text based.
         /// </summary>
-        /// <value>Determines whether values should be binary or text based.</value>
+        /// <value>Determines whether the next value written should be binary or text based.</value>
         public bool IsBinary
         {
             get

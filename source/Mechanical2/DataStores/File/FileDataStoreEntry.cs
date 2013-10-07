@@ -1,22 +1,26 @@
 ﻿using System;
-using System.IO;
-using System.Runtime.CompilerServices;
-using System.Text;
 using Mechanical.Conditions;
 using Mechanical.Core;
-using Mechanical.FileFormats;
 
 namespace Mechanical.DataStores.File
 {
+    //// NOTE: the path used by the file data store implementation (filesystem, zip, ... etc.)
+    ////       mirrors the data store path (though they may differ in individual identifiers
+    ////       and the directory separator, they will have the same parent-child relationships).
+    ////
+    ////       We do this to make sure, that if a parent object was added,
+    ////       the necessary resources (directory, zip entry, ...)
+    ////       are available for it's children.
+
     /// <summary>
-    /// Data store related information about a file path.
+    /// A file data store entry.
     /// </summary>
-    public struct FileDataStoreEntry
+    public struct FileDataStoreEntry : IEquatable<FileDataStoreEntry>
     {
         /// <summary>
-        /// The (probably not data store compatible) string representing the file or directory.
+        /// The type of data store node, this entry represents.
         /// </summary>
-        public readonly string RawPath;
+        public readonly DataStoreToken Token;
 
         /// <summary>
         /// The data store compatible string representing the file or directory.
@@ -24,221 +28,134 @@ namespace Mechanical.DataStores.File
         public readonly string DataStorePath;
 
         /// <summary>
-        /// <c>true</c> for files; <c>false</c> for directories.
+        /// The alternative name of the file (or directory), or <c>null</c> if it is the same as the data store name.
         /// </summary>
-        public readonly bool IsFile;
+        public readonly string FileName;
 
         /// <summary>
-        /// <c>true</c> if the file stores binary data; otherwise, <c>false</c>. Ignored for directories.
+        /// Initializes a new instance of the <see cref="FileDataStoreEntry"/> struct.
         /// </summary>
-        public readonly bool IsBinary;
-
-        private FileDataStoreEntry( string rawPath, string dataStorePath, bool isFile, bool isBinary )
-        {
-            Ensure.Debug(rawPath, r => r.NotNullOrEmpty());
-            Ensure.Debug(dataStorePath, a => a.NotNullOrEmpty());
-
-            this.RawPath = rawPath;
-            this.DataStorePath = dataStorePath;
-            this.IsFile = isFile;
-            this.IsBinary = isBinary;
-        }
-
-        /// <summary>
-        /// Returns a new <see cref="FileDataStoreEntry"/> instance.
-        /// </summary>
-        /// <param name="rawPath">The (probably not data store compatible) string representing the file or directory.</param>
+        /// <param name="token">The type of data store node, this entry represents.</param>
         /// <param name="dataStorePath">The data store compatible string representing the file or directory.</param>
-        /// <param name="isBinary"><c>true</c> if the file stores binary data; otherwise, <c>false</c>.</param>
-        /// <returns>A new <see cref="FileDataStoreEntry"/> instance.</returns>
-        public static FileDataStoreEntry FromFile( string rawPath, string dataStorePath, bool isBinary )
+        /// <param name="fileName">The alternative name of the file (or directory), or <c>null</c> if it is the same as the data store name.</param>
+        public FileDataStoreEntry( DataStoreToken token, string dataStorePath, string fileName = null )
         {
-            return new FileDataStoreEntry(rawPath, dataStorePath, isFile: true, isBinary: isBinary);
-        }
-
-        /// <summary>
-        /// Returns a new <see cref="FileDataStoreEntry"/> instance.
-        /// </summary>
-        /// <param name="rawPath">The (probably not data store compatible) string representing the file or directory.</param>
-        /// <param name="dataStorePath">The data store compatible string representing the file or directory.</param>
-        /// <returns>A new <see cref="FileDataStoreEntry"/> instance.</returns>
-        public static FileDataStoreEntry FromDirectory( string rawPath, string dataStorePath )
-        {
-            return new FileDataStoreEntry(rawPath, dataStorePath, isFile: false, isBinary: default(bool));
-        }
-
-        #region CSV
-
-        private const string RawPathHeader = "raw path";
-        private const string DataStorePathHeader = "data store path";
-        private const string IsFileHeader = "is file";
-        private const string IsBinaryHeader = "is binary";
-        private const string True = "t";
-        private const string False = "f";
-
-        /// <summary>
-        /// Writes the headers of a file entry CSV stream.
-        /// </summary>
-        /// <param name="writer">The <see cref="CsvWriter"/> to use.</param>
-        public static void WriteColumnHeaders( CsvWriter writer )
-        {
-            if( writer.NullReference() )
-                throw new ArgumentNullException().StoreFileLine();
-
-            writer.Write(RawPathHeader);
-            writer.Write(DataStorePathHeader);
-            writer.Write(IsFileHeader);
-            writer.Write(IsBinaryHeader);
-            writer.WriteLine();
-        }
-
-        /// <summary>
-        /// Parses a line from a file entry CSV stream.
-        /// </summary>
-        /// <param name="reader">The <see cref="CsvReader"/> to use.</param>
-        /// <returns>A new <see cref="FileDataStoreEntry"/> instance.</returns>
-        public static FileDataStoreEntry FromCsvLine( CsvReader reader )
-        {
-            if( reader.NullReference() )
-                throw new ArgumentNullException().StoreFileLine();
-
-            try
-            {
-                if( reader.Record.Count != 4 )
-                    throw new FormatException("Invalid number of cells!").Store("cellCount", reader.Record.Count);
-
-                return new FileDataStoreEntry(
-                    rawPath: reader.Record[0],
-                    dataStorePath: reader.Record[1],
-                    isFile: string.Equals(reader.Record[2].Trim(), True, StringComparison.InvariantCultureIgnoreCase),
-                    isBinary: reader.Record[3].NullOrWhiteSpace() ? default(bool) : string.Equals(reader.Record[3].Trim(), True, StringComparison.InvariantCultureIgnoreCase));
-            }
-            catch( Exception ex )
-            {
-                ex.Store("Record", reader.Record);
-                throw;
-            }
-        }
-
-#if !MECHANICAL_NET4CP
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-        private static string GetDataStorePath( string rawPath, string parentDataStorePath )
-        {
-            var escapedFileName = Path.GetFileName(rawPath);
-            escapedFileName = DataStore.Escape(escapedFileName);
-            if( !DataStore.IsValidName(escapedFileName) )
-            {
-                // can not generate data store name: too long
-                return null;
-            }
+            if( token == DataStoreToken.BinaryValue
+             || token == DataStoreToken.TextValue
+             || token == DataStoreToken.ObjectStart )
+                this.Token = token;
             else
-                return DataStore.Combine(parentDataStorePath, escapedFileName);
-        }
+                throw new ArgumentException("Invalid token!").Store("token", token).Store("dataStorePath", dataStorePath).Store("fileName", fileName);
 
-#if !MECHANICAL_NET4CP
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-        private static bool IsDirectory( string rawPath )
-        {
-            return (System.IO.File.GetAttributes(rawPath) & FileAttributes.Directory) == FileAttributes.Directory;
-        }
+            if( dataStorePath.NullOrLengthy() )
+                throw new ArgumentException().Store("token", token).Store("dataStorePath", dataStorePath).Store("fileName", fileName);
+            else
+                this.DataStorePath = dataStorePath;
 
-        private static void WriteFile( int numCharactersToCut, string rawPath, string parentDataStorePath, CsvWriter writer )
-        {
-            var dataStorePath = GetDataStorePath(rawPath, parentDataStorePath);
-            if( dataStorePath.NullReference() )
-                return;
-
-            var fileExtension = Path.GetExtension(rawPath);
-            bool isBinary = true;
-            if( string.Equals(fileExtension, ".txt", StringComparison.InvariantCultureIgnoreCase) )
-                isBinary = false;
-
-            writer.Write(rawPath.Substring(startIndex: numCharactersToCut));
-            writer.Write(dataStorePath);
-            writer.Write(True); // IsFile
-            writer.Write(isBinary ? True : False);
-            writer.WriteLine();
-        }
-
-        private static void WriteDirectory( int numCharactersToCut, string rawPath, string parentDataStorePath, CsvWriter writer )
-        {
-            var dataStorePath = GetDataStorePath(rawPath, parentDataStorePath);
-            if( dataStorePath.NullReference() )
-                return;
-
-            writer.Write(rawPath.Substring(startIndex: numCharactersToCut));
-            writer.Write(dataStorePath);
-            writer.Write(False); // IsFile
-            writer.Write(); // IsBinary
-            writer.WriteLine();
-
-            foreach( string rawChildPath in Directory.EnumerateFileSystemEntries(rawPath) )
-            {
-                if( IsDirectory(rawChildPath) )
-                    WriteDirectory(numCharactersToCut, rawChildPath, dataStorePath, writer);
-                else
-                    WriteFile(numCharactersToCut, rawChildPath, dataStorePath, writer);
-            }
+            if( fileName.NullOrEmpty()
+             || DataStore.Comparer.Equals(fileName, DataStore.GetNodeName(dataStorePath)) )
+                this.FileName = null;
+            else
+                this.FileName = fileName;
         }
 
         /// <summary>
-        /// Generates a data store file entry CSV file. Results are unordered. File names too long are skipped silently.
+        /// Returns the string representation of this entry.
         /// </summary>
-        /// <param name="csvFilePath">The path to the CSV file to generate.</param>
-        /// <param name="relativeRootPath">The file or directory representing the root node of the data store, relative to the CSV file; or <c>null</c> for an empty data store.</param>
-        public static void CreateCsvFile( string csvFilePath, string relativeRootPath )
+        /// <returns>The string representation of this entry.</returns>
+        public override string ToString()
         {
-            try
-            {
-                if( Path.IsPathRooted(relativeRootPath) )
-                    throw new ArgumentException("The path to the root file or directory needs to be relative to the CSV file!");
+            return SafeString.DebugFormat("{0}; {1}; {2}", this.Token, this.DataStorePath, this.FileName);
+        }
 
-                var csvDir = Path.GetDirectoryName(csvFilePath);
-                int numCharactersToCut = csvDir.Length;
-                if( csvDir[csvDir.Length - 1] != Path.DirectorySeparatorChar
-                 && csvDir[csvDir.Length - 1] != Path.AltDirectorySeparatorChar
-                 && csvDir[csvDir.Length - 1] != Path.VolumeSeparatorChar )
-                    ++numCharactersToCut;
+        #region IEquatable
 
-                string rootPath = null;
-                if( !relativeRootPath.NullOrEmpty() )
-                {
-                    rootPath = Path.Combine(csvDir, relativeRootPath);
-                    if( !Directory.Exists(rootPath)
-                     && !System.IO.File.Exists(rootPath) )
-                        throw new FileNotFoundException("Could not find root file or directory!");
+        /// <summary>
+        /// Indicates whether the current object is equal to another object of the same type.
+        /// </summary>
+        /// <param name="other">An object to compare this object to.</param>
+        /// <returns><c>true</c> if the current object is equal to the <paramref name="other"/> parameter; otherwise, <c>false</c>.</returns>
+        public /*virtual*/ bool Equals( FileDataStoreEntry other )
+        {
+            // in case we're overriding
+            /*if( !base.Equals( other ) )
+                return false;*/
 
-                    // directory contents will have proper character casing
-                    // but we need to make sure the root name does as well
-                    // (do note, that only the name of the root will be checked, not it's whole path!)
-                    var rootParentDir = Path.GetDirectoryName(rootPath);
-                    var correctName = Directory.GetFileSystemEntries(rootParentDir, searchPattern: Path.GetFileName(rootPath), searchOption: SearchOption.TopDirectoryOnly)[0];
-                    rootPath = Path.Combine(rootParentDir, correctName);
-                }
+            // might not need this, if the base has checked it (or if 'other' is a value type)
+            /*if( other.NullReference() )
+                return false;*/
 
-                using( var sw = new StreamWriter(csvFilePath, append: false, encoding: Encoding.UTF8) )
-                using( var writer = new CsvWriter(sw, CsvFormat.International) )
-                {
-                    WriteColumnHeaders(writer);
+            // NOTE: since DataStore.Comparer is currently case-sensitive, this is not strictly correct for Windows.
+            //       However: since portability is a requirement, this might indicate to the user, that the file
+            //       names they use are not portable!
+            return this.Token == other.Token
+                && DataStore.Comparer.Equals(this.DataStorePath, other.DataStorePath)
+                && DataStore.Comparer.Equals(this.FileName, other.FileName);
+        }
 
-                    if( !relativeRootPath.NullOrEmpty() )
-                    {
-                        if( IsDirectory(rootPath) )
-                            WriteDirectory(numCharactersToCut, rootPath, string.Empty, writer);
-                        else
-                            WriteFile(numCharactersToCut, rootPath, string.Empty, writer);
-                    }
-                }
-            }
-            catch( Exception ex )
-            {
-                ex.StoreFileLine();
-                ex.Store("csvFilePath", csvFilePath);
-                ex.Store("relativeRootPath", relativeRootPath);
-                throw;
-            }
+        /// <summary>
+        /// Implements the operator ==.
+        /// </summary>
+        /// <param name="left">The left  side of the operator.</param>
+        /// <param name="right">The right side of the operator.</param>
+        /// <returns>The result of the operator.</returns>
+        public static bool operator ==( FileDataStoreEntry left, FileDataStoreEntry right )
+        {
+            /*if( object.ReferenceEquals(left, right) )
+                return true;
+
+            if( left.NullReference() )
+                return false;*/
+
+            return left.Equals(right);
+        }
+
+        /// <summary>
+        /// Implements the operator !=.
+        /// </summary>
+        /// <param name="left">The left side of the operator.</param>
+        /// <param name="right">The right side of the operator.</param>
+        /// <returns>The result of the operator.</returns>
+        public static bool operator !=( FileDataStoreEntry left, FileDataStoreEntry right )
+        {
+            return !(left == right);
+        }
+
+        /// <summary>
+        /// Indicates whether the current object is equal to another object of the same type.
+        /// </summary>
+        /// <param name="other">An object to compare this object to.</param>
+        /// <returns>true if the current object is equal to the <paramref name="other"/> parameter; otherwise, false.</returns>
+        public override bool Equals( object other )
+        {
+            // for reference types
+            /*var asNode = other as IDataStoreNode;
+
+            if( asNode.NullReference() )
+                return false;
+            else
+                return this.Equals(asNode);*/
+
+            // for value types
+            if( other is FileDataStoreEntry )
+                return this.Equals((FileDataStoreEntry)other);
+            else
+                return false;
+        }
+
+        /// <summary>
+        /// Serves as a hash function for a particular type.
+        /// </summary>
+        /// <returns>
+        /// A hash code for the current <see cref="T:System.Object"/>.
+        /// </returns>
+        public override int GetHashCode()
+        {
+            // NOTE: the data store path may be null, if we were instantiated through default()
+            //       and the file name may be null anyways.
+            return this.Token.GetHashCode()
+                 ^ (this.DataStorePath.NullReference() ? 0 : this.DataStorePath.GetHashCode())
+                 ^ (this.FileName.NullReference() ? 0 : this.FileName.GetHashCode());
         }
 
         #endregion

@@ -37,6 +37,7 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
@@ -165,6 +166,9 @@
     <Compile Include="..\Mechanical2\DataStores\DataStoreToken.cs">
       <Link>DataStores\DataStoreToken.cs</Link>
     </Compile>
+    <Compile Include="..\Mechanical2\DataStores\DataStoreWriterBase.cs">
+      <Link>DataStores\DataStoreWriterBase.cs</Link>
+    </Compile>
     <Compile Include="..\Mechanical2\DataStores\DelegateSerialization.cs">
       <Link>DataStores\DelegateSerialization.cs</Link>
     </Compile>
@@ -173,6 +177,9 @@
     </Compile>
     <Compile Include="..\Mechanical2\DataStores\File\FileDataStoreEntry.cs">
       <Link>DataStores\File\FileDataStoreEntry.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\File\FileDataStoreEntryList.cs">
+      <Link>DataStores\File\FileDataStoreEntryList.cs</Link>
     </Compile>
     <Compile Include="..\Mechanical2\DataStores\File\FileDataStoreReader.cs">
       <Link>DataStores\File\FileDataStoreReader.cs</Link>
@@ -185,6 +192,12 @@
     </Compile>
     <Compile Include="..\Mechanical2\DataStores\File\FileDataStoreWriterBase.cs">
       <Link>DataStores\File\FileDataStoreWriterBase.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\File\ZipDataStoreReader.cs">
+      <Link>DataStores\File\ZipDataStoreReader.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\File\ZipDataStoreWriter.cs">
+      <Link>DataStores\File\ZipDataStoreWriter.cs</Link>
     </Compile>
     <Compile Include="..\Mechanical2\DataStores\IDataStoreObjectDeserializer.cs">
       <Link>DataStores\IDataStoreObjectDeserializer.cs</Link>

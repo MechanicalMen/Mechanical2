@@ -1,93 +1,34 @@
 ﻿using System;
-using System.IO;
-using System.Text;
-using System.Xml;
+using System.Collections.Generic;
 using Mechanical.Conditions;
 using Mechanical.Core;
 
 namespace Mechanical.DataStores.File
 {
-    //// TODO: RawPath get/set :  the raw path for the next node to be written; if null -> try unescape; if exception -> use data store name
-
-    /*/// <summary>
-    /// An XML based data store writer.
+    /// <summary>
+    /// A base class for file (or archive) based data store writers.
     /// </summary>
-    public class XmlDataStoreWriter : DisposableObject, IDataStoreWriter
+    public abstract class FileDataStoreWriterBase : DataStoreWriterBase.Disposable
     {
-        #region StringWriterWithEncoding
-
-        private class StringWriterWithEncoding : StringWriter
-        {
-            private readonly Encoding encoding;
-
-            internal StringWriterWithEncoding( StringBuilder sb, Encoding encoding )
-                : base(sb)
-            {
-                Ensure.That(encoding).NotNull();
-
-                this.encoding = encoding;
-            }
-
-            public override Encoding Encoding
-            {
-                get { return this.encoding; }
-            }
-        }
-
-        #endregion
-
         #region Private Fields
 
-        internal const string RootName = "root";
-
-        private readonly bool hasRootObject;
-        private XmlWriter xmlWriter;
-        private Mechanical.IO.StringWriter textWriter;
+        private readonly FileDataStoreEntryList entries;
+        private readonly List<FileDataStoreEntry> parents;
+        private bool isBinary = true;
+        private string fileName;
 
         #endregion
 
         #region Constructors
 
-        private XmlDataStoreWriter( XmlWriter xmlWriter, string writeRootObject )
-        {
-            Ensure.That(xmlWriter).NotNull();
-
-            this.xmlWriter = xmlWriter;
-            this.textWriter = new Mechanical.IO.StringWriter();
-            this.xmlWriter.WriteStartElement(RootName);
-
-            if( writeRootObject.NotNullReference() )
-            {
-                if( !DataStore.IsValidName(writeRootObject) )
-                    throw new ArgumentException("Invalid data store name!").Store("writeRootObject", writeRootObject);
-
-                this.xmlWriter.WriteStartElement(writeRootObject);
-                this.hasRootObject = true;
-            }
-            else
-                this.hasRootObject = false;
-        }
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="XmlDataStoreWriter"/> class.
+        /// Initializes a new instance of the <see cref="FileDataStoreWriterBase"/> class.
         /// </summary>
-        /// <param name="sb">The <see cref="StringBuilder"/> to use.</param>
-        /// <param name="indent">Determines whether to indent the xml elements.</param>
-        /// <param name="writeRootObject">The name of the object, to use as the root of the data store, or <c>null</c> to have the root determined by a Write call.</param>
-        public XmlDataStoreWriter( StringBuilder sb, bool indent = true, string writeRootObject = null )
-            : this(XmlWriter.Create(new StringWriterWithEncoding(sb, DataStore.DefaultEncoding) { NewLine = DataStore.DefaultNewLine }, new XmlWriterSettings() { Encoding = DataStore.DefaultEncoding, NewLineChars = DataStore.DefaultNewLine, Indent = indent, CloseOutput = true }), writeRootObject)
+        protected FileDataStoreWriterBase()
+            : base()
         {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="XmlDataStoreWriter"/> class.
-        /// </summary>
-        /// <param name="stream">The <see cref="Stream"/> to take ownership of.</param>
-        /// <param name="indent">Determines whether to indent the xml elements.</param>
-        /// <param name="writeRootObject">The name of the object, to use as the root of the data store, or <c>null</c> to have the root determined by a Write call.</param>
-        public XmlDataStoreWriter( Stream stream, bool indent = true, string writeRootObject = null )
-            : this(XmlWriter.Create(new StreamWriter(stream, DataStore.DefaultEncoding) { NewLine = DataStore.DefaultNewLine }, new XmlWriterSettings() { Encoding = DataStore.DefaultEncoding, NewLineChars = DataStore.DefaultNewLine, Indent = indent, CloseOutput = true }), writeRootObject)
-        {
+            this.entries = new FileDataStoreEntryList();
+            this.parents = new List<FileDataStoreEntry>();
         }
 
         #endregion
@@ -105,112 +46,148 @@ namespace Mechanical.DataStores.File
                 //// dispose-only (i.e. non-finalizable) logic
                 //// (managed, disposable resources you own)
 
-                if( this.xmlWriter.NotNullReference() )
-                {
-                    // close root data store object, if one was specified
-                    // in the constructor
-                    if( this.hasRootObject )
-                        this.xmlWriter.WriteFullEndElement();
-
-                    this.xmlWriter.WriteFullEndElement(); // closing root xml element
-
-                    this.xmlWriter.Flush();
-                    this.xmlWriter.Close();
-                    this.xmlWriter = null;
-                }
+                this.SaveEntries();
             }
 
             //// shared cleanup logic
             //// (unmanaged resources)
-
-            this.textWriter = null;
-
 
             base.OnDispose(disposing);
         }
 
         #endregion
 
-        #region IDataStoreWriter
+        #region Protected Members
 
         /// <summary>
-        /// Writes an object to the data store.
+        /// Gets the entries of the file data store.
         /// </summary>
-        /// <typeparam name="T">The type of object to write.</typeparam>
-        /// <param name="name">The name of the serialized object.</param>
-        /// <param name="obj">The object to serialize.</param>
-        /// <param name="serializer">The serializer to use.</param>
-        public void Write<T>( string name, T obj, IDataStoreValueSerializer<T> serializer )
+        /// <value>The entries of the file data store.</value>
+        protected FileDataStoreEntryList Entries
         {
-            if( this.IsDisposed )
-                throw new ObjectDisposedException(string.Empty).Store("name", name).Store("obj", "obj").Store("serializer", serializer);
-
-            if( !DataStore.IsValidName(name) )
-                throw new ArgumentException("Invalid data store name!").Store("name", name).Store("obj", "obj").Store("serializer", serializer);
-
-            if( serializer.NullReference() )
-                throw new ArgumentNullException("serializer").Store("name", name).Store("obj", "obj").Store("serializer", serializer);
-
-            // serialize
-            serializer.Serialize(obj, this.textWriter);
-            var value = this.textWriter.ToString();
-            this.textWriter.Clear();
-
-            // write node
-            if( value.Length != 0 )
-            {
-                this.xmlWriter.WriteElementString(name, value);
-            }
-            else
-            {
-                this.xmlWriter.WriteStartElement(name);
-                this.xmlWriter.WriteEndElement(); // not a full end element, that would be an empty object
-            }
+            get { return this.entries; }
         }
 
         /// <summary>
-        /// Writes an object to the data store.
+        /// Saves the file entries of the data store.
         /// </summary>
-        /// <typeparam name="T">The type of object to write.</typeparam>
-        /// <param name="name">The name of the serialized object.</param>
-        /// <param name="obj">The object to serialize.</param>
-        /// <param name="serializer">The serializer to use.</param>
-        public void Write<T>( string name, T obj, IDataStoreObjectSerializer<T> serializer )
+        protected abstract void SaveEntries();
+
+        /// <summary>
+        /// Writes the specified file data store entry.
+        /// </summary>
+        /// <param name="entry">The file data store entry to open for reading.</param>
+        protected abstract void WriteEntry( FileDataStoreEntry entry );
+
+        /// <summary>
+        /// Writes an ObjectStart, ObjectEnd, or a value.
+        /// </summary>
+        /// <param name="name">The data store name to use; or <c>null</c> for the ObjectEnd token.</param>
+        /// <param name="isObjectStart"><c>true</c> if an ObjectStart token is to be written, <c>false</c> for ObjectEnd, and <c>null</c> for a binary or text value.</param>
+        /// <returns>A value determining whether the value to be written is binary or not. <c>null</c> if an object was written.</returns>
+        protected override bool? Write( string name, bool? isObjectStart )
         {
-            if( this.IsDisposed )
-                throw new ObjectDisposedException(string.Empty).Store("name", name).Store("obj", "obj").Store("serializer", serializer);
+            try
+            {
+                if( isObjectStart != false
+                 && !DataStore.IsValidName(name) )
+                    throw new ArgumentException("Invalid data store name!").StoreFileLine();
 
-            if( !DataStore.IsValidName(name) )
-                throw new ArgumentException("Invalid data store name!").Store("name", name).Store("obj", "obj").Store("serializer", serializer);
+                bool? isBinary;
+                FileDataStoreEntry entry;
+                if( isObjectStart.HasValue )
+                {
+                    if( isObjectStart.Value )
+                    {
+                        if( this.parents.Count == 0 )
+                            entry = new FileDataStoreEntry(DataStoreToken.ObjectStart, name, this.FileName);
+                        else
+                            entry = new FileDataStoreEntry(DataStoreToken.ObjectStart, DataStore.Combine(this.parents[this.parents.Count - 1].DataStorePath, name), this.FileName);
+                        this.parents.Add(entry);
 
-            if( serializer.NullReference() )
-                throw new ArgumentNullException("serializer").Store("name", name).Store("obj", "obj").Store("serializer", serializer);
+                        isBinary = null;
+                    }
+                    else
+                    {
+                        this.parents.RemoveAt(this.parents.Count - 1);
+                        return null; // no WriteEntry call for ObjectEnd!
+                    }
+                }
+                else
+                {
+                    if( this.parents.Count == 0 )
+                        entry = new FileDataStoreEntry(this.IsBinary ? DataStoreToken.BinaryValue : DataStoreToken.TextValue, name, this.FileName);
+                    else
+                        entry = new FileDataStoreEntry(this.IsBinary ? DataStoreToken.BinaryValue : DataStoreToken.TextValue, DataStore.Combine(this.parents[this.parents.Count - 1].DataStorePath, name), this.FileName);
 
-            // write start element
-            this.xmlWriter.WriteStartElement(name);
+                    isBinary = this.IsBinary;
+                }
 
-            // serialize
-            serializer.Serialize(obj, this);
-
-            // close the node
-            this.xmlWriter.WriteFullEndElement();
+                this.FileName = null;
+                this.entries.AddToParent(entry);
+                this.WriteEntry(entry);
+                return isBinary;
+            }
+            catch( Exception ex )
+            {
+                ex.StoreFileLine();
+                ex.Store("name", name);
+                ex.Store("isObjectStart", isObjectStart);
+                throw;
+            }
         }
 
         #endregion
 
-        #region Public Methods
+        #region Public Members
 
         /// <summary>
-        /// Flushes the buffers of the underlying implementation(s).
+        /// Gets or sets a value indicating whether the next value written should be binary or text based.
         /// </summary>
-        public void Flush()
+        /// <value>Determines whether the next value written should be binary or text based.</value>
+        public bool IsBinary
         {
-            if( this.IsDisposed )
-                throw new ObjectDisposedException(string.Empty).StoreDefault();
+            get
+            {
+                if( this.IsDisposed )
+                    throw new ObjectDisposedException(null).StoreFileLine();
 
-            this.xmlWriter.Flush();
+                return this.isBinary;
+            }
+            set
+            {
+                if( this.IsDisposed )
+                    throw new ObjectDisposedException(null).StoreFileLine();
+
+                this.isBinary = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the name of the file (or directory) to be written. <c>null</c> if it is the same as the data store name.
+        /// </summary>
+        /// <value>The name of the file (or directory).</value>
+        public string FileName
+        {
+            get
+            {
+                if( this.IsDisposed )
+                    throw new ObjectDisposedException(null).StoreFileLine();
+
+                return this.fileName;
+            }
+            set
+            {
+                if( this.IsDisposed )
+                    throw new ObjectDisposedException(null).StoreFileLine();
+
+                if( value.NullOrEmpty() )
+                    this.fileName = null;
+                else
+                    this.fileName = value;
+            }
         }
 
         #endregion
-    }*/
+    }
 }

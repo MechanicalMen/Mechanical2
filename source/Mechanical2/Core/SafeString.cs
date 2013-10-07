@@ -368,6 +368,7 @@ namespace Mechanical.Core
             {
                 #region Private Fields
 
+                private const string Null = "null";
                 private static readonly Dictionary<Type, string> BuiltInTypes;
 
                 #endregion
@@ -619,7 +620,7 @@ namespace Mechanical.Core
                 {
                     if( arg.NullReference() )
                     {
-                        return "null";
+                        return Null;
                     }
                     else if( arg is sbyte )
                     {
@@ -745,6 +746,14 @@ namespace Mechanical.Core
                                 // print the type, and then use the wrapper to print the value
                                 var enumType = type.GetGenericArguments()[0];
                                 return SafeString.Print(enumType, format: null, formatProvider: this) + '.' + arg.ToString();
+                            }
+                            else if( typeDef == typeof(Nullable<>) )
+                            {
+                                if( arg.NullReference() )
+                                    return Null;
+
+                                object value = arg.GetType().GetProperty("Value", BindingFlags.Public | BindingFlags.Instance).GetValue(arg);
+                                return SafeString.DebugPrint(value);
                             }
                         }
 

@@ -50,7 +50,8 @@ namespace Mechanical.IO
         /// <param name="substr">The substring to read from.</param>
         public void Set( Substring substr )
         {
-            Ensure.That(substr.Origin).NotNull();
+            if( substr.Origin.NullReference() )
+                throw new ArgumentNullException().StoreFileLine();
 
             this.substr = substr;
         }

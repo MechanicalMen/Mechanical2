@@ -278,29 +278,28 @@ namespace Mechanical.DataStores
                 writer.Write(
                     Keys.Store,
                     obj,
-                    ( info, w ) =>
+                    info =>
                     {
                         foreach( var pair in info.Store )
-                            w.Write(pair.Key, EncodeStoredValue(pair.Value));
+                            writer.Write(pair.Key, EncodeStoredValue(pair.Value));
                     });
 
                 writer.Write(
                     Keys.InnerExceptions,
                     obj,
-                    ( info, w ) =>
+                    info =>
                     {
                         for( int i = 0; i < info.InnerExceptions.Count; ++i )
-                            w.Write("ie" + i.ToString(CultureInfo.InvariantCulture), info.InnerExceptions[i], Default);
+                            writer.Write("ie" + i.ToString(CultureInfo.InvariantCulture), info.InnerExceptions[i], Default);
                     });
             }
 
             /// <summary>
             /// Deserializes a data store object.
             /// </summary>
-            /// <param name="name">The name of the serialized object.</param>
             /// <param name="reader">The data store reader to use.</param>
             /// <returns>The deserialized object.</returns>
-            public ExceptionInfo Deserialize( string name, IDataStoreReader reader )
+            public ExceptionInfo Deserialize( IDataStoreReader reader )
             {
                 if( reader.NullReference() )
                     throw new ArgumentNullException("reader").StoreFileLine();
@@ -312,12 +311,13 @@ namespace Mechanical.DataStores
 
                 reader.Read(
                     Keys.Store,
-                    r =>
+                    () =>
                     {
                         string key, value;
-                        while( r.Token != DataStoreToken.ObjectEnd )
+                        while( reader.Read()
+                            && reader.Token == DataStoreToken.TextValue )
                         {
-                            value = r.ReadString(out key);
+                            value = reader.DeserializeAsValue<string>(out key);
                             value = DecodeStoredValue(value);
                             info.store.Add(key, value);
                         }
@@ -325,12 +325,13 @@ namespace Mechanical.DataStores
 
                 reader.Read(
                     Keys.InnerExceptions,
-                    r =>
+                    () =>
                     {
                         ExceptionInfo innerException;
-                        while( r.Token != DataStoreToken.ObjectEnd )
+                        while( reader.Read()
+                            && reader.Token == DataStoreToken.ObjectStart )
                         {
-                            innerException = r.Read(Default);
+                            innerException = reader.Deserialize(Default);
                             info.innerExceptions.Add(innerException);
                         }
                     });

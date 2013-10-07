@@ -72,26 +72,23 @@ namespace Mechanical.DataStores.Node
 
         #endregion
 
-        #region IDataStoreValueDeserializer
+        #region IDataStoreObjectDeserializer
 
         /// <summary>
         /// Deserializes a data store object.
         /// </summary>
-        /// <param name="name">The name of the serialized object.</param>
         /// <param name="reader">The data store reader to use.</param>
         /// <returns>The deserialized object.</returns>
-        public IDataStoreObject Deserialize( string name, IDataStoreReader reader )
+        public IDataStoreObject Deserialize( IDataStoreReader reader )
         {
-            if( !DataStore.IsValidName(name) )
-                throw new ArgumentException().Store("name", name);
-
             if( reader.NullReference() )
                 throw new ArgumentNullException("reader").StoreFileLine();
 
-            var obj = new DataStoreObject(name);
+            var obj = new DataStoreObject(reader.Name);
             while( reader.Token != DataStoreToken.ObjectEnd )
             {
-                if( reader.Token == DataStoreToken.Value )
+                if( reader.Token == DataStoreToken.BinaryValue
+                 || reader.Token == DataStoreToken.TextValue )
                 {
                     var value = reader.Read(this.valueSerializer);
                     obj.Nodes.Add(value);
