@@ -10,7 +10,7 @@ namespace Mechanical.DataStores.Node
     /// <summary>
     /// A data store reader which reads from an <see cref="IDataStoreNode"/>.
     /// </summary>
-    public class DataStoreNodeReader : DataStoreReaderBase
+    public class DataStoreNodeReader : DataStoreReaderBase, ISeekableDataStoreReader
     {
         #region Private Fields
 
@@ -25,6 +25,8 @@ namespace Mechanical.DataStores.Node
                 this.Index = 0;
             }
         }
+
+        private static readonly char[] PathSeparator = new char[] { DataStore.PathSeparator };
 
         private readonly BinaryArrayReaderLE binaryReader = new BinaryArrayReaderLE();
         private readonly StringReader textReader = new StringReader();
@@ -185,6 +187,116 @@ namespace Mechanical.DataStores.Node
         protected override void CloseReader( ITextReader reader )
         {
             this.textReader.Set(Substring.Empty); // only necessary if reader was opened, but never used. Unlikely, but we don't know for sure.
+        }
+
+        #endregion
+
+        #region ISeekableDataStoreReader
+
+        /// <summary>
+        /// Positions the reader at the start of the data store.
+        /// </summary>
+        public void SeekStart()
+        {
+            this.SetPosition(DataStoreToken.DataStoreStart, string.Empty);
+
+            this.currentNode = null;
+            this.parents.Clear();
+        }
+
+        /// <summary>
+        /// Positions the reader at the end of the data store.
+        /// </summary>
+        public void SeekEnd()
+        {
+            this.SetPosition(DataStoreToken.DataStoreStart, string.Empty);
+
+            this.currentNode = null;
+            this.parents.Clear();
+        }
+
+        /// <summary>
+        /// Seeks the specified data store path.
+        /// Positions the reader at the specified ObjectStart or value token if the path is found, or at DataStoreEnd otherwise.
+        /// Throws an exception, if the path does not exist.
+        /// </summary>
+        /// <param name="absolutePath">The absolute data store path to seek.</param>
+        public void Seek( string absolutePath )
+        {
+            if( !this.TrySeek(absolutePath) )
+                throw new KeyNotFoundException().Store("absolutePath", absolutePath);
+        }
+
+        /// <summary>
+        /// Tries to seek the specified data store path.
+        /// Positions the reader at the specified ObjectStart or value token if the path is found, or at DataStoreEnd otherwise.
+        /// </summary>
+        /// <param name="absolutePath">The absolute data store path to seek.</param>
+        /// <returns><c>true</c> if the path was found; otherwise, <c>false</c>.</returns>
+        public bool TrySeek( string absolutePath )
+        {
+            this.currentNode = null;
+            this.parents.Clear();
+
+
+            Substring remainingPath = absolutePath;
+            Substring name;
+            do
+            {
+                name = Substring.SplitFirst(ref remainingPath, PathSeparator, StringSplitOptions.None);
+                if( !DataStore.IsValidName(name) )
+                    goto error;
+
+                if( this.currentNode.NullReference() )
+                {
+                    // first path segment
+                    if( !DataStore.Comparer.Equals(this.rootNode.Name, name) )
+                        goto error;
+
+                    this.currentNode = this.rootNode;
+                }
+                else
+                {
+                    // in the middle of the path
+                    var parent = this.currentNode as IDataStoreObject;
+                    if( parent.NullReference() )
+                        goto error;
+
+                    bool found = false;
+                    for( int i = 0; i < parent.Nodes.Count; ++i )
+                    {
+                        if( DataStore.Comparer.Equals(parent.Nodes[i].Name, name) )
+                        {
+                            this.PushObject();
+                            this.currentNode = parent.Nodes[i];
+                            found = true;
+                            break;
+                        }
+                    }
+                    if( !found )
+                        goto error;
+                }
+            }
+            while( !remainingPath.NullOrEmpty );
+
+
+            // update base class
+            DataStoreToken token;
+            if( this.currentNode is IDataStoreObject )
+                token = DataStoreToken.ObjectStart;
+            else if( this.currentNode is IDataStoreTextValue )
+                token = DataStoreToken.TextValue;
+            else if( this.currentNode is IDataStoreBinaryValue )
+                token = DataStoreToken.BinaryValue;
+            else
+                throw new Exception("Invalid data store node type!").Store("nodeType", this.currentNode.GetType());
+
+            this.SetPosition(token, absolutePath);
+            return true;
+
+        error:
+            this.SetPosition(DataStoreToken.DataStoreEnd, null);
+            return false;
         }
 
         #endregion

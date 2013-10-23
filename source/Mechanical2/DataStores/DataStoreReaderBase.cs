@@ -131,6 +131,8 @@ namespace Mechanical.DataStores
 
         #region Private Fields
 
+        private static readonly char[] PathSeparator = new char[] { DataStore.PathSeparator };
+
         private readonly IDisposableObject asDisposableObject;
         private readonly List<string> parents = new List<string>();
         private DataStoreToken currentToken = DataStoreToken.DataStoreStart;
@@ -230,6 +232,50 @@ namespace Mechanical.DataStores
         /// </summary>
         /// <param name="reader">The reader of the value.</param>
         protected abstract void CloseReader( ITextReader reader );
+
+        #endregion
+
+        #region Protected Methods
+
+        /// <summary>
+        /// Seekable data store readers may use this method to specify the position of the reader.
+        /// </summary>
+        /// <param name="token">The data store token to set.</param>
+        /// <param name="absolutePath">The absolute data store path to set. Ignored for DataStoreEnd.</param>
+        protected void SetPosition( DataStoreToken token, string absolutePath )
+        {
+#if DEBUG
+            if( !token.Wrap().IsDefined )
+                throw new Exception("Data store implementation returned invalid token!").StoreFileLine();
+#endif
+            // clear current state
+            this.CloseReaders();
+            this.parents.Clear();
+            this.currentName = null;
+            this.currentPath = null;
+            this.currentToken = token;
+
+            // set new state
+            if( token != DataStoreToken.DataStoreStart
+             && token != DataStoreToken.DataStoreEnd )
+            {
+                Substring remainingPath = absolutePath;
+                Substring name;
+                do
+                {
+                    name = Substring.SplitFirst(ref remainingPath, PathSeparator, StringSplitOptions.None);
+#if DEBUG
+                    if( !DataStore.IsValidName(name) )
+                        throw new Exception("Data store implementation returned invalid name!").StoreFileLine();
+#endif
+                    this.parents.Add(name.ToString());
+                }
+                while( !remainingPath.NullOrEmpty );
+
+                this.currentName = this.parents[this.parents.Count - 1];
+                this.parents.RemoveAt(this.parents.Count - 1);
+            }
+        }
 
         #endregion
 

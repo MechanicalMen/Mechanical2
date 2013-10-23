@@ -217,8 +217,11 @@
     <Compile Include="..\Mechanical2\DataStores\IDataStoreWriter.cs">
       <Link>DataStores\IDataStoreWriter.cs</Link>
     </Compile>
-    <Compile Include="..\Mechanical2\DataStores\ISeekableDataStore.cs">
-      <Link>DataStores\ISeekableDataStore.cs</Link>
+    <Compile Include="..\Mechanical2\DataStores\ISeekableDataStoreReader.cs">
+      <Link>DataStores\ISeekableDataStoreReader.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\ISeekableDataStoreWriter.cs">
+      <Link>DataStores\ISeekableDataStoreWriter.cs</Link>
     </Compile>
     <Compile Include="..\Mechanical2\DataStores\ISO8601.cs">
       <Link>DataStores\ISO8601.cs</Link>

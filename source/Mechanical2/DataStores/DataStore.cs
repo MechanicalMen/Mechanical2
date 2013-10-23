@@ -31,11 +31,25 @@ namespace Mechanical.DataStores
         ////         - empty strings are valid paths as well (they represent the parent "directory" of the root node)
         ////         - there is no length restriction
 
-        #region IsValidName
+        #region Private Fields
 
+        private const char EscapeCharacter = '_';
         private static readonly char[] ValidFirstCharacters;
 
+        #endregion
+
+        #region Static Constructor
+
         static DataStore()
+        {
+            ValidFirstCharacters = GetValidFirstCharacters();
+        }
+
+        #endregion
+
+        #region IsValidName
+
+        private static char[] GetValidFirstCharacters()
         {
             var chars = new List<char>();
             for( char ch = 'a'; ch <= 'z'; ++ch )
@@ -43,7 +57,7 @@ namespace Mechanical.DataStores
             for( char ch = 'A'; ch <= 'Z'; ++ch )
                 chars.Add(ch);
             chars.Add('_');
-            ValidFirstCharacters = chars.ToArray();
+            return chars.ToArray();
         }
 
         /// <summary>
@@ -51,9 +65,9 @@ namespace Mechanical.DataStores
         /// </summary>
         /// <param name="name">The string to examine.</param>
         /// <returns><c>true</c> if the specified string is a valid data store name; otherwise, <c>false</c>.</returns>
-        public static bool IsValidName( string name )
+        public static bool IsValidName( Substring name )
         {
-            if( name.NullOrEmpty() )
+            if( name.NullOrEmpty )
                 return false;
 
             if( name.Length > 255 ) // max. NTFS file name length
@@ -109,8 +123,6 @@ namespace Mechanical.DataStores
         #endregion
 
         #region Escape, Unescape, GenerateName
-
-        private const char EscapeCharacter = '_';
 
 #if !MECHANICAL_NET4CP
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -271,7 +283,7 @@ namespace Mechanical.DataStores
 
         #endregion
 
-        #region DefaultEncoding, DefaultNewLine, PathSeparator, Comparer
+        #region DefaultEncoding, DefaultNewLine, PathSeparator
 
         /// <summary>
         /// The default <see cref="Encoding"/> of data stores.
@@ -288,14 +300,152 @@ namespace Mechanical.DataStores
         /// </summary>
         public const char PathSeparator = '/';
 
-        /// <summary>
-        /// The comparer used for data store names and paths.
-        /// </summary>
-        public static readonly StringComparer Comparer = StringComparer.Ordinal;
+        #endregion
+
+        #region NameAndPathComparer, Comparer
 
         //// NOTE: Comparer needs to be able to handle invalid data store names and paths!
         //// NOTE: carefully review code, if Comparer sensitivity changes, since some code
         ////       uses it for strict file-data store name, file-file comparisons.
+
+        #region NameAndPathComparer
+
+        /// <summary>
+        /// Compares data store names and paths.
+        /// </summary>
+        public class NameAndPathComparer : IComparer<string>,
+                                           IComparer<Substring>,
+                                           IEqualityComparer<string>,
+                                           IEqualityComparer<Substring>
+        {
+            /// <summary>
+            /// The default instance of the type.
+            /// </summary>
+            public static readonly NameAndPathComparer Default = new NameAndPathComparer();
+
+            #region IComparer
+
+            /// <summary>
+            /// Compares two objects and returns a value indicating whether one is less than, equal to, or greater than the other.
+            /// </summary>
+            /// <param name="x">The first object to compare.</param>
+            /// <param name="y">The second object to compare.</param>
+            /// <returns>A signed integer that indicates the relative values of <paramref name="x"/> and <paramref name="y"/>.</returns>
+            public int Compare( string x, string y )
+            {
+                return string.CompareOrdinal(x, y);
+            }
+
+            /// <summary>
+            /// Compares two objects and returns a value indicating whether one is less than, equal to, or greater than the other.
+            /// </summary>
+            /// <param name="x">The first object to compare.</param>
+            /// <param name="y">The second object to compare.</param>
+            /// <returns>A signed integer that indicates the relative values of <paramref name="x"/> and <paramref name="y"/>.</returns>
+            public int Compare( Substring x, Substring y )
+            {
+                return x.CompareTo(y, CompareOptions.Ordinal);
+            }
+
+            /// <summary>
+            /// Compares two objects and returns a value indicating whether one is less than, equal to, or greater than the other.
+            /// </summary>
+            /// <param name="x">The first object to compare.</param>
+            /// <param name="y">The second object to compare.</param>
+            /// <returns>A signed integer that indicates the relative values of <paramref name="x"/> and <paramref name="y"/>.</returns>
+            public int Compare( Substring x, string y )
+            {
+                return x.CompareTo(y, CompareOptions.Ordinal);
+            }
+
+            /// <summary>
+            /// Compares two objects and returns a value indicating whether one is less than, equal to, or greater than the other.
+            /// </summary>
+            /// <param name="x">The first object to compare.</param>
+            /// <param name="y">The second object to compare.</param>
+            /// <returns>A signed integer that indicates the relative values of <paramref name="x"/> and <paramref name="y"/>.</returns>
+            public int Compare( string x, Substring y )
+            {
+                return new Substring(x).CompareTo(y, CompareOptions.Ordinal);
+            }
+
+            #endregion
+
+            #region IEqualityComparer
+
+            /// <summary>
+            /// Determines whether the specified objects are equal.
+            /// </summary>
+            /// <param name="x">The first object to compare.</param>
+            /// <param name="y">The second object to compare.</param>
+            /// <returns><c>true</c> if the specified objects are equal; otherwise, <c>false</c>.</returns>
+            public bool Equals( string x, string y )
+            {
+                return this.Compare(x, y) == 0;
+            }
+
+            /// <summary>
+            /// Determines whether the specified objects are equal.
+            /// </summary>
+            /// <param name="x">The first object to compare.</param>
+            /// <param name="y">The second object to compare.</param>
+            /// <returns><c>true</c> if the specified objects are equal; otherwise, <c>false</c>.</returns>
+            public bool Equals( Substring x, Substring y )
+            {
+                return this.Compare(x, y) == 0;
+            }
+
+            /// <summary>
+            /// Determines whether the specified objects are equal.
+            /// </summary>
+            /// <param name="x">The first object to compare.</param>
+            /// <param name="y">The second object to compare.</param>
+            /// <returns><c>true</c> if the specified objects are equal; otherwise, <c>false</c>.</returns>
+            public bool Equals( Substring x, string y )
+            {
+                return this.Compare(x, y) == 0;
+            }
+
+            /// <summary>
+            /// Determines whether the specified objects are equal.
+            /// </summary>
+            /// <param name="x">The first object to compare.</param>
+            /// <param name="y">The second object to compare.</param>
+            /// <returns><c>true</c> if the specified objects are equal; otherwise, <c>false</c>.</returns>
+            public bool Equals( string x, Substring y )
+            {
+                return this.Compare(x, y) == 0;
+            }
+
+            /// <summary>
+            /// Returns a hash code for the specified object.
+            /// </summary>
+            /// <param name="obj">The object for which a hash code is to be returned.</param>
+            /// <returns>A hash code for the specified object.</returns>
+            public int GetHashCode( string obj )
+            {
+                return StringComparer.Ordinal.GetHashCode(obj);
+            }
+
+            /// <summary>
+            /// Returns a hash code for the specified object.
+            /// </summary>
+            /// <param name="obj">The object for which a hash code is to be returned.</param>
+            /// <returns>A hash code for the specified object.</returns>
+            public int GetHashCode( Substring obj )
+            {
+                return StringComparer.Ordinal.GetHashCode(obj.ToString());
+            }
+
+            #endregion
+        }
+
+        #endregion
+
+        /// <summary>
+        /// The comparer used for data store names and paths.
+        /// </summary>
+        public static readonly NameAndPathComparer Comparer = NameAndPathComparer.Default;
 
         #endregion
 
@@ -399,14 +549,26 @@ namespace Mechanical.DataStores
         /// <returns>The data store name found.</returns>
         public static string GetNodeName( string path )
         {
-            if( path.NullOrEmpty() )
+            Substring result;
+            GetNodeName(path, out result);
+            return result.ToString();
+        }
+
+        /// <summary>
+        /// Gets the name of the node, the data store path points to.
+        /// </summary>
+        /// <param name="path">The data store path to look at.</param>
+        /// <param name="result">The data store name found.</param>
+        public static void GetNodeName( Substring path, out Substring result )
+        {
+            if( path.NullOrEmpty )
                 throw new ArgumentException().Store("path", path);
 
             int index = path.LastIndexOf(PathSeparator);
             if( index != -1 )
-                return path.Substring(startIndex: index + 1);
+                result = path.Substr(startIndex: index + 1);
             else
-                return path;
+                result = path;
         }
 
         /// <summary>
@@ -416,6 +578,18 @@ namespace Mechanical.DataStores
         /// <returns>The data store path found.</returns>
         public static string GetParentPath( string path )
         {
+            Substring result;
+            GetParentPath(path, out result);
+            return result.ToString();
+        }
+
+        /// <summary>
+        /// Gets the path to the parent data store object of the specified node.
+        /// </summary>
+        /// <param name="path">The data store path to look at.</param>
+        /// <param name="result">The data store path found.</param>
+        public static void GetParentPath( Substring path, out Substring result )
+        {
             if( path.NullReference() )
                 throw new ArgumentNullException().StoreFileLine();
 
@@ -423,24 +597,23 @@ namespace Mechanical.DataStores
             {
                 int index = path.LastIndexOf(PathSeparator);
                 if( index != -1 )
-                    return path.Substring(startIndex: 0, length: index);
+                {
+                    result = path.Substr(startIndex: 0, length: index);
+                    return;
+                }
             }
 
-            return string.Empty;
+            result = Substring.Empty;
         }
 
         #endregion
 
         //// TODO: [un]escape paths
         //// TODO: unit tests
-        //// TODO: seekable reader/writer
 
         //// TODO: binary data store (seekable?! - what about network streams?)
         //// TODO: json data store (do not store number/true/false/null as strings)
         //// TODO: IDataStoreNode & Co. --> default [de]serialization mappings  (instead of reader.ReadNode & Co.)
         //// TODO: test datastores for attempting to read or write multiple roots
-
-        //// TODO: switch data store path methods to Substring
-        //// TODO: allow Comparer to work with substrings
     }
 }
