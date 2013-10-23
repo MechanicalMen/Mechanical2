@@ -105,11 +105,7 @@ namespace Mechanical.DataStores.Xml
 
                 if( this.xmlWriter.NotNullReference() )
                 {
-                    // close root data store object, if one was specified
-                    // in the constructor
                     this.xmlWriter.WriteFullEndElement(); // closing root xml element
-
-                    this.xmlWriter.Flush();
                     this.xmlWriter.Close();
                     this.xmlWriter = null;
                 }

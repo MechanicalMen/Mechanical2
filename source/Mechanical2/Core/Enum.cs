@@ -357,7 +357,7 @@ namespace Mechanical.Core
 
         private static readonly Type UnderlyingType;
 
-        #region Names, Values
+        #region Names, Values, WrappedValues
 
         //// NOTE: we BREAK System.Enum here!
 
@@ -369,7 +369,7 @@ namespace Mechanical.Core
         //// NOTE: GetNames returns (arguably) unexpected results for negative constants
         ////       see: http://stackoverflow.com/questions/6819348/enum-getnames-results-in-unexpected-order-with-negative-enum-constants
 
-        private static Tuple<ReadOnlyList.Base<string>, ReadOnlyList.Base<Enum<TEnum>>> namesValues = null;
+        private static Tuple<ReadOnlyList.Base<string>, ReadOnlyList.Base<TEnum>, ReadOnlyList.Base<Enum<TEnum>>> namesValues = null;
 
         private class UnderlyingObjectComparer : IComparer<object>
         {
@@ -400,7 +400,7 @@ namespace Mechanical.Core
             }
         }
 
-        private static Tuple<ReadOnlyList.Base<string>, ReadOnlyList.Base<Enum<TEnum>>> GetNamesValues()
+        private static Tuple<ReadOnlyList.Base<string>, ReadOnlyList.Base<TEnum>, ReadOnlyList.Base<Enum<TEnum>>> GetNamesValues()
         {
             var list = new List<KeyValuePair<string, object>>();
             foreach( var field in typeof(TEnum).GetFields(BindingFlags.Public | BindingFlags.Static) )
@@ -415,11 +415,15 @@ namespace Mechanical.Core
                 names[i] = list[i].Key;
 
             var objToValue = CompiledOp.ObjectToValue;
-            var values = new Enum<TEnum>[list.Count];
+            var values = new TEnum[list.Count];
+            var wrappedValues = new Enum<TEnum>[list.Count];
             for( int i = 0; i < values.Length; ++i )
+            {
                 values[i] = objToValue(list[i].Value);
+                wrappedValues[i] = values[i];
+            }
 
-            return new Tuple<ReadOnlyList.Base<string>, ReadOnlyList.Base<Enum<TEnum>>>(new ReadOnlyList.Wrapper<string>(names), new ReadOnlyList.Wrapper<Enum<TEnum>>(values));
+            return new Tuple<ReadOnlyList.Base<string>, ReadOnlyList.Base<TEnum>, ReadOnlyList.Base<Enum<TEnum>>>(new ReadOnlyList.Wrapper<string>(names), new ReadOnlyList.Wrapper<TEnum>(values), new ReadOnlyList.Wrapper<Enum<TEnum>>(wrappedValues));
         }
 
         /// <summary>
@@ -444,7 +448,7 @@ namespace Mechanical.Core
         /// Gets an array of the values of the constants in the enumeration.
         /// </summary>
         /// <value>An array of the values of the constants in the enumeration.</value>
-        public static ReadOnlyList.Base<Enum<TEnum>> Values
+        public static ReadOnlyList.Base<TEnum> Values
         {
             get
             {
@@ -455,6 +459,24 @@ namespace Mechanical.Core
                 }
 
                 return namesValues.Item2;
+            }
+        }
+
+        /// <summary>
+        /// Gets an array of the values of the constants in the enumeration.
+        /// </summary>
+        /// <value>An array of the values of the constants in the enumeration.</value>
+        public static ReadOnlyList.Base<Enum<TEnum>> WrappedValues
+        {
+            get
+            {
+                if( namesValues.NullReference() )
+                {
+                    var newNamesValues = GetNamesValues();
+                    Interlocked.CompareExchange(ref namesValues, newNamesValues, null);
+                }
+
+                return namesValues.Item3;
             }
         }
 
@@ -626,7 +648,7 @@ namespace Mechanical.Core
             // NOTE: this will return the original value as well (and may return more flags than are necessary)
             var list = new List<Enum<TEnum>>();
 
-            foreach( var potentialFlag in Values )
+            foreach( var potentialFlag in WrappedValues )
             {
                 if( value.HasFlag(potentialFlag)
                  && !potentialFlag.IsZero ) // do not consider "zero" a flag
@@ -639,7 +661,7 @@ namespace Mechanical.Core
         private static List<Enum<TEnum>> GetSimpleFlags()
         {
             var simpleFlags = new List<Enum<TEnum>>();
-            var values = Values;
+            var values = WrappedValues;
             if( values.Count != 0 )
             {
                 foreach( var v in values )

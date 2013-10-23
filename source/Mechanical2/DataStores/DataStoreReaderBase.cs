@@ -79,6 +79,9 @@ namespace Mechanical.DataStores
             /// <param name="disposing">If set to <c>true</c>, the method was called by Dispose; otherwise by the destructor.</param>
             protected virtual void OnDisposing( bool disposing )
             {
+                // see notes on DataStoreWriterBase.OnDisposing
+                if( disposing )
+                    this.CloseReaders();
             }
 
             /// <summary>
@@ -91,8 +94,6 @@ namespace Mechanical.DataStores
                 {
                     //// dispose-only (i.e. non-finalizable) logic
                     //// (managed, disposable resources you own)
-
-                    this.CloseReaders();
                 }
 
                 //// shared cleanup logic

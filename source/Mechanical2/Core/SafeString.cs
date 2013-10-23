@@ -752,8 +752,14 @@ namespace Mechanical.Core
                                 if( arg.NullReference() )
                                     return Null;
 
-                                object value = arg.GetType().GetProperty("Value", BindingFlags.Public | BindingFlags.Instance).GetValue(arg);
-                                return SafeString.DebugPrint(value);
+                                var hasValue = (bool)arg.GetType().GetProperty("HasValue", BindingFlags.Public | BindingFlags.Instance).GetValue(arg);
+                                if( hasValue )
+                                {
+                                    object value = arg.GetType().GetProperty("Value", BindingFlags.Public | BindingFlags.Instance).GetValue(arg);
+                                    return SafeString.DebugPrint(value);
+                                }
+                                else
+                                    return Null;
                             }
                         }
 

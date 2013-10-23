@@ -77,6 +77,12 @@ namespace Mechanical.DataStores
             /// <param name="disposing">If set to <c>true</c>, the method was called by Dispose; otherwise by the destructor.</param>
             protected virtual void OnDisposing( bool disposing )
             {
+                // NOTE: it is important to close any open writers,
+                //       before the disposal of the subclass:
+                //       in case the root node is a value, and
+                //       the subclass writes content when the writers are closed! (XmlDataStoreWriter)
+                if( disposing )
+                    this.CloseWriters();
             }
 
             /// <summary>
@@ -89,8 +95,6 @@ namespace Mechanical.DataStores
                 {
                     //// dispose-only (i.e. non-finalizable) logic
                     //// (managed, disposable resources you own)
-
-                    this.CloseWriters();
                 }
 
                 //// shared cleanup logic
@@ -282,7 +286,7 @@ namespace Mechanical.DataStores
             if( isBinary.HasValue )
                 throw new Exception("Data store implementation indicated a value, while an object is being handled!").StoreFileLine();
 #else
-            this.Write(name, isObjectStart: false);
+            this.Write(name: null, isObjectStart: false);
 #endif
         }
 

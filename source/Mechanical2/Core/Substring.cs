@@ -418,6 +418,29 @@ namespace Mechanical.Core
 
         #endregion
 
+        #region LastIndexOf
+
+        /// <summary>
+        /// Reports the zero-based index position of the last occurrence of a specified Unicode character within this instance.
+        /// </summary>
+        /// <param name="value">The Unicode character to seek.</param>
+        /// <returns>The zero-based index position of value if that character is found, or <c>-1</c> if it is not.</returns>
+        public int LastIndexOf( char value )
+        {
+            if( this.Origin.NullReference() )
+                return -1;
+
+            for( int i = this.StartIndex + this.Length - 1; i >= this.StartIndex; --i )
+            {
+                if( this.Origin[i] == value )
+                    return i - this.StartIndex;
+            }
+
+            return -1;
+        }
+
+        #endregion
+
         #region TrimStart
 
         /// <summary>
@@ -662,7 +685,7 @@ namespace Mechanical.Core
 
         #endregion
 
-        #region ToString
+        #region ToString, GetHashCode
 
         /// <summary>
         /// Returns a <see cref="String"/> that represents this instance.
@@ -674,6 +697,18 @@ namespace Mechanical.Core
                 return null;
             else
                 return this.Origin.Substring(this.StartIndex, this.Length);
+        }
+
+        /// <summary>
+        /// Returns the hash code for this <see cref="Substring"/>.
+        /// </summary>
+        /// <returns>A 32-bit signed integer hash code.</returns>
+        public override int GetHashCode()
+        {
+            if( this.Origin.NullReference() )
+                return 0;
+            else
+                return this.Origin.Substring(this.StartIndex, this.Length).GetHashCode();
         }
 
         #endregion

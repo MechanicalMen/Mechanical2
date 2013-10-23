@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 
 namespace Mechanical.Core
 {
@@ -47,6 +48,24 @@ namespace Mechanical.Core
         public static bool NullOrWhiteSpace( this string str )
         {
             return string.IsNullOrWhiteSpace(str);
+        }
+
+        #endregion
+
+        #region Append
+
+        /// <summary>
+        /// Appends the specified <see cref="Substring"/>.
+        /// </summary>
+        /// <param name="sb">The <see cref="StringBuilder"/> to append to.</param>
+        /// <param name="substr">The <see cref="Substring"/> to append.</param>
+        /// <returns>A reference to <paramref name="sb"/> after the append operation has completed.</returns>
+        public static StringBuilder Append( StringBuilder sb, Substring substr )
+        {
+            if( substr.NullOrEmpty )
+                return sb;
+            else
+                return sb.Append(substr.Origin, substr.StartIndex, substr.Length);
         }
 
         #endregion
