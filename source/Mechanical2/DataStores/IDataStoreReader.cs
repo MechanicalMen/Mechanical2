@@ -122,7 +122,7 @@ namespace Mechanical.DataStores
                     throw new ArgumentNullException("deserializer").StoreFileLine();
 
                 if( name.NotNullReference()
-                 && !DataStore.SameNames(name, reader.Name) )
+                 && !DataStore.Comparer.Equals(name, reader.Name) )
                     throw new FormatException("Name mismatch!").StoreFileLine();
 
                 var token = reader.Token;
@@ -164,7 +164,7 @@ namespace Mechanical.DataStores
                     throw new FormatException("Data store object start expected!").StoreFileLine();
 
                 if( name.NotNullReference()
-                 && !DataStore.SameNames(name, reader.Name) )
+                 && !DataStore.Comparer.Equals(name, reader.Name) )
                     throw new FormatException("Name mismatch!").StoreFileLine();
 
                 // deserialize

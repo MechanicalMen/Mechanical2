@@ -13,6 +13,91 @@ namespace Mechanical.IO
     /// </summary>
     public class BinaryStreamReaderLE : IBinaryReader
     {
+        #region Seekable
+
+        /// <summary>
+        /// A seekable version of the reader.
+        /// </summary>
+        public class Seekable : BinaryStreamReaderLE, ISeekableBinaryReader
+        {
+            #region Constructor
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="Seekable"/> class.
+            /// </summary>
+            /// <param name="stream">The <see cref="Stream"/> being read from.</param>
+            public Seekable( Stream stream )
+                : base(stream)
+            {
+                this.Stream = stream;
+            }
+
+            #endregion
+
+            #region IBinarySeekableStream
+
+            /// <summary>
+            /// Gets the length in bytes of the stream.
+            /// </summary>
+            /// <value>A long value representing the length of the stream in bytes.</value>
+            public long Length
+            {
+                get { return this.Stream.Length; }
+            }
+
+            /// <summary>
+            /// Gets or sets the position within the current stream.
+            /// </summary>
+            /// <value>The current position within the stream.</value>
+            public long Position
+            {
+                get { return this.Stream.Position; }
+                set { this.Stream.Position = value; }
+            }
+
+            /// <summary>
+            /// Sets the position within the current stream.
+            /// </summary>
+            /// <param name="offset">A byte offset relative to the <paramref name="origin"/> parameter. </param>
+            /// <param name="origin">A value of type <see cref="SeekOrigin"/> indicating the reference point used to obtain the new position. </param>
+            /// <returns>The new position within the current stream.</returns>
+            public long Seek( long offset, SeekOrigin origin )
+            {
+                return this.Stream.Seek(offset, origin);
+            }
+
+            #endregion
+
+            #region Public Properties
+
+            /// <summary>
+            /// Gets or sets the <see cref="Stream"/> being read from.
+            /// </summary>
+            /// <value>The <see cref="Stream"/> being read from.</value>
+            public override Stream Stream
+            {
+                get
+                {
+                    return base.Stream;
+                }
+                set
+                {
+                    if( value.NullReference() )
+                        throw new ArgumentNullException().StoreFileLine();
+
+                    if( !value.CanSeek )
+                        throw new InvalidOperationException("Stream is not seekable!").StoreFileLine();
+
+                    base.Stream = value;
+                }
+            }
+
+            #endregion
+        }
+
+        #endregion
+
+
         #region Private Fields
 
         private static readonly byte[] EmptyBytes = new byte[0];
@@ -107,7 +192,7 @@ namespace Mechanical.IO
         /// Gets or sets the <see cref="Stream"/> being read from.
         /// </summary>
         /// <value>The <see cref="Stream"/> being read from.</value>
-        public Stream Stream
+        public virtual Stream Stream
         {
             get
             {

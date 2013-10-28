@@ -237,9 +237,9 @@ namespace Mechanical.Core
                         var valueParam = Expression.Parameter(typeof(TEnum));
                         var flagParam = Expression.Parameter(typeof(TEnum));
                         var v = Expression.Convert(valueParam, UnderlyingType);
-                        var f = Expression.Not(Expression.Convert(flagParam, UnderlyingType));
-                        var or = Expression.And(v, f);
-                        var body = Expression.Convert(or, typeof(TEnum));
+                        var nf = Expression.Not(Expression.Convert(flagParam, UnderlyingType));
+                        var and = Expression.And(v, nf);
+                        var body = Expression.Convert(and, typeof(TEnum));
                         var op = Expression.Lambda<Func<TEnum, TEnum, TEnum>>(body, valueParam, flagParam).Compile();
                         Interlocked.CompareExchange(ref removeFlag, op, null);
                     }

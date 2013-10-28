@@ -13,7 +13,7 @@ namespace Mechanical.DataStores.Node
     {
         #region NodesCollection
 
-        private class NodesCollection : List.Wrapper<IDataStoreNode>
+        internal class NodesCollection : List.Wrapper<IDataStoreNode>
         {
             /// <summary>
             /// Inserts an item to the <see cref="IList{T}"/> at the specified index.
@@ -27,7 +27,7 @@ namespace Mechanical.DataStores.Node
 
                 foreach( var node in this )
                 {
-                    if( DataStore.SameNames(node.Name, item.Name) )
+                    if( DataStore.Comparer.Equals(node.Name, item.Name) )
                         throw new ArgumentException("A child having the specified name has already been added!").Store("Name", item.Name);
                 }
 

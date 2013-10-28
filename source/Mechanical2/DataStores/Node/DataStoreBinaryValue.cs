@@ -13,11 +13,22 @@ namespace Mechanical.DataStores.Node
     {
         #region Private Fields
 
+        private static readonly ArraySegment<byte> EmptyBytes = new ArraySegment<byte>(new byte[0]);
+
         private ArraySegment<byte> content;
 
         #endregion
 
         #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DataStoreBinaryValue"/> class.
+        /// </summary>
+        /// <param name="name">The name of the data store node.</param>
+        public DataStoreBinaryValue( string name )
+            : this(name, EmptyBytes)
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DataStoreBinaryValue"/> class.

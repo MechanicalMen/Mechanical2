@@ -33,7 +33,10 @@ namespace Mechanical.DataStores
 
         #region Private Fields
 
+        private const int MaxNameLength = 255 - 1; // '\0'
+        private const int MaxPathLength = 260 - 3 - 1; // "c:\"
         private const char EscapeCharacter = '_';
+
         private static readonly char[] ValidFirstCharacters;
 
         #endregion
@@ -70,7 +73,7 @@ namespace Mechanical.DataStores
             if( name.NullOrEmpty )
                 return false;
 
-            if( name.Length > 255 ) // max. NTFS file name length
+            if( name.Length > MaxNameLength ) // max. NTFS file name length
                 return false;
 
             if( !IsValidFirstCharacter(name[0]) )
@@ -106,34 +109,66 @@ namespace Mechanical.DataStores
 
         #endregion
 
-        #region SameNames
+        #region GenerateName
+
+        private static readonly Random Rnd = new Random();
 
         /// <summary>
-        /// Determines whether the two data store names are the same.
-        /// For non data store names, the result is undetermined.
+        /// Generates a data store name. The generated name may still not be valid
+        /// if it is added to a data store object, with a child of the same name.
+        /// The generated name may be completely different than the one provided,
+        /// therefore it should be saved, if restoring the original name is desired.
         /// </summary>
-        /// <param name="name1">The first data store name.</param>
-        /// <param name="name2">The second data store name.</param>
-        /// <returns><c>true</c>, if the two data store names are the same; otherwise <c>false</c>.</returns>
-        public static bool SameNames( string name1, string name2 )
+        /// <param name="from">The string to generate the name from deterministically; or <c>null</c> to generate a random hash based name.</param>
+        /// <returns>The data store name generated.</returns>
+        public static string GenerateName( string from = null )
         {
-            return string.Equals(name1, name2, StringComparison.Ordinal);
+            if( !from.NullOrEmpty() )
+            {
+                // always try to escape, even if it would be data store compatible (think underscores!)
+                var escaped = EscapeName(from);
+                if( DataStore.IsValidName(escaped) )
+                    return escaped;
+
+                // escape didn't work, generate deterministic hash
+                byte[] bytes = DefaultEncoding.GetBytes(from);
+                var sb = new StringBuilder(32);
+#if !SILVERLIGHT
+                bytes = System.Security.Cryptography.MD5.Create().ComputeHash(bytes); // MD5 is fine, since we don't worry about cryptographic security, and it's shorter than SHA1 and others
+                foreach( var b in bytes )
+                    sb.Append(b.ToString("x2"));
+#else
+                sb.Append(Convert.ToBase64String(bytes), startIndex: 0, count: 32);
+#endif
+                if( !IsValidFirstCharacter(sb[0]) )
+                    sb[0] = '_'; // does not decrease hash deviation (unlike a letter would)
+                return sb.ToString();
+            }
+
+            // generate random name
+            var guid = Guid.NewGuid().ToString("N");
+            if( !IsValidFirstCharacter(guid[0]) )
+                guid = ValidFirstCharacters[Rnd.Next(ValidFirstCharacters.Length)] + guid.Substring(startIndex: 1);
+            return guid;
         }
 
         #endregion
 
-        #region Escape, Unescape, GenerateName
+        #region EscapeName, UnescapeName, EscapePath, UnescapePath
 
 #if !MECHANICAL_NET4CP
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-        private static void InitializeEscape( ref StringBuilder sb, string str, int i )
+        private static void InitializeEscapeBuffer( ref StringBuilder sb, ref bool stringBuilderUsedBefore, Substring str )
         {
-            if( sb.NullReference() )
+            if( !stringBuilderUsedBefore )
             {
-                sb = new StringBuilder();
-                if( i > 0 )
-                    sb.Append(str, startIndex: 0, count: i);
+                stringBuilderUsedBefore = true;
+
+                if( sb.NullReference() )
+                    sb = new StringBuilder();
+
+                sb.Append(str);
             }
         }
 
@@ -146,35 +181,29 @@ namespace Mechanical.DataStores
             sb.Append(((short)ch).ToString("X4", CultureInfo.InvariantCulture));
         }
 
-        /// <summary>
-        /// Escapes the specified string using valid data store identifier characters.
-        /// The result may not be a valid identifier, if it is too long.
-        /// </summary>
-        /// <param name="str">The string to escape.</param>
-        /// <returns>The escaped string. May or may not be a valid data store identifier.</returns>
-        public static string Escape( string str )
+        private static bool EscapeName( Substring name, ref StringBuilder sb )
         {
-            if( str.NullOrEmpty() )
-                throw new ArgumentException().Store("str", str);
+            if( name.NullOrEmpty )
+                throw new ArgumentException().Store("name", name);
 
-            StringBuilder sb = null;
+            bool stringBuilderUsed = false;
             char ch;
-            for( int i = 0; i < str.Length; ++i )
+            for( int i = 0; i < name.Length; ++i )
             {
-                ch = str[i];
+                ch = name[i];
                 if( i == 0 )
                 {
                     if( !IsValidFirstCharacter(ch) )
                     {
-                        InitializeEscape(ref sb, str, i);
+                        InitializeEscapeBuffer(ref sb, ref stringBuilderUsed, name.Substr(startIndex: 0, length: i));
                         AppendEscaped(sb, ch);
                     }
                     else if( ch == EscapeCharacter )
                     {
-                        InitializeEscape(ref sb, str, i);
+                        InitializeEscapeBuffer(ref sb, ref stringBuilderUsed, name.Substr(startIndex: 0, length: i));
                         sb.Append(EscapeCharacter, repeatCount: 2);
                     }
-                    else if( sb.NotNullReference() )
+                    else if( stringBuilderUsed )
                     {
                         sb.Append(ch);
                     }
@@ -183,57 +212,104 @@ namespace Mechanical.DataStores
                 {
                     if( !IsValidMiddleCharacter(ch) )
                     {
-                        InitializeEscape(ref sb, str, i);
+                        InitializeEscapeBuffer(ref sb, ref stringBuilderUsed, name.Substr(startIndex: 0, length: i));
                         AppendEscaped(sb, ch);
                     }
                     else if( ch == EscapeCharacter )
                     {
-                        InitializeEscape(ref sb, str, i);
+                        InitializeEscapeBuffer(ref sb, ref stringBuilderUsed, name.Substr(startIndex: 0, length: i));
                         sb.Append(EscapeCharacter, repeatCount: 2);
                     }
-                    else if( sb.NotNullReference() )
+                    else if( stringBuilderUsed )
                     {
                         sb.Append(ch);
                     }
                 }
             }
 
-            if( sb.NotNullReference() )
-                return sb.ToString();
-            else
-                return str;
+            return stringBuilderUsed;
         }
 
         /// <summary>
-        /// Converts an escaped string to it's original format.
+        /// Escapes the specified string using valid data store identifier characters.
+        /// The result may not be a valid identifier, if it is too long.
         /// </summary>
-        /// <param name="str">The string to decode.</param>
-        /// <returns>The original string contents.</returns>
-        public static string Unescape( string str )
+        /// <param name="name">The string to escape.</param>
+        /// <returns>The escaped string. May or may not be a valid data store identifier.</returns>
+        public static string EscapeName( string name )
         {
-            if( str.NullOrEmpty() )
-                throw new ArgumentException().Store("str", str);
-
             StringBuilder sb = null;
-            short value;
-            for( int i = 0; i < str.Length; )
-            {
-                if( str[i] == EscapeCharacter )
-                {
-                    InitializeEscape(ref sb, str, i);
+            var stringBuilderUsed = EscapeName(name, ref sb);
+            if( stringBuilderUsed )
+                return sb.ToString();
+            else
+                return name;
+        }
 
-                    if( i + 1 < str.Length )
+        /// <summary>
+        /// Escapes the specified string using valid data store path characters.
+        /// The result may not be a valid path, if it is too long.
+        /// </summary>
+        /// <param name="path">The string to escape.</param>
+        /// <returns>The escaped string. May or may not be a valid data store path.</returns>
+        public static string EscapePath( string path )
+        {
+            if( path.NullReference() )
+                throw new ArgumentNullException().StoreFileLine();
+
+            if( path.Length == 0 )
+                return string.Empty;
+
+            if( path.IndexOf(PathSeparator) == -1 )
+                return EscapeName(path);
+
+            var sb = new StringBuilder();
+            bool stringBuilderUsed;
+            Substring remainingPath = path;
+            Substring name;
+            do
+            {
+                if( sb.Length != 0 )
+                    sb.Append(PathSeparator);
+
+                name = Substring.SplitFirst(ref remainingPath, PathSeparatorArray, StringSplitOptions.None);
+                if( !DataStore.IsValidName(name) )
+                    throw new ArgumentException("Not a valid data store path!").Store("path", path);
+
+                stringBuilderUsed = EscapeName(name, ref sb);
+                if( !stringBuilderUsed )
+                    sb.Append(name);
+            }
+            while( !remainingPath.NullOrEmpty );
+
+            return sb.ToString();
+        }
+
+        private static bool UnescapeName( Substring name, ref StringBuilder sb )
+        {
+            if( name.NullOrEmpty )
+                throw new ArgumentException().Store("name", name);
+
+            bool stringBuilderUsed = false;
+            short value;
+            for( int i = 0; i < name.Length; )
+            {
+                if( name[i] == EscapeCharacter )
+                {
+                    InitializeEscapeBuffer(ref sb, ref stringBuilderUsed, name.Substr(startIndex: 0, length: i));
+
+                    if( i + 1 < name.Length )
                     {
-                        if( str[i + 1] == EscapeCharacter )
+                        if( name[i + 1] == EscapeCharacter )
                         {
                             sb.Append(EscapeCharacter);
                             i += 2;
                             continue;
                         }
-                        else if( i + 4 < str.Length )
+                        else if( i + 4 < name.Length )
                         {
-                            var hex = str.Substring(i + 1, 4);
-                            if( short.TryParse(hex, NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out value) )
+                            var hex = name.Substr(i + 1, 4);
+                            if( short.TryParse(hex.ToString(), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out value) )
                             {
                                 sb.Append((char)value);
                                 i += 5;
@@ -242,43 +318,70 @@ namespace Mechanical.DataStores
                         }
                     }
 
-                    throw new FormatException().Store("str", str).Store("i", i);
+                    throw new FormatException().Store("name", name).Store("i", i);
                 }
                 else
                 {
-                    if( sb.NotNullReference() )
-                        sb.Append(str[i]);
+                    if( stringBuilderUsed )
+                        sb.Append(name[i]);
                     ++i;
                 }
             }
 
-            if( sb.NotNullReference() )
-                return sb.ToString();
-            else
-                return str;
+            return stringBuilderUsed;
         }
 
-        private static readonly Random Rnd = new Random();
+        /// <summary>
+        /// Converts an escaped name to it's original format.
+        /// </summary>
+        /// <param name="name">The string to decode.</param>
+        /// <returns>The original string contents.</returns>
+        public static string UnescapeName( string name )
+        {
+            StringBuilder sb = null;
+            var stringBuilderUsed = UnescapeName(name, ref sb);
+            if( stringBuilderUsed )
+                return sb.ToString();
+            else
+                return name;
+        }
 
         /// <summary>
-        /// Generates a data store name. The generated name may still not be valid
-        /// if it is added to a data store object, with a child of the same name.
+        /// Converts an escaped path to it's original format.
         /// </summary>
-        /// <param name="from">The string to generate the name from; or <c>null</c> to generate a GUID based name.</param>
-        /// <returns>The data store name generated.</returns>
-        public static string GenerateName( string from = null )
+        /// <param name="path">The string to decode.</param>
+        /// <returns>The original string contents.</returns>
+        public static string UnescapePath( string path )
         {
-            if( !from.NullOrEmpty() )
-            {
-                var escaped = Escape(from);
-                if( DataStore.IsValidName(escaped) )
-                    return escaped;
-            }
+            if( path.NullReference() )
+                throw new ArgumentNullException().StoreFileLine();
 
-            var guid = Guid.NewGuid().ToString("N");
-            if( !IsValidFirstCharacter(guid[0]) )
-                guid = ValidFirstCharacters[Rnd.Next(ValidFirstCharacters.Length)] + guid.Substring(startIndex: 1);
-            return guid;
+            if( path.Length == 0 )
+                return string.Empty;
+
+            if( path.IndexOf(PathSeparator) == -1 )
+                return UnescapeName(path);
+
+            var sb = new StringBuilder();
+            bool stringBuilderUsed;
+            Substring remainingPath = path;
+            Substring name;
+            do
+            {
+                if( sb.Length != 0 )
+                    sb.Append(PathSeparator);
+
+                name = Substring.SplitFirst(ref remainingPath, PathSeparatorArray, StringSplitOptions.None);
+                if( !DataStore.IsValidName(name) )
+                    throw new ArgumentException("Not a valid data store path!").Store("path", path);
+
+                stringBuilderUsed = UnescapeName(name, ref sb);
+                if( !stringBuilderUsed )
+                    sb.Append(name);
+            }
+            while( !remainingPath.NullOrEmpty );
+
+            return sb.ToString();
         }
 
         #endregion
@@ -299,6 +402,9 @@ namespace Mechanical.DataStores
         /// The character separating data store identifiers in a data store path.
         /// </summary>
         public const char PathSeparator = '/';
+
+        // not public, because only the array reference is read-only, and not the actual items.
+        internal static readonly char[] PathSeparatorArray = new char[] { PathSeparator };
 
         #endregion
 
@@ -522,7 +628,7 @@ namespace Mechanical.DataStores
 
         #endregion
 
-        #region Combine, GetNodeName, GetParentPath
+        #region Combine, GetNodeName, GetParentPath, GetPathNames, IsValidPath
 
         /// <summary>
         /// Combines two data store paths. The result is NOT a valid data store name.
@@ -590,30 +696,70 @@ namespace Mechanical.DataStores
         /// <param name="result">The data store path found.</param>
         public static void GetParentPath( Substring path, out Substring result )
         {
-            if( path.NullReference() )
-                throw new ArgumentNullException().StoreFileLine();
+            if( path.NullOrEmpty )
+                throw new ArgumentException().Store("path", path);
 
-            if( path.Length != 0 )
+            int index = path.LastIndexOf(PathSeparator);
+            if( index != -1 )
+                result = path.Substr(startIndex: 0, length: index);
+            else
+                result = Substring.Empty;
+        }
+
+        /// <summary>
+        /// Gets the names of the path, from left to right.
+        /// </summary>
+        /// <param name="path">The data store path to look at.</param>
+        /// <returns>The names of the specified path.</returns>
+        public static IEnumerable<Substring> GetPathNames( Substring path )
+        {
+            Substring remainingPath = path;
+            Substring name;
+            do
             {
-                int index = path.LastIndexOf(PathSeparator);
-                if( index != -1 )
-                {
-                    result = path.Substr(startIndex: 0, length: index);
-                    return;
-                }
-            }
+                name = Substring.SplitFirst(ref remainingPath, PathSeparatorArray, StringSplitOptions.None);
+                if( !DataStore.IsValidName(name) )
+                    throw new ArgumentException("Not a valid data store path!").Store("path", path);
 
-            result = Substring.Empty;
+                yield return name;
+            }
+            while( !remainingPath.NullOrEmpty );
+        }
+
+        /// <summary>
+        /// Determines whether the specified string is a valid data store path.
+        /// </summary>
+        /// <param name="path">The string to examine.</param>
+        /// <returns><c>true</c> if the specified string is a valid data store path; otherwise, <c>false</c>.</returns>
+        public static bool IsValidPath( Substring path )
+        {
+            if( path.Origin.NullReference() )
+                return false;
+
+            if( path.Length == 0 )
+                return true;
+
+            if( path.Length > MaxPathLength )
+                return false;
+
+            Substring remainingPath = path;
+            Substring name;
+            do
+            {
+                name = Substring.SplitFirst(ref remainingPath, PathSeparatorArray, StringSplitOptions.None);
+                if( !DataStore.IsValidName(name) )
+                    return false;
+            }
+            while( !remainingPath.NullOrEmpty );
+
+            return true;
         }
 
         #endregion
 
-        //// TODO: [un]escape paths
         //// TODO: unit tests
-
         //// TODO: binary data store (seekable?! - what about network streams?)
         //// TODO: json data store (do not store number/true/false/null as strings)
-        //// TODO: IDataStoreNode & Co. --> default [de]serialization mappings  (instead of reader.ReadNode & Co.)
         //// TODO: test datastores for attempting to read or write multiple roots
     }
 }

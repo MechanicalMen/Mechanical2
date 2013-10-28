@@ -185,6 +185,9 @@
     <Compile Include="..\Mechanical2\DataStores\DataStoreToken.cs">
       <Link>DataStores\DataStoreToken.cs</Link>
     </Compile>
+    <Compile Include="..\Mechanical2\DataStores\DataStoreWriterBase.cs">
+      <Link>DataStores\DataStoreWriterBase.cs</Link>
+    </Compile>
     <Compile Include="..\Mechanical2\DataStores\DelegateSerialization.cs">
       <Link>DataStores\DelegateSerialization.cs</Link>
     </Compile>
@@ -311,8 +314,17 @@
     <Compile Include="..\Mechanical2\IO\IBinaryReader.cs">
       <Link>IO\IBinaryReader.cs</Link>
     </Compile>
+    <Compile Include="..\Mechanical2\IO\IBinaryStream.cs">
+      <Link>IO\IBinaryStream.cs</Link>
+    </Compile>
     <Compile Include="..\Mechanical2\IO\IBinaryWriter.cs">
       <Link>IO\IBinaryWriter.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\IO\IOWrapper.cs">
+      <Link>IO\IOWrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\IO\ISeekableBinaryReader.cs">
+      <Link>IO\ISeekableBinaryReader.cs</Link>
     </Compile>
     <Compile Include="..\Mechanical2\IO\ITextReader.cs">
       <Link>IO\ITextReader.cs</Link>

@@ -175,30 +175,6 @@
     <Compile Include="..\Mechanical2\DataStores\ExceptionInfo.cs">
       <Link>DataStores\ExceptionInfo.cs</Link>
     </Compile>
-    <Compile Include="..\Mechanical2\DataStores\File\FileDataStoreEntry.cs">
-      <Link>DataStores\File\FileDataStoreEntry.cs</Link>
-    </Compile>
-    <Compile Include="..\Mechanical2\DataStores\File\FileDataStoreEntryList.cs">
-      <Link>DataStores\File\FileDataStoreEntryList.cs</Link>
-    </Compile>
-    <Compile Include="..\Mechanical2\DataStores\File\FileDataStoreReader.cs">
-      <Link>DataStores\File\FileDataStoreReader.cs</Link>
-    </Compile>
-    <Compile Include="..\Mechanical2\DataStores\File\FileDataStoreReaderBase.cs">
-      <Link>DataStores\File\FileDataStoreReaderBase.cs</Link>
-    </Compile>
-    <Compile Include="..\Mechanical2\DataStores\File\FileDataStoreWriter.cs">
-      <Link>DataStores\File\FileDataStoreWriter.cs</Link>
-    </Compile>
-    <Compile Include="..\Mechanical2\DataStores\File\FileDataStoreWriterBase.cs">
-      <Link>DataStores\File\FileDataStoreWriterBase.cs</Link>
-    </Compile>
-    <Compile Include="..\Mechanical2\DataStores\File\ZipDataStoreReader.cs">
-      <Link>DataStores\File\ZipDataStoreReader.cs</Link>
-    </Compile>
-    <Compile Include="..\Mechanical2\DataStores\File\ZipDataStoreWriter.cs">
-      <Link>DataStores\File\ZipDataStoreWriter.cs</Link>
-    </Compile>
     <Compile Include="..\Mechanical2\DataStores\IDataStoreObjectDeserializer.cs">
       <Link>DataStores\IDataStoreObjectDeserializer.cs</Link>
     </Compile>
@@ -216,12 +192,6 @@
     </Compile>
     <Compile Include="..\Mechanical2\DataStores\IDataStoreWriter.cs">
       <Link>DataStores\IDataStoreWriter.cs</Link>
-    </Compile>
-    <Compile Include="..\Mechanical2\DataStores\ISeekableDataStoreReader.cs">
-      <Link>DataStores\ISeekableDataStoreReader.cs</Link>
-    </Compile>
-    <Compile Include="..\Mechanical2\DataStores\ISeekableDataStoreWriter.cs">
-      <Link>DataStores\ISeekableDataStoreWriter.cs</Link>
     </Compile>
     <Compile Include="..\Mechanical2\DataStores\ISO8601.cs">
       <Link>DataStores\ISO8601.cs</Link>
@@ -322,14 +292,47 @@
     <Compile Include="..\Mechanical2\IO\BinaryWriterBaseLE.cs">
       <Link>IO\BinaryWriterBaseLE.cs</Link>
     </Compile>
+    <Compile Include="..\Mechanical2\IO\FileSystem\DataStoreObjectFileSystem.cs">
+      <Link>IO\FileSystem\DataStoreObjectFileSystem.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\IO\FileSystem\DirectoryFileSystem.cs">
+      <Link>IO\FileSystem\DirectoryFileSystem.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\IO\FileSystem\FileSystemExtensions.cs">
+      <Link>IO\FileSystem\FileSystemExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\IO\FileSystem\IFileSystem.cs">
+      <Link>IO\FileSystem\IFileSystem.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\IO\FileSystem\IFileSystemReader.cs">
+      <Link>IO\FileSystem\IFileSystemReader.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\IO\FileSystem\IFileSystemWriter.cs">
+      <Link>IO\FileSystem\IFileSystemWriter.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\IO\FileSystem\PortableFileName.cs">
+      <Link>IO\FileSystem\PortableFileName.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\IO\FileSystem\ZipFileSystem.cs">
+      <Link>IO\FileSystem\ZipFileSystem.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\IO\FileSystem\ZipFileSystemReader.cs">
+      <Link>IO\FileSystem\ZipFileSystemReader.cs</Link>
+    </Compile>
     <Compile Include="..\Mechanical2\IO\IBinaryReader.cs">
       <Link>IO\IBinaryReader.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\IO\IBinaryStream.cs">
+      <Link>IO\IBinaryStream.cs</Link>
     </Compile>
     <Compile Include="..\Mechanical2\IO\IBinaryWriter.cs">
       <Link>IO\IBinaryWriter.cs</Link>
     </Compile>
     <Compile Include="..\Mechanical2\IO\IOWrapper.cs">
       <Link>IO\IOWrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\IO\ISeekableBinaryReader.cs">
+      <Link>IO\ISeekableBinaryReader.cs</Link>
     </Compile>
     <Compile Include="..\Mechanical2\IO\ITextReader.cs">
       <Link>IO\ITextReader.cs</Link>

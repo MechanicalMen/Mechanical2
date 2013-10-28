@@ -64,7 +64,7 @@ namespace Mechanical.DataStores.Node
                 return false;
 
 
-            if( !DataStore.SameNames(this.Name, other.Name) )
+            if( !DataStore.Comparer.Equals(this.Name, other.Name) )
                 return false;
 
             var value = this as IDataStoreValue;

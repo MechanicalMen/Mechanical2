@@ -42,7 +42,7 @@ namespace Mechanical.Conditions
             {
                 string str = entry.Key as string;
                 if( str.NotNullReference()
-                 && DataStore.SameNames(str, key) )
+                 && DataStore.Comparer.Equals(str, key) )
                 {
                     if( (entry.Value.NullReference() && value.NullReference())
                      || string.Equals(entry.Value as string, value, StringComparison.Ordinal) )

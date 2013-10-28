@@ -131,8 +131,6 @@ namespace Mechanical.DataStores
 
         #region Private Fields
 
-        private static readonly char[] PathSeparator = new char[] { DataStore.PathSeparator };
-
         private readonly IDisposableObject asDisposableObject;
         private readonly List<string> parents = new List<string>();
         private DataStoreToken currentToken = DataStoreToken.DataStoreStart;
@@ -263,7 +261,7 @@ namespace Mechanical.DataStores
                 Substring name;
                 do
                 {
-                    name = Substring.SplitFirst(ref remainingPath, PathSeparator, StringSplitOptions.None);
+                    name = Substring.SplitFirst(ref remainingPath, DataStore.PathSeparatorArray, StringSplitOptions.None);
 #if DEBUG
                     if( !DataStore.IsValidName(name) )
                         throw new Exception("Data store implementation returned invalid name!").StoreFileLine();
