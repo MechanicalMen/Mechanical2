@@ -255,5 +255,25 @@ namespace Mechanical.IO.FileSystem
         }
 
         #endregion
+
+        #region ReadAllText
+
+        /// <summary>
+        /// Opens a text file, reads all lines of the file, and then closes the file.
+        /// </summary>
+        /// <param name="fileSystem">The file system to query.</param>
+        /// <param name="dataStorePath">The data store path specifying the file to read.</param>
+        /// <returns>A string containing all lines of the file.</returns>
+        public static string ReadAllText( this IFileSystemReader fileSystem, string dataStorePath )
+        {
+            Ensure.Debug(fileSystem, f => f.NotNull());
+
+            var reader = fileSystem.ReadText(dataStorePath);
+            var result = reader.ReadToEnd();
+            reader.Close();
+            return result;
+        }
+
+        #endregion
     }
 }

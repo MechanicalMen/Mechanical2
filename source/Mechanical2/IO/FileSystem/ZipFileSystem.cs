@@ -1,26 +1,25 @@
 ﻿using System;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Text;
 using Mechanical.Conditions;
 using Mechanical.Core;
-using Mechanical.DataStores;
 
 namespace Mechanical.IO.FileSystem
 {
     /// <summary>
     /// Represents a zip file as an abstract file system.
     /// </summary>
-    public class ZipFileSystem : IFileSystem
+    public class ZipFileSystem : ZipFileSystemBase
     {
-        #region Non-Public Fields
+        #region Private Fields
 
-        internal const char ZipDirectorySeparator = '/';
-        internal static readonly Encoding ZipEntryNameEncoding = Encoding.UTF8;
-        internal static readonly CompressionLevel CompressionLevel = CompressionLevel.Optimal;
+        private static readonly Encoding ZipEntryNameEncoding = Encoding.UTF8;
+        private static readonly CompressionLevel CompressionLevel = CompressionLevel.Optimal;
 
+        private Stream zipStream;
         private ZipArchive zipArchive;
-        private ZipFileSystemReader reader;
 
         #endregion
 
@@ -32,16 +31,12 @@ namespace Mechanical.IO.FileSystem
         /// <param name="stream">The <see cref="Stream"/> that contains the archive.</param>
         /// <param name="escapeFileNames">Indicates whether the original file names are escaped.</param>
         public ZipFileSystem( Stream stream, bool escapeFileNames )
+            : base(escapeFileNames)
         {
             try
             {
-                this.zipArchive = new ZipArchive(
-                    stream, 
-                    ZipArchiveMode.Update,
-                    leaveOpen: false,
-                    entryNameEncoding: ZipEntryNameEncoding);
-
-                this.reader = new ZipFileSystemReader(this.zipArchive, escapeFileNames);
+                this.zipStream = stream;
+                this.Flush();
             }
             catch( Exception ex )
             {
@@ -73,356 +68,135 @@ namespace Mechanical.IO.FileSystem
 
         #endregion
 
-        #region Internal Static Methods
+        #region IDisposableObject
 
-        internal static string ToZipPath( string dataStorePath, bool escapeNames, bool isDirectory )
+        /// <summary>
+        /// Called when the object is being disposed of. Inheritors must call base.OnDispose to be properly disposed.
+        /// </summary>
+        /// <param name="disposing">If set to <c>true</c>, release both managed and unmanaged resources; otherwise release only the unmanaged resources.</param>
+        protected override void OnDispose( bool disposing )
         {
-            try
+            if( disposing )
             {
-                if( dataStorePath.NullOrEmpty() )
-                    return string.Empty;
+                //// dispose-only (i.e. non-finalizable) logic
+                //// (managed, disposable resources you own)
 
-                string zipPath;
-                if( escapeNames )
+                if( this.zipArchive.NotNullReference() )
                 {
-                    zipPath = DataStore.UnescapePath(dataStorePath);
-                    zipPath = zipPath.Replace(DataStore.PathSeparator, ZipDirectorySeparator);
+                    this.zipArchive.Dispose();
+                    this.zipArchive = null;
                 }
-                else
-                    zipPath = dataStorePath.Replace(DataStore.PathSeparator, ZipDirectorySeparator);
 
-                if( isDirectory )
-                    return zipPath + ZipDirectorySeparator;
-                else
-                    return zipPath;
-            }
-            catch( Exception ex )
-            {
-                ex.Store("dataStorePath", dataStorePath);
-                ex.Store("escapeNames", escapeNames);
-                throw;
-            }
-        }
-
-        internal static string FromZipPath( string zipPath, bool escapeNames )
-        {
-            try
-            {
-                if( zipPath[zipPath.Length - 1] == ZipDirectorySeparator )
-                    zipPath = zipPath.Substring(startIndex: 0, length: zipPath.Length - 1);
-
-                string dataStorePath;
-                if( escapeNames )
+                if( this.zipStream.NotNullReference() )
                 {
-                    dataStorePath = zipPath.Replace(ZipDirectorySeparator, DataStore.PathSeparator);
-                    dataStorePath = DataStore.EscapePath(dataStorePath);
+                    this.zipStream.Dispose();
+                    this.zipStream = null;
                 }
-                else
-                    dataStorePath = zipPath.Replace(ZipDirectorySeparator, DataStore.PathSeparator);
+            }
 
-                return dataStorePath;
-            }
-            catch( Exception ex )
-            {
-                ex.Store("zipPath", zipPath);
-                ex.Store("escapeNames", escapeNames);
-                throw;
-            }
+            //// shared cleanup logic
+            //// (unmanaged resources)
+
+            base.OnDispose(disposing);
         }
 
         #endregion
 
-        #region Private Methods
+        #region ZipFileSystemBase
 
-        private ZipArchiveEntry CreateDirectoryRecursively( string dataStorePath )
+        /// <summary>
+        /// Returns the standard zip paths of the entries.
+        /// </summary>
+        /// <returns>The file paths of the zip entries found.</returns>
+        protected override string[] GetZipEntryFilePaths()
         {
-            // check whether the directory already exists
-            var zipDirectoryPath = ToZipPath(dataStorePath, this.EscapesNames, isDirectory: true);
-            var zipEntry = this.zipArchive.GetEntry(zipDirectoryPath);
-            if( zipEntry.NullReference() )
-            {
-                // make sure parent directory exists
-                var parentDataStorePath = DataStore.GetParentPath(dataStorePath);
-                if( !parentDataStorePath.NullOrEmpty() )
-                    this.CreateDirectoryRecursively(parentDataStorePath);
-
-                // make sure path specified is not a file
-                var zipFilePath = ToZipPath(dataStorePath, this.EscapesNames, isDirectory: false);
-                zipEntry = this.zipArchive.GetEntry(zipFilePath);
-                if( zipEntry.NotNullReference() )
-                    throw new FileNotFoundException("File system entry already exists, but isn't a directory!").Store("filePath", dataStorePath);
-
-                // create directory
-                zipEntry = this.zipArchive.CreateEntry(zipDirectoryPath, CompressionLevel);
-            }
-
-            return zipEntry;
+            return this.zipArchive.Entries.Select(e => e.FullName).ToArray();
         }
 
-        private void DeleteDirectoryRecursively( string dataStorePath )
+        /// <summary>
+        /// Determines whether a zip entry with the specified zip path exists.
+        /// </summary>
+        /// <param name="zipPath">The zip path to search for.</param>
+        /// <returns><c>true</c> if the zip path is in use; otherwise, <c>false</c>.</returns>
+        protected override bool ContainsEntry( string zipPath )
         {
-            foreach( var d in this.GetDirectoryNames(dataStorePath) )
-                this.DeleteDirectoryRecursively(d);
+            return this.zipArchive.GetEntry(zipPath).NotNullReference();
+        }
 
-            foreach( var f in this.GetFileNames(dataStorePath) )
-                this.DeleteFile(f);
+        /// <summary>
+        /// Opens an entry for reading.
+        /// </summary>
+        /// <param name="zipPath">The zip path identifying the entry.</param>
+        /// <returns>The stream to read the uncompressed contents of the zip entry from.</returns>
+        protected override Stream OpenRead( string zipPath )
+        {
+            var zipEntry = this.zipArchive.GetEntry(zipPath);
+            if( zipEntry.NotNullReference() )
+                return zipEntry.Open();
+            else
+                return null;
+        }
 
-            var zipDirectoryPath = ToZipPath(dataStorePath, this.EscapesNames, isDirectory: true);
-            var zipEntry = this.zipArchive.GetEntry(zipDirectoryPath);
+        /// <summary>
+        /// Gets the uncompressed size of the zip entry.
+        /// </summary>
+        /// <param name="zipPath">The zip path identifying the entry.</param>
+        /// <returns>The uncompressed size of the zip entry; or <c>null</c>.</returns>
+        protected override long? GetUncompressedSize( string zipPath )
+        {
+            var zipEntry = this.zipArchive.GetEntry(zipPath);
+            if( zipEntry.NotNullReference() )
+                return zipEntry.Length;
+            else
+                return null;
+        }
+
+        /// <summary>
+        /// Creates a new zip entry representing a directory.
+        /// </summary>
+        /// <param name="zipPath">The zip path identifying the entry.</param>
+        protected override void CreateDirectoryEntry( string zipPath )
+        {
+            this.zipArchive.CreateEntry(zipPath, CompressionLevel);
+        }
+
+        /// <summary>
+        /// Removes the specified zip entry.
+        /// </summary>
+        /// <param name="zipPath">The zip path identifying the entry.</param>
+        protected override void RemoveEntry( string zipPath )
+        {
+            var zipEntry = this.zipArchive.GetEntry(zipPath);
             if( zipEntry.NotNullReference() )
                 zipEntry.Delete();
         }
 
-        #endregion
-
-        #region IFileSystemReader
-
         /// <summary>
-        /// Gets a value indicating whether the names of files and directories are escaped.
-        /// If <c>false</c>, the data store path maps directly to the file path; otherwise escaping needs to be used, both by the implementation, as well as the calling code.
-        /// Setting it to <c>true</c> is the only way to influence file names, but then even valid data store names may need to be escaped (underscores!).
+        /// Creates a new zip entry representing a file.
         /// </summary>
-        /// <value>Indicates whether the names of files and directories are escaped.</value>
-        public bool EscapesNames
+        /// <param name="zipPath">The zip path identifying the entry.</param>
+        /// <returns>The <see cref="Stream"/> to which to write the contents of the entry to.</returns>
+        protected override Stream CreateFileEntry( string zipPath )
         {
-            get { return this.reader.EscapesNames; }
+            var zipEntry = this.zipArchive.CreateEntry(zipPath, CompressionLevel);
+            return zipEntry.Open();
         }
 
         /// <summary>
-        /// Gets the names of the files found directly in the specified directory.
-        /// Subdirectories are not searched.
+        /// Saves the current state of the zip file.
         /// </summary>
-        /// <param name="dataStorePath">The data store path specifying the directory to search for files.</param>
-        /// <returns>The names of the files found.</returns>
-        public string[] GetFileNames( string dataStorePath = "" )
+        protected override void Flush()
         {
-            return this.reader.GetFileNames(dataStorePath);
-        }
+            // ZipArchive has to be disposed to make it write its content to its underlying stream.
+            if( this.zipArchive.NotNullReference() )
+                this.zipArchive.Dispose();
 
-        /// <summary>
-        /// Gets the names of the directories found directly in the specified directory.
-        /// Subdirectories are not searched.
-        /// </summary>
-        /// <param name="dataStorePath">The data store path specifying the directory to search for directories.</param>
-        /// <returns>The names of the directories found.</returns>
-        public string[] GetDirectoryNames( string dataStorePath = "" )
-        {
-            return this.reader.GetDirectoryNames(dataStorePath);
-        }
-
-        /// <summary>
-        /// Opens the specified file for reading.
-        /// </summary>
-        /// <param name="dataStorePath">The data store path specifying the file to open.</param>
-        /// <returns>An <see cref="ITextReader"/> representing the file opened.</returns>
-        public ITextReader ReadText( string dataStorePath )
-        {
-            return this.reader.ReadText(dataStorePath);
-        }
-
-        /// <summary>
-        /// Opens the specified file for reading.
-        /// </summary>
-        /// <param name="dataStorePath">The data store path specifying the file to open.</param>
-        /// <returns>An <see cref="IBinaryReader"/> representing the file opened.</returns>
-        public IBinaryReader ReadBinary( string dataStorePath )
-        {
-            return this.reader.ReadBinary(dataStorePath);
-        }
-
-        /// <summary>
-        /// Gets the size, in bytes, of the specified file.
-        /// </summary>
-        /// <param name="dataStorePath">The data store path specifying the file.</param>
-        /// <returns>The size of the specified file in bytes.</returns>
-        public long GetFileSize( string dataStorePath )
-        {
-            return this.reader.GetFileSize(dataStorePath);
-        }
-
-        #endregion
-
-        #region IFileSystemWriter
-
-        /// <summary>
-        /// Gets a value indicating whether the names of files and directories are escaped.
-        /// If <c>false</c>, the data store path maps directly to the file path; otherwise escaping needs to be used, both by the implementation, as well as the calling code.
-        /// Setting it to <c>true</c> is the only way to influence file names, but then even valid data store names may need to be escaped (underscores!).
-        /// </summary>
-        /// <value>Indicates whether the names of files and directories are escaped.</value>
-        bool IFileSystemWriter.EscapesNames
-        {
-            get { return this.reader.EscapesNames; }
-        }
-
-        /// <summary>
-        /// Creates the specified directory (and any directories along the path) should it not exist.
-        /// </summary>
-        /// <param name="dataStorePath">The data store path specifying the directory to create.</param>
-        public void CreateDirectory( string dataStorePath )
-        {
-            try
-            {
-                if( dataStorePath.NullOrEmpty()
-                 || !DataStore.IsValidPath(dataStorePath) )
-                    throw new ArgumentException("Invalid data store path!").StoreFileLine();
-
-                this.CreateDirectoryRecursively(dataStorePath);
-            }
-            catch( Exception ex )
-            {
-                ex.Store("dataStorePath", dataStorePath);
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Deletes the specified file. Does nothing if it does not exist.
-        /// </summary>
-        /// <param name="dataStorePath">The data store path specifying the file to delete.</param>
-        public void DeleteFile( string dataStorePath )
-        {
-            try
-            {
-                if( dataStorePath.NullOrEmpty()
-                 || !DataStore.IsValidPath(dataStorePath) )
-                    throw new ArgumentException("Invalid data store path!").StoreFileLine();
-
-                var zipFilePath = ToZipPath(dataStorePath, this.EscapesNames, isDirectory: false);
-                var zipEntry = this.zipArchive.GetEntry(zipFilePath);
-                if( zipEntry.NotNullReference() )
-                    zipEntry.Delete();
-            }
-            catch( Exception ex )
-            {
-                ex.Store("dataStorePath", dataStorePath);
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Deletes the specified directory. Does nothing if it does not exist.
-        /// </summary>
-        /// <param name="dataStorePath">The data store path specifying the directory to delete.</param>
-        public void DeleteDirectory( string dataStorePath )
-        {
-            try
-            {
-                if( dataStorePath.NullOrEmpty()
-                 || !DataStore.IsValidPath(dataStorePath) )
-                    throw new ArgumentException("Invalid data store path!").StoreFileLine();
-
-                this.DeleteDirectoryRecursively(dataStorePath);
-            }
-            catch( Exception ex )
-            {
-                ex.Store("dataStorePath", dataStorePath);
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Always creates a new empty file, and opens it for writing.
-        /// </summary>
-        /// <param name="dataStorePath">The data store path specifying the file to open.</param>
-        /// <returns>An <see cref="ITextWriter"/> representing the file opened.</returns>
-        public ITextWriter CreateNewText( string dataStorePath )
-        {
-            try
-            {
-                if( dataStorePath.NullOrEmpty()
-                 || !DataStore.IsValidPath(dataStorePath) )
-                    throw new ArgumentException("Invalid data store path!").StoreFileLine();
-
-                // delete existing entry
-                var zipFilePath = ToZipPath(dataStorePath, this.EscapesNames, isDirectory: false);
-                var zipEntry = this.zipArchive.GetEntry(zipFilePath);
-                if( zipEntry.NotNullReference() )
-                    zipEntry.Delete();
-
-                // create directory
-                this.CreateDirectoryRecursively(DataStore.GetParentPath(dataStorePath));
-
-                // create new entry
-                zipEntry = this.zipArchive.CreateEntry(zipFilePath, CompressionLevel);
-                return IOWrapper.ToTextWriter(zipEntry.Open(), DataStore.DefaultEncoding, DataStore.DefaultNewLine);
-            }
-            catch( Exception ex )
-            {
-                ex.Store("dataStorePath", dataStorePath);
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Always creates a new empty file, and opens it for writing.
-        /// </summary>
-        /// <param name="dataStorePath">The data store path specifying the file to open.</param>
-        /// <returns>An <see cref="IBinaryWriter"/> representing the file opened.</returns>
-        public IBinaryWriter CreateNewBinary( string dataStorePath )
-        {
-            try
-            {
-                if( dataStorePath.NullOrEmpty()
-                 || !DataStore.IsValidPath(dataStorePath) )
-                    throw new ArgumentException("Invalid data store path!").StoreFileLine();
-
-                // delete existing entry
-                var zipFilePath = ToZipPath(dataStorePath, this.EscapesNames, isDirectory: false);
-                var zipEntry = this.zipArchive.GetEntry(zipFilePath);
-                if( zipEntry.NotNullReference() )
-                    zipEntry.Delete();
-
-                // create directory
-                this.CreateDirectoryRecursively(DataStore.GetParentPath(dataStorePath));
-
-                // create new entry
-                zipEntry = this.zipArchive.CreateEntry(zipFilePath, CompressionLevel);
-                return IOWrapper.ToBinaryWriter(zipEntry.Open());
-            }
-            catch( Exception ex )
-            {
-                ex.Store("dataStorePath", dataStorePath);
-                throw;
-            }
-        }
-
-        #endregion
-
-        #region IFileSystem
-
-        /// <summary>
-        /// Opens an existing file, or creates a new one, for reading and writing.
-        /// </summary>
-        /// <param name="dataStorePath">The data store path specifying the file to open.</param>
-        /// <returns>An <see cref="IBinaryStream"/> representing the file opened.</returns>
-        public IBinaryStream OpenBinary( string dataStorePath )
-        {
-            try
-            {
-                if( dataStorePath.NullOrEmpty()
-                 || !DataStore.IsValidPath(dataStorePath) )
-                    throw new ArgumentException("Invalid data store path!").StoreFileLine();
-
-                // try to open existing entry
-                var zipFilePath = ToZipPath(dataStorePath, this.EscapesNames, isDirectory: false);
-                var zipEntry = this.zipArchive.GetEntry(zipFilePath);
-                if( zipEntry.NullReference() )
-                {
-                    // create directory
-                    this.CreateDirectoryRecursively(DataStore.GetParentPath(dataStorePath));
-
-                    // create new entry
-                    zipEntry = this.zipArchive.CreateEntry(zipFilePath, CompressionLevel);
-                }
-
-                return IOWrapper.ToBinaryStream(zipEntry.Open());
-            }
-            catch( Exception ex )
-            {
-                ex.Store("dataStorePath", dataStorePath);
-                throw;
-            }
+            // (re)load the existing archive (if there is one)
+            this.zipArchive = new ZipArchive(
+                    this.zipStream,
+                    ZipArchiveMode.Update,
+                    leaveOpen: true, // makes the stream reusable
+                    entryNameEncoding: ZipEntryNameEncoding);
         }
 
         #endregion

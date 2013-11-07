@@ -411,8 +411,8 @@ namespace Mechanical.DataStores
         #region NameAndPathComparer, Comparer
 
         //// NOTE: Comparer needs to be able to handle invalid data store names and paths!
-        //// NOTE: carefully review code, if Comparer sensitivity changes, since some code
-        ////       uses it for strict file-data store name, file-file comparisons.
+        //// NOTE: carefully review code, if Comparer sensitivity changes,
+        ////       since Mechanical.IO.FileSystem depends on it as well.
 
         #region NameAndPathComparer
 

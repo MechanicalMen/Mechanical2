@@ -30,6 +30,14 @@ namespace Mechanical.IO
         #region StringReaderBase
 
         /// <summary>
+        /// Closes the abstract stream.
+        /// Calling it implies that this instances will not be used anymore.
+        /// </summary>
+        public override void Close()
+        {
+        }
+
+        /// <summary>
         /// Fills the internal buffer of the reader.
         /// </summary>
         /// <returns>Characters from the stream, or a null or empty <see cref="Substring"/> if all characters have been read.</returns>

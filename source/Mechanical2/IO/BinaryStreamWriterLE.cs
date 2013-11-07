@@ -58,6 +58,16 @@ namespace Mechanical.IO
         #region IBinaryWriter
 
         /// <summary>
+        /// Closes the abstract stream.
+        /// Calling it implies that this instances will not be used anymore.
+        /// </summary>
+        public override void Close()
+        {
+            //// this class does NOT dispose of the Stream it - currently - wraps
+            //// for that, use the IOWrapper class
+        }
+
+        /// <summary>
         /// Writes the byte array to the data store value.
         /// </summary>
         /// <param name="array">The byte array to write data from.</param>

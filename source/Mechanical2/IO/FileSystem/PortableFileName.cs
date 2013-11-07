@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using Mechanical.Conditions;
 using Mechanical.Core;
+using Mechanical.DataStores;
 
 namespace Mechanical.IO.FileSystem
 {
@@ -54,23 +56,23 @@ namespace Mechanical.IO.FileSystem
 
         #endregion
 
-        #region IsValid
+        #region IsValid*
 
         /// <summary>
         /// Determines whether the specified file name is portable.
         /// </summary>
         /// <param name="fileName">The file name to check.</param>
         /// <returns><c>true</c> if the file name is portable; otherwise, <c>false</c>.</returns>
-        public static bool IsValid( string fileName )
+        public static bool IsValidName( Substring fileName )
         {
             // null or empty
-            if( fileName.NullOrEmpty() )
+            if( fileName.NullOrEmpty )
                 return false;
 
             // valid characters only
-            foreach( char ch in fileName )
+            for( int i = 0; i < fileName.Length; ++i )
             {
-                if( !IsValidPosixPortableFileNameCharacter(ch) )
+                if( !IsValidPosixPortableFileNameCharacter(fileName[i]) )
                     return false;
             }
 
@@ -79,14 +81,15 @@ namespace Mechanical.IO.FileSystem
                 return false;
 
             // current and parent directory names
-            if( string.Equals(fileName, ".", StringComparison.Ordinal)
+            // the step above accounts for this
+            /*if( string.Equals(fileName, ".", StringComparison.Ordinal)
              || string.Equals(fileName, "..", StringComparison.Ordinal) )
-                return false;
+                return false;*/
 
             // DOS device names, in any character case
             foreach( var dosDevName in DosDeviceNames )
             {
-                if( string.Equals(fileName, dosDevName, StringComparison.OrdinalIgnoreCase) )
+                if( fileName.Equals(dosDevName, CompareOptions.OrdinalIgnoreCase) )
                     return false;
             }
 
@@ -94,15 +97,61 @@ namespace Mechanical.IO.FileSystem
             int extensionAt = fileName.LastIndexOf('.'); // this would not be OK, if we were checking file paths, instead of file names!
             if( extensionAt != -1 )
             {
-                fileName = fileName.Substring(startIndex: 0, length: extensionAt);
+                fileName = fileName.Substr(startIndex: 0, length: extensionAt);
                 foreach( var dosDevName in DosDeviceNames )
                 {
-                    if( string.Equals(fileName, dosDevName, StringComparison.OrdinalIgnoreCase) )
+                    if( fileName.Equals(dosDevName, CompareOptions.OrdinalIgnoreCase) )
                         return false;
                 }
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Determines whether the specified file path is portable.
+        /// The directory separator is <see cref="DataStore.PathSeparator"/>.
+        /// </summary>
+        /// <param name="filePath">The file path to check.</param>
+        /// <returns><c>true</c> if the file path is portable; otherwise, <c>false</c>.</returns>
+        public static bool IsValidPath( string filePath )
+        {
+            if( filePath.NullOrEmpty() )
+                return false;
+
+            Substring remainingPath = filePath;
+            Substring name;
+            do
+            {
+                name = Substring.SplitFirst(ref remainingPath, DataStore.PathSeparatorArray, StringSplitOptions.None);
+                if( !IsValidName(name) )
+                    return false;
+            }
+            while( !remainingPath.NullOrEmpty );
+
+            return true;
+        }
+
+        #endregion
+
+        #region ToValidDataStorePath
+
+        /// <summary>
+        /// Converts the relative file path to a valid data store path.
+        /// The directory separator is <see cref="DataStore.PathSeparator"/>.
+        /// </summary>
+        /// <param name="filePath">The relative file path to convert to a valid data store path; where the directory separator is <see cref="DataStore.PathSeparator"/>.</param>
+        /// <returns>The data store path created.</returns>
+        public static string ToDataStorePath( string filePath )
+        {
+            if( !IsValidPath(filePath) )
+                throw new ArgumentException("The specified file path is not portable!").Store("filePath", filePath);
+
+            var dataStorePath = DataStore.EscapePath(filePath);
+            if( !DataStore.IsValidPath(dataStorePath) )
+                throw new ArgumentException("The specified file path is too long!").Store("filePath", filePath);
+
+            return dataStorePath;
         }
 
         #endregion

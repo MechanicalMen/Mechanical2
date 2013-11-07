@@ -9,6 +9,12 @@ namespace Mechanical.IO
     public interface IBinaryWriter
     {
         /// <summary>
+        /// Closes the abstract stream.
+        /// Calling it implies that this instances will not be used anymore.
+        /// </summary>
+        void Close();
+
+        /// <summary>
         /// Writes the byte array to the data store value.
         /// </summary>
         /// <param name="array">The byte array to write data from.</param>

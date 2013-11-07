@@ -102,6 +102,90 @@ namespace Mechanical.DataStores
 
         #endregion
 
+        #region Read/Assert ObjectStart/~End
+
+        /// <summary>
+        /// Tests whether the current position of the data store reader is at an ObjectStart token.
+        /// </summary>
+        /// <param name="reader">The <see cref="IDataStoreReader"/> to use.</param>
+        /// <param name="name">The expected name of the current object, or <c>null</c> if it is not important.</param>
+        public static void AssertObjectStart( this IDataStoreReader reader, string name = null )
+        {
+            try
+            {
+                if( reader.Token != DataStoreToken.ObjectStart )
+                    throw new FormatException("Data store object start expected!").StoreFileLine();
+
+                if( name.NotNullReference()
+                 && !DataStore.Comparer.Equals(name, reader.Name) )
+                    throw new FormatException("Name mismatch!").StoreFileLine();
+            }
+            catch( Exception ex )
+            {
+                ex.StoreFileLine();
+                ex.Store("expectedName", name);
+                ex.Store("Path", reader.Path);
+                reader.StorePosition(ex);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Reads the next ObjectStart token from the data store reader.
+        /// </summary>
+        /// <param name="reader">The <see cref="IDataStoreReader"/> to use.</param>
+        /// <param name="name">The expected name of the current object, or <c>null</c> if it is not important.</param>
+        public static void ReadObjectStart( this IDataStoreReader reader, string name = null )
+        {
+            if( !reader.Read() )
+            {
+                var ex = new FormatException("Unexpected end of data store!")
+                    .StoreFileLine()
+                    .Store("expectedName", name)
+                    .Store("Path", reader.Path);
+                reader.StorePosition(ex);
+                throw ex;
+            }
+
+            AssertObjectStart(reader, name);
+        }
+
+        /// <summary>
+        /// Tests whether the current position of the data store reader is at an ObjectEnd token.
+        /// </summary>
+        /// <param name="reader">The <see cref="IDataStoreReader"/> to use.</param>
+        public static void AssertObjectEnd( this IDataStoreReader reader )
+        {
+            if( reader.Token != DataStoreToken.ObjectEnd )
+            {
+                var ex = new FormatException("Data store object end expected!")
+                    .StoreFileLine()
+                    .Store("Path", reader.Path);
+                reader.StorePosition(ex);
+                throw ex;
+            }
+        }
+
+        /// <summary>
+        /// Reads the next ObjectEnd token from the data store reader.
+        /// </summary>
+        /// <param name="reader">The <see cref="IDataStoreReader"/> to use.</param>
+        public static void ReadObjectEnd( this IDataStoreReader reader )
+        {
+            if( !reader.Read() )
+            {
+                var ex = new FormatException("Unexpected end of data store!")
+                    .StoreFileLine()
+                    .Store("Path", reader.Path);
+                reader.StorePosition(ex);
+                throw ex;
+            }
+
+            AssertObjectEnd(reader);
+        }
+
+        #endregion
+
         #region Deserialize/Read( [name,] deserializer )
 
         /// <summary>
@@ -160,12 +244,7 @@ namespace Mechanical.DataStores
                 if( deserializer.NullReference() )
                     throw new ArgumentNullException("deserializer").StoreFileLine();
 
-                if( reader.Token != DataStoreToken.ObjectStart )
-                    throw new FormatException("Data store object start expected!").StoreFileLine();
-
-                if( name.NotNullReference()
-                 && !DataStore.Comparer.Equals(name, reader.Name) )
-                    throw new FormatException("Name mismatch!").StoreFileLine();
+                AssertObjectStart(reader, name);
 
                 // deserialize
                 int objDepth = reader.Depth;
@@ -924,7 +1003,4 @@ namespace Mechanical.DataStores
 
         #endregion
     }
-
-    //// TODO: TryReadAs*(string name, ...) // check name; check token: object end or data store end; check token: value or object start
-    //// TODO: unit tests for extension methods
 }

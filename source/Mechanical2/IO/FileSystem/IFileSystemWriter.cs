@@ -1,4 +1,6 @@
 ﻿using System;
+using Mechanical.Conditions;
+using Mechanical.Core;
 
 namespace Mechanical.IO.FileSystem
 {
@@ -46,5 +48,31 @@ namespace Mechanical.IO.FileSystem
         /// <param name="dataStorePath">The data store path specifying the file to open.</param>
         /// <returns>An <see cref="IBinaryWriter"/> representing the file opened.</returns>
         IBinaryWriter CreateNewBinary( string dataStorePath );
+    }
+
+    /// <content>
+    /// Methods extending the <see cref="IFileSystemWriter"/> type.
+    /// </content>
+    public static partial class FileSystemExtensions
+    {
+        #region WriteAllText
+
+        /// <summary>
+        /// Creates a new file, writes the specified string to the file, and then closes the file. If the target file already exists, it is overwritten.
+        /// </summary>
+        /// <param name="fileSystem">The file system to use.</param>
+        /// <param name="dataStorePath">The data store path specifying the file to open.</param>
+        /// <param name="contents">The string to write to the file.</param>
+        public static void WriteAllText( this IFileSystemWriter fileSystem, string dataStorePath, string contents )
+        {
+            Ensure.Debug(fileSystem, f => f.NotNull());
+
+            var writer = fileSystem.CreateNewText(dataStorePath);
+            if( contents.NotNullReference() ) // same 'null' handling as the standard .NET implementation
+                writer.Write(contents);
+            writer.Close();
+        }
+
+        #endregion
     }
 }

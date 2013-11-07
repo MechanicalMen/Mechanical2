@@ -36,6 +36,7 @@ namespace Mechanical.Log
 
         /// <summary>
         /// Returns a new <see cref="LogEntrySerializer"/> instance.
+        /// This is the recommended way of creating an instance.
         /// </summary>
         /// <param name="xmlFilePath">The file to write the Xml contents to.</param>
         /// <returns>The new <see cref="LogEntrySerializer"/> instance created.</returns>
@@ -59,6 +60,7 @@ namespace Mechanical.Log
 
         /// <summary>
         /// Returns a new <see cref="LogEntrySerializer"/> instance.
+        /// If possible, use the other method to create an instance.
         /// </summary>
         /// <param name="xmlStream">The <see cref="Stream"/> to write the Xml contents to.</param>
         /// <returns>The new <see cref="LogEntrySerializer"/> instance created.</returns>
@@ -109,9 +111,17 @@ namespace Mechanical.Log
         /// <param name="entry">The <see cref="LogEntry"/> to log.</param>
         protected override void Log( LogEntry entry )
         {
-            this.writer.Write("e" + this.logEntryIndex.ToString(CultureInfo.InvariantCulture), entry, LogEntry.Serializer.Default);
-            this.writer.Flush();
-            ++this.logEntryIndex;
+            // NOTE: when the disk is full, trying to write and then failing
+            //       may result in an infinite cycle
+            try
+            {
+                this.writer.Write("e" + this.logEntryIndex.ToString(CultureInfo.InvariantCulture), entry, LogEntry.Serializer.Default);
+                this.writer.Flush();
+                ++this.logEntryIndex;
+            }
+            catch
+            {
+            }
         }
 
         #endregion

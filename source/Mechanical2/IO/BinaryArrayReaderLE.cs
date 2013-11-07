@@ -139,6 +139,14 @@ namespace Mechanical.IO
         #region IBinaryReader
 
         /// <summary>
+        /// Closes the abstract stream.
+        /// Calling it implies that this instances will not be used anymore.
+        /// </summary>
+        public void Close()
+        {
+        }
+
+        /// <summary>
         /// Reads the specified number of bytes, starting from a specified point in the byte array.
         /// </summary>
         /// <param name="buffer">The buffer to read data into.</param>

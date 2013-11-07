@@ -230,6 +230,7 @@ namespace Mechanical.IO.FileSystem
         #region Private Fields
 
         private readonly DataStoreObject.NodesCollection rootNodes;
+        private readonly bool escapeFileNames;
 
         #endregion
 
@@ -238,9 +239,11 @@ namespace Mechanical.IO.FileSystem
         /// <summary>
         /// Initializes a new instance of the <see cref="DataStoreObjectFileSystem"/> class
         /// </summary>
-        public DataStoreObjectFileSystem()
+        /// <param name="escapeFileNames">Indicates whether the original file names should be escaped. Sets the appropriate property, but otherwise ignored.</param>
+        public DataStoreObjectFileSystem( bool escapeFileNames = false )
         {
             this.rootNodes = new DataStoreObject.NodesCollection();
+            this.escapeFileNames = escapeFileNames;
         }
 
         #endregion
@@ -443,7 +446,7 @@ namespace Mechanical.IO.FileSystem
         /// <value>Indicates whether the names of files and directories are escaped.</value>
         public bool EscapesNames
         {
-            get { return false; }
+            get { return this.escapeFileNames; }
         }
 
         /// <summary>
@@ -604,7 +607,7 @@ namespace Mechanical.IO.FileSystem
         /// <value>Indicates whether the names of files and directories are escaped.</value>
         bool IFileSystemWriter.EscapesNames
         {
-            get { return false; }
+            get { return this.escapeFileNames; }
         }
 
         /// <summary>

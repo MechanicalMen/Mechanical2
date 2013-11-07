@@ -9,6 +9,12 @@ namespace Mechanical.IO
     public interface ITextReader
     {
         /// <summary>
+        /// Closes the abstract stream.
+        /// Calling it implies that this instances will not be used anymore.
+        /// </summary>
+        void Close();
+
+        /// <summary>
         /// Returns the next available character, without actually reading it.
         /// </summary>
         /// <returns>An integer representing the next character to be read, or <c>-1</c> if no more characters are available or the reader does not support seeking.</returns>

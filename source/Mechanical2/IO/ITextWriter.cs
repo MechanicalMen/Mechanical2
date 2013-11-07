@@ -9,6 +9,12 @@ namespace Mechanical.IO
     public interface ITextWriter
     {
         /// <summary>
+        /// Closes the abstract stream.
+        /// Calling it implies that this instances will not be used anymore.
+        /// </summary>
+        void Close();
+
+        /// <summary>
         /// Writes the character.
         /// </summary>
         /// <param name="character">The character to write.</param>

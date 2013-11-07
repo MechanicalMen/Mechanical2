@@ -27,14 +27,14 @@ namespace Mechanical.IO.FileSystem
         /// <summary>
         /// Initializes a new instance of the <see cref="DirectoryFileSystem"/> class
         /// </summary>
-        /// <param name="directoryPath">The path specifying the contents at the root of this abstract file system.</param>
+        /// <param name="directoryPath">The path specifying the contents at the root of this abstract file system. If the directory does not exist, it is created.</param>
         /// <param name="escapeFileNames">Indicates whether the original file names are escaped.</param>
         public DirectoryFileSystem( string directoryPath, bool escapeFileNames )
         {
             try
             {
                 if( !Directory.Exists(directoryPath) )
-                    throw new FileNotFoundException("Directory does not exist!");
+                    Directory.CreateDirectory(directoryPath);
 
                 this.rootDirectoryFullPath = Path.GetFullPath(directoryPath);
                 this.escapeFileNames = escapeFileNames;
@@ -122,11 +122,10 @@ namespace Mechanical.IO.FileSystem
                  && !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                var relativeHostPath = ToRelativeHostPath(dataStorePath, this.EscapesNames);
-                var fullHostPath = Path.Combine(this.rootDirectoryFullPath, relativeHostPath);
-
+                var fullHostPath = this.ToFullFilePath(dataStorePath);
                 var filesOrDirectories = getFilesOrDirectories(fullHostPath);
 
+                string relativeHostPath;
                 var results = new List<string>(filesOrDirectories.Length);
                 foreach( var f in filesOrDirectories )
                 {
@@ -222,10 +221,9 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                var relativeHostPath = ToRelativeHostPath(dataStorePath, this.EscapesNames);
-                var fullHostPath = Path.Combine(this.rootDirectoryFullPath, relativeHostPath);
-
-                return IOWrapper.ToTextReader(File.OpenRead(fullHostPath));
+                var fullHostPath = this.ToFullFilePath(dataStorePath);
+                var fs = File.OpenRead(fullHostPath);
+                return IOWrapper.ToTextReader(fs);
             }
             catch( Exception ex )
             {
@@ -247,9 +245,7 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                var relativeHostPath = ToRelativeHostPath(dataStorePath, this.EscapesNames);
-                var fullHostPath = Path.Combine(this.rootDirectoryFullPath, relativeHostPath);
-
+                var fullHostPath = this.ToFullFilePath(dataStorePath);
                 return IOWrapper.ToBinaryReader(File.OpenRead(fullHostPath));
             }
             catch( Exception ex )
@@ -272,9 +268,7 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                var relativeHostPath = ToRelativeHostPath(dataStorePath, this.EscapesNames);
-                var fullHostPath = Path.Combine(this.rootDirectoryFullPath, relativeHostPath);
-
+                var fullHostPath = this.ToFullFilePath(dataStorePath);
                 return new FileInfo(fullHostPath).Length;
             }
             catch( Exception ex )
@@ -311,9 +305,7 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                var relativeHostPath = ToRelativeHostPath(dataStorePath, this.EscapesNames);
-                var fullHostPath = Path.Combine(this.rootDirectoryFullPath, relativeHostPath);
-
+                var fullHostPath = this.ToFullFilePath(dataStorePath);
                 Directory.CreateDirectory(fullHostPath);
             }
             catch( Exception ex )
@@ -335,9 +327,7 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                var relativeHostPath = ToRelativeHostPath(dataStorePath, this.EscapesNames);
-                var fullHostPath = Path.Combine(this.rootDirectoryFullPath, relativeHostPath);
-
+                var fullHostPath = this.ToFullFilePath(dataStorePath);
                 if( File.Exists(fullHostPath) )
                 {
                     RemoveReadOnlyAttribute(fullHostPath);
@@ -363,9 +353,7 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                var relativeHostPath = ToRelativeHostPath(dataStorePath, this.EscapesNames);
-                var fullHostPath = Path.Combine(this.rootDirectoryFullPath, relativeHostPath);
-
+                var fullHostPath = this.ToFullFilePath(dataStorePath);
                 if( Directory.Exists(fullHostPath) )
                     RecursivelyDeleteExistingDirectory(fullHostPath);
             }
@@ -389,9 +377,7 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                var relativeHostPath = ToRelativeHostPath(dataStorePath, this.EscapesNames);
-                var fullHostPath = Path.Combine(this.rootDirectoryFullPath, relativeHostPath);
-
+                var fullHostPath = this.ToFullFilePath(dataStorePath);
                 Directory.CreateDirectory(Path.GetDirectoryName(fullHostPath));
                 return IOWrapper.ToTextWriter(File.OpenWrite(fullHostPath), DataStore.DefaultEncoding, DataStore.DefaultNewLine);
             }
@@ -415,9 +401,7 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                var relativeHostPath = ToRelativeHostPath(dataStorePath, this.EscapesNames);
-                var fullHostPath = Path.Combine(this.rootDirectoryFullPath, relativeHostPath);
-
+                var fullHostPath = this.ToFullFilePath(dataStorePath);
                 Directory.CreateDirectory(Path.GetDirectoryName(fullHostPath));
                 return IOWrapper.ToBinaryWriter(File.OpenWrite(fullHostPath));
             }
@@ -445,9 +429,7 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                var relativeHostPath = ToRelativeHostPath(dataStorePath, this.EscapesNames);
-                var fullHostPath = Path.Combine(this.rootDirectoryFullPath, relativeHostPath);
-
+                var fullHostPath = this.ToFullFilePath(dataStorePath);
                 Directory.CreateDirectory(Path.GetDirectoryName(fullHostPath));
                 return IOWrapper.ToBinaryStream(new FileStream(fullHostPath, FileMode.OpenOrCreate, FileAccess.ReadWrite));
             }
@@ -456,6 +438,24 @@ namespace Mechanical.IO.FileSystem
                 ex.Store("dataStorePath", dataStorePath);
                 throw;
             }
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Converts a dataStorePath of the abstract file system,
+        /// to a full file path of the operating system.
+        /// If at all possible, use streams (see <see cref="IOWrapper"/>) instead of this method.
+        /// </summary>
+        /// <param name="dataStorePath">The data store path specifying the file or directory.</param>
+        /// <returns>The full path to the file or directory.</returns>
+        public string ToFullFilePath( string dataStorePath )
+        {
+            var relativeHostPath = ToRelativeHostPath(dataStorePath, this.EscapesNames);
+            var fullHostPath = Path.Combine(this.rootDirectoryFullPath, relativeHostPath);
+            return fullHostPath;
         }
 
         #endregion

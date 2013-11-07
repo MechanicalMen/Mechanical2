@@ -43,6 +43,14 @@ namespace Mechanical.IO
         #region ITextWriter
 
         /// <summary>
+        /// Closes the abstract stream.
+        /// Calling it implies that this instances will not be used anymore.
+        /// </summary>
+        public void Close()
+        {
+        }
+
+        /// <summary>
         /// Writes the character.
         /// </summary>
         /// <param name="character">The character to write.</param>

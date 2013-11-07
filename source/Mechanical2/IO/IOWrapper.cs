@@ -41,6 +41,7 @@ namespace Mechanical.IO
 
                 this.stream = stream;
                 this.reader = new BinaryStreamReaderLE(this.stream);
+                this.writer = new BinaryStreamWriterLE(this.stream);
             }
 
             #endregion
@@ -76,6 +77,11 @@ namespace Mechanical.IO
             #endregion
 
             #region IBinaryReader
+
+            void IBinaryReader.Close()
+            {
+                this.Close();
+            }
 
             public int Read( byte[] buffer, int index, int count )
             {
@@ -274,6 +280,11 @@ namespace Mechanical.IO
 
             #region IBinaryWriter
 
+            void IBinaryWriter.Close()
+            {
+                this.Close();
+            }
+
             public void Write( byte[] array, int offset, int count )
             {
                 if( this.IsDisposed )
@@ -406,6 +417,11 @@ namespace Mechanical.IO
 
             #region IBinaryStream
 
+            public void Close()
+            {
+                this.Dispose();
+            }
+
             public void SetLength( long value )
             {
                 if( this.IsDisposed )
@@ -462,11 +478,11 @@ namespace Mechanical.IO
             {
                 if( disposing )
                 {
-                    var asDisposable = this.binaryStream as IDisposable;
-                    if( asDisposable.NotNullReference() )
-                        asDisposable.Dispose();
-
-                    this.binaryStream = null;
+                    if( this.binaryStream.NotNullReference() )
+                    {
+                        this.binaryStream.Close();
+                        this.binaryStream = null;
+                    }
                 }
 
                 base.Dispose(disposing);
@@ -658,6 +674,11 @@ namespace Mechanical.IO
             #endregion
 
             #region IBinaryReader
+
+            public void Close()
+            {
+                this.Dispose();
+            }
 
             public int Read( byte[] buffer, int index, int count )
             {
@@ -867,12 +888,12 @@ namespace Mechanical.IO
             {
                 if( disposing )
                 {
-                    var asDisposable = this.binaryReader as IDisposable;
-                    if( asDisposable.NotNullReference() )
-                        asDisposable.Dispose();
-
-                    this.binaryReader = null;
-                    this.binarySeekable = null;
+                    if( this.binaryReader.NotNullReference() )
+                    {
+                        this.binaryReader.Close();
+                        this.binaryReader = null;
+                        this.binarySeekable = null;
+                    }
                 }
 
                 base.Dispose(disposing);
@@ -1032,6 +1053,11 @@ namespace Mechanical.IO
             #endregion
 
             #region IBinaryWriter
+
+            public void Close()
+            {
+                this.Dispose();
+            }
 
             public void Write( byte[] array, int offset, int count )
             {
@@ -1209,10 +1235,11 @@ namespace Mechanical.IO
             {
                 if( disposing )
                 {
-                    var asDisposable = this.binaryWriter as IDisposable;
-                    if( asDisposable.NotNullReference() )
-                        asDisposable.Dispose();
-                    this.binaryWriter = null;
+                    if( this.binaryWriter.NotNullReference() )
+                    {
+                        this.binaryWriter.Close();
+                        this.binaryWriter = null;
+                    }
                 }
 
                 base.Dispose(disposing);
@@ -1377,6 +1404,11 @@ namespace Mechanical.IO
 
             #region ITextReader
 
+            public void Close()
+            {
+                this.Dispose();
+            }
+
             public int Peek()
             {
                 if( this.IsDisposed )
@@ -1471,24 +1503,21 @@ namespace Mechanical.IO
 
             #endregion
 
-            #region IDisposableObject
+            #region TextReader
 
             protected override void Dispose( bool disposing )
             {
                 if( disposing )
                 {
-                    var asDisposable = this.textReader as IDisposable;
-                    if( asDisposable.NotNullReference() )
-                        asDisposable.Dispose();
-                    this.textReader = null;
+                    if( this.textReader.NotNullReference() )
+                    {
+                        this.textReader.Close();
+                        this.textReader = null;
+                    }
                 }
 
                 base.Dispose(disposing);
             }
-
-            #endregion
-
-            #region TextReader
 
             public override int Peek()
             {
@@ -1582,6 +1611,11 @@ namespace Mechanical.IO
 
             #region ITextWriter
 
+            public void Close()
+            {
+                this.Dispose();
+            }
+
             public void Write( char character )
             {
                 if( this.IsDisposed )
@@ -1664,24 +1698,21 @@ namespace Mechanical.IO
 
             #endregion
 
-            #region IDisposableObject
+            #region TextWriter
 
             protected override void Dispose( bool disposing )
             {
                 if( disposing )
                 {
-                    var asDisposable = this.textWriter as IDisposable;
-                    if( asDisposable.NotNullReference() )
-                        asDisposable.Dispose();
-                    this.textWriter = null;
+                    if( this.textWriter.NotNullReference() )
+                    {
+                        this.textWriter.Close();
+                        this.textWriter = null;
+                    }
                 }
 
                 base.Dispose(disposing);
             }
-
-            #endregion
-
-            #region TextWriter
 
             public override Encoding Encoding
             {
