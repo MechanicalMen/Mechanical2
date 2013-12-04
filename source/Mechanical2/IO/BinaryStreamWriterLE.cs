@@ -68,6 +68,14 @@ namespace Mechanical.IO
         }
 
         /// <summary>
+        /// Clears all buffers for this stream and causes any buffered data to be written to the underlying device.
+        /// </summary>
+        public override void Flush()
+        {
+            this.stream.Flush();
+        }
+
+        /// <summary>
         /// Writes the byte array to the data store value.
         /// </summary>
         /// <param name="array">The byte array to write data from.</param>

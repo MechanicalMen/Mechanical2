@@ -72,6 +72,19 @@ namespace Mechanical.IO
         }
 
         /// <summary>
+        /// Clears all buffers for this stream and causes any buffered data to be written to the underlying device.
+        /// </summary>
+        public override void Flush()
+        {
+            if( this.numBytesLeftOver > 0 )
+            {
+                int numChars = Convert.ToBase64CharArray(this.leftOverBytes, 0, this.numBytesLeftOver, this.characters, 0);
+                this.textWriter.Write(this.characters, 0, numChars);
+                this.numBytesLeftOver = 0;
+            }
+        }
+
+        /// <summary>
         /// Writes the byte array to the data store value.
         /// </summary>
         /// <param name="array">The byte array to write data from.</param>
@@ -103,23 +116,6 @@ namespace Mechanical.IO
                 this.textWriter.Write(this.characters, 0, numChars);
 
                 offset += byteChunkLength;
-            }
-        }
-
-        #endregion
-
-        #region Public Methods
-
-        /// <summary>
-        /// Writes out any remaining bytes and adds padding, if necessary.
-        /// </summary>
-        public void Flush()
-        {
-            if( this.numBytesLeftOver > 0 )
-            {
-                int numChars = Convert.ToBase64CharArray(this.leftOverBytes, 0, this.numBytesLeftOver, this.characters, 0);
-                this.textWriter.Write(this.characters, 0, numChars);
-                this.numBytesLeftOver = 0;
             }
         }
 

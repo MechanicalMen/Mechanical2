@@ -313,6 +313,9 @@
     <Compile Include="..\Mechanical2\IO\FileSystem\PortableFileName.cs">
       <Link>IO\FileSystem\PortableFileName.cs</Link>
     </Compile>
+    <Compile Include="..\Mechanical2\IO\FileSystem\SubdirectoryFileSystem.cs">
+      <Link>IO\FileSystem\SubdirectoryFileSystem.cs</Link>
+    </Compile>
     <Compile Include="..\Mechanical2\IO\FileSystem\ZipFileSystem.cs">
       <Link>IO\FileSystem\ZipFileSystem.cs</Link>
     </Compile>

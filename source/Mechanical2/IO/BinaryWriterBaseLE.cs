@@ -36,6 +36,11 @@ namespace Mechanical.IO
         public abstract void Close();
 
         /// <summary>
+        /// Clears all buffers for this stream and causes any buffered data to be written to the underlying device.
+        /// </summary>
+        public abstract void Flush();
+
+        /// <summary>
         /// Writes the byte array to the data store value.
         /// </summary>
         /// <param name="array">The byte array to write data from.</param>

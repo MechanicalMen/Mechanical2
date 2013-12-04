@@ -51,6 +51,13 @@ namespace Mechanical.IO
         }
 
         /// <summary>
+        /// Clears all buffers for this stream and causes any buffered data to be written to the underlying device.
+        /// </summary>
+        public void Flush()
+        {
+        }
+
+        /// <summary>
         /// Writes the character.
         /// </summary>
         /// <param name="character">The character to write.</param>

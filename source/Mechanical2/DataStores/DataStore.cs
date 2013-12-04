@@ -273,8 +273,6 @@ namespace Mechanical.DataStores
                     sb.Append(PathSeparator);
 
                 name = Substring.SplitFirst(ref remainingPath, PathSeparatorArray, StringSplitOptions.None);
-                if( !DataStore.IsValidName(name) )
-                    throw new ArgumentException("Not a valid data store path!").Store("path", path);
 
                 stringBuilderUsed = EscapeName(name, ref sb);
                 if( !stringBuilderUsed )

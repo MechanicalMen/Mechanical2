@@ -39,7 +39,7 @@ namespace Mechanical.IO.FileSystem
 
         #endregion
 
-        #region POSIX portable file name character set
+        #region Character Tests
 
 #if !MECHANICAL_NET4CP
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -54,36 +54,44 @@ namespace Mechanical.IO.FileSystem
                 || ch == '-';
         }
 
+#if !MECHANICAL_NET4CP
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        private static bool InvalidWindowsCharacter( char ch )
+        {
+            return (0 <= ch && ch <= 31) // control characters
+                || ch == 127 // delete control character
+                || ch == '\\'
+                || ch == '/'
+                || ch == ':'
+                || ch == '|'
+                || ch == '?'
+                || ch == '*'
+                || ch == '"'
+                || ch == '<'
+                || ch == '>';
+        }
+
         #endregion
 
         #region IsValid*
 
-        /// <summary>
-        /// Determines whether the specified file name is portable.
-        /// </summary>
-        /// <param name="fileName">The file name to check.</param>
-        /// <returns><c>true</c> if the file name is portable; otherwise, <c>false</c>.</returns>
-        public static bool IsValidName( Substring fileName )
+#if !MECHANICAL_NET4CP
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        private static bool IsValidWindowsNameCore( Substring fileName )
         {
-            // null or empty
-            if( fileName.NullOrEmpty )
-                return false;
-
-            // valid characters only
-            for( int i = 0; i < fileName.Length; ++i )
-            {
-                if( !IsValidPosixPortableFileNameCharacter(fileName[i]) )
-                    return false;
-            }
+            Substring trimmedFileName = fileName.TrimEnd();
 
             // may not end in period on windows
-            if( fileName[fileName.Length - 1] == '.' )
+            // (even if period is followed by whitespaces)
+            if( trimmedFileName[fileName.Length - 1] == '.' )
                 return false;
 
             // current and parent directory names
             // the step above accounts for this
-            /*if( string.Equals(fileName, ".", StringComparison.Ordinal)
-             || string.Equals(fileName, "..", StringComparison.Ordinal) )
+            /*if( trimmedFileName.Equals(".", CompareOptions.Ordinal)
+             || trimmedFileName.Equals("..", CompareOptions.Ordinal) )
                 return false;*/
 
             // DOS device names, in any character case
@@ -106,6 +114,48 @@ namespace Mechanical.IO.FileSystem
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Determines whether the specified string is a valid windows file name.
+        /// </summary>
+        /// <param name="fileName">The file name to check.</param>
+        /// <returns><c>true</c> if the parameter is a valid windows file name; otherwise, <c>false</c>.</returns>
+        public static bool IsWindowsName( Substring fileName )
+        {
+            // null or empty
+            if( fileName.NullOrEmpty )
+                return false;
+
+            // valid characters only
+            for( int i = 0; i < fileName.Length; ++i )
+            {
+                if( InvalidWindowsCharacter(fileName[i]) )
+                    return false;
+            }
+
+            return IsValidWindowsNameCore(fileName);
+        }
+
+        /// <summary>
+        /// Determines whether the specified file name is portable.
+        /// </summary>
+        /// <param name="fileName">The file name to check.</param>
+        /// <returns><c>true</c> if the file name is portable; otherwise, <c>false</c>.</returns>
+        public static bool IsValidName( Substring fileName )
+        {
+            // null or empty
+            if( fileName.NullOrEmpty )
+                return false;
+
+            // valid characters only
+            for( int i = 0; i < fileName.Length; ++i )
+            {
+                if( !IsValidPosixPortableFileNameCharacter(fileName[i]) )
+                    return false;
+            }
+
+            return IsValidWindowsNameCore(fileName);
         }
 
         /// <summary>
@@ -155,5 +205,11 @@ namespace Mechanical.IO.FileSystem
         }
 
         #endregion
+
+        /// <summary>
+        /// The comparer to use for portable file name equality.
+        /// Result is undetermined for invalid names.
+        /// </summary>
+        public static readonly StringComparer Comparer = StringComparer.OrdinalIgnoreCase;
     }
 }

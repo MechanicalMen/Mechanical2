@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using System.Threading;
 using Mechanical.Conditions;
 using Mechanical.Core;
 
@@ -285,6 +286,11 @@ namespace Mechanical.IO
                 this.Close();
             }
 
+            public void Flush()
+            {
+                this.writer.Flush();
+            }
+
             public void Write( byte[] array, int offset, int count )
             {
                 if( this.IsDisposed )
@@ -505,6 +511,7 @@ namespace Mechanical.IO
 
             public override void Flush()
             {
+                this.binaryStream.Flush();
             }
 
             public override long Length
@@ -1059,6 +1066,11 @@ namespace Mechanical.IO
                 this.Dispose();
             }
 
+            public void Flush()
+            {
+                this.writer.Flush();
+            }
+
             public void Write( byte[] array, int offset, int count )
             {
                 if( this.IsDisposed )
@@ -1262,6 +1274,7 @@ namespace Mechanical.IO
 
             public override void Flush()
             {
+                this.binaryWriter.Flush();
             }
 
             public override long Length
@@ -1616,6 +1629,11 @@ namespace Mechanical.IO
                 this.Dispose();
             }
 
+            public void Flush()
+            {
+                this.textWriter.Flush();
+            }
+
             public void Write( char character )
             {
                 if( this.IsDisposed )
@@ -1714,6 +1732,12 @@ namespace Mechanical.IO
                 base.Dispose(disposing);
             }
 
+            public override void Flush()
+            {
+                base.Flush();
+                this.textWriter.Flush();
+            }
+
             public override Encoding Encoding
             {
                 get { return this.encoding; }
@@ -1751,6 +1775,29 @@ namespace Mechanical.IO
         public static TextWriter Wrap( ITextWriter textWriter, Encoding encoding )
         {
             return new ITexWriterAsTextWriter(textWriter, encoding);
+        }
+
+        #endregion
+
+
+        #region Extension Methods
+
+        private static readonly ThreadLocal<byte[]> CopyBuffer = new ThreadLocal<byte[]>(() => new byte[4 * 1024]); // the same buffer size as System.IO.Stream.CopyTo
+
+        /// <summary>
+        /// Copies the contents of one stream to another.
+        /// </summary>
+        /// <param name="reader">The source, to read data from.</param>
+        /// <param name="writer">The destination, to write data to.</param>
+        public static void CopyTo( this IBinaryReader reader, IBinaryWriter writer )
+        {
+            Ensure.Debug(reader, r => r.NotNull());
+            Ensure.That(writer).NotNull();
+
+            int bytesRead;
+            var buffer = CopyBuffer.Value;
+            while( (bytesRead = reader.Read(buffer, 0, buffer.Length)) != 0 )
+                writer.Write(buffer, 0, bytesRead);
         }
 
         #endregion
