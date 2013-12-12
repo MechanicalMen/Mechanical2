@@ -130,7 +130,7 @@ namespace Mechanical.DataStores
                 if( DataStore.IsValidName(escaped) )
                     return escaped;
 
-                // escape didn't work, generate deterministic hash
+                // escape didn't work, generate deterministic (case-sensitive) hash
                 byte[] bytes = DefaultEncoding.GetBytes(from);
                 var sb = new StringBuilder(32);
 #if !SILVERLIGHT

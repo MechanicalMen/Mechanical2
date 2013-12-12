@@ -105,6 +105,22 @@ namespace Mechanical.DataStores
         #region Read/Assert ObjectStart/~End
 
         /// <summary>
+        /// Tests whether the data store reader position can be advanced.
+        /// </summary>
+        /// <param name="reader">The <see cref="IDataStoreReader"/> to use.</param>
+        public static void AssertCanRead( this IDataStoreReader reader )
+        {
+            if( !reader.Read() )
+            {
+                var ex = new FormatException("Unexpected end of data store!")
+                    .StoreFileLine()
+                    .Store("Path", reader.Path);
+                reader.StorePosition(ex);
+                throw ex;
+            }
+        }
+
+        /// <summary>
         /// Tests whether the current position of the data store reader is at an ObjectStart token.
         /// </summary>
         /// <param name="reader">The <see cref="IDataStoreReader"/> to use.</param>
@@ -137,16 +153,7 @@ namespace Mechanical.DataStores
         /// <param name="name">The expected name of the current object, or <c>null</c> if it is not important.</param>
         public static void ReadObjectStart( this IDataStoreReader reader, string name = null )
         {
-            if( !reader.Read() )
-            {
-                var ex = new FormatException("Unexpected end of data store!")
-                    .StoreFileLine()
-                    .Store("expectedName", name)
-                    .Store("Path", reader.Path);
-                reader.StorePosition(ex);
-                throw ex;
-            }
-
+            AssertCanRead(reader);
             AssertObjectStart(reader, name);
         }
 
@@ -172,15 +179,7 @@ namespace Mechanical.DataStores
         /// <param name="reader">The <see cref="IDataStoreReader"/> to use.</param>
         public static void ReadObjectEnd( this IDataStoreReader reader )
         {
-            if( !reader.Read() )
-            {
-                var ex = new FormatException("Unexpected end of data store!")
-                    .StoreFileLine()
-                    .Store("Path", reader.Path);
-                reader.StorePosition(ex);
-                throw ex;
-            }
-
+            AssertCanRead(reader);
             AssertObjectEnd(reader);
         }
 
@@ -253,8 +252,7 @@ namespace Mechanical.DataStores
                 // read object to end (in case the deserializer didn't)
                 while( !(reader.Token == DataStoreToken.ObjectEnd && reader.Depth == objDepth) )
                 {
-                    if( !reader.Read() )
-                        throw new FormatException("Unexpected end of data store!").StoreFileLine();
+                    AssertCanRead(reader);
                 }
 
                 return obj;

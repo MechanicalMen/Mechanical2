@@ -877,7 +877,7 @@ namespace Mechanical.Core
             }
 
             result = string.Empty;
-            return completeSuccess; // NOT false!
+            return completeSuccess; // NOT 'return false' !
         }
 
         /// <summary>
