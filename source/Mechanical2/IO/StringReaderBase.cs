@@ -31,7 +31,7 @@ namespace Mechanical.IO
 
         #region Private Methods
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private void AppendToBuilder( Substring substr )
@@ -45,7 +45,7 @@ namespace Mechanical.IO
             }
         }
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private string ClearBuilder()
@@ -62,7 +62,7 @@ namespace Mechanical.IO
             }
         }
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private int IndexOfNewLineInBuffer()
@@ -80,7 +80,7 @@ namespace Mechanical.IO
             return -1;
         }
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private void SetBufferPastNewLine( int newLineAt )

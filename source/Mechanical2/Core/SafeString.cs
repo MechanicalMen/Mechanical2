@@ -450,7 +450,7 @@ namespace Mechanical.Core
                         }
                         else
                         {
-#if !MECHANICAL_NET4CP && !SILVERLIGHT
+#if !MECHANICAL_NET4 && !SILVERLIGHT
                             var typeInfo = type.GetTypeInfo();
 #else
                             var typeInfo = type;
@@ -491,7 +491,7 @@ namespace Mechanical.Core
                             {
                                 Type[] types;
                                 if( typeInfo.IsGenericTypeDefinition )
-#if !MECHANICAL_NET4CP && !SILVERLIGHT
+#if !MECHANICAL_NET4 && !SILVERLIGHT
                                     types = typeInfo.GenericTypeParameters;
                                 else
                                     types = type.GenericTypeArguments;
@@ -688,7 +688,7 @@ namespace Mechanical.Core
                         this.AppendType(sb, format, (Type)arg);
                         return sb.ToString();
                     }
-#if !MECHANICAL_NET4CP && !SILVERLIGHT
+#if !MECHANICAL_NET4 && !SILVERLIGHT
                     else if( arg is TypeInfo )
                     {
                         var sb = new StringBuilder();
@@ -1229,6 +1229,41 @@ namespace Mechanical.Core
         {
             string result;
             TryFormat(out result, FormatProvider.Debug.Default, format, args);
+            return result;
+        }
+
+        #endregion
+
+        #region InvariantPrint, InvariantFormat
+
+        /// <summary>
+        /// Gets the string representation of an object using the invariant culture.
+        /// Always returns a non-null string.
+        /// Throws no exceptions.
+        /// </summary>
+        /// <param name="obj">The object to format.</param>
+        /// <param name="format">The format to use; or <c>null</c>.</param>
+        /// <returns>The string representation of <paramref name="obj"/>.</returns>
+        public static string InvariantPrint( object obj, string format = null )
+        {
+            string result;
+            TryPrint(obj, format, CultureInfo.InvariantCulture, out result);
+            return result;
+        }
+
+        /// <summary>
+        /// Replaces the format item in a specified string with the string representation of a corresponding object in a specified array.
+        /// Uses the invariant culture.
+        /// Always returns a non-null string.
+        /// Throws no exceptions.
+        /// </summary>
+        /// <param name="format">A composite format string.</param>
+        /// <param name="args">An object array that contains zero or more objects to format.</param>
+        /// <returns>A copy of <paramref name="format"/> in which the format items have been replaced by the string representation of the corresponding objects in <paramref name="args"/>.</returns>
+        public static string InvariantFormat( string format, params object[] args )
+        {
+            string result;
+            TryFormat(out result, CultureInfo.InvariantCulture, format, args);
             return result;
         }
 

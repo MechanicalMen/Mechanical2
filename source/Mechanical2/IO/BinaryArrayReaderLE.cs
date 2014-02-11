@@ -45,7 +45,7 @@ namespace Mechanical.IO
 
         #region Private Methods
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private void FillBuffer( int count )
@@ -65,7 +65,7 @@ namespace Mechanical.IO
             }
         }
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private ArraySegment<byte> ReadBytes( int count )
@@ -80,7 +80,7 @@ namespace Mechanical.IO
             return result;
         }
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private byte[] ToArray( ArraySegment<byte> segment )

@@ -88,7 +88,7 @@ namespace Mechanical.DataStores
             return true;
         }
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private static bool IsValidFirstCharacter( char ch )
@@ -98,7 +98,7 @@ namespace Mechanical.DataStores
                 || ch == '_';
         }
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private static bool IsValidMiddleCharacter( char ch )
@@ -156,7 +156,7 @@ namespace Mechanical.DataStores
 
         #region EscapeName, UnescapeName, EscapePath, UnescapePath
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private static void InitializeEscapeBuffer( ref StringBuilder sb, ref bool stringBuilderUsedBefore, Substring str )
@@ -172,7 +172,7 @@ namespace Mechanical.DataStores
             }
         }
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private static void AppendEscaped( StringBuilder sb, char ch )

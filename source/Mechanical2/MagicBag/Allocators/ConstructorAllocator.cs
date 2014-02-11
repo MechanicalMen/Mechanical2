@@ -63,7 +63,7 @@ namespace Mechanical.MagicBag.Allocators
         /// <returns>The <see cref="ConstructorAllocator{T}"/> created.</returns>
         public static ConstructorAllocator<T> FromDefault()
         {
-#if !MECHANICAL_NET4CP && !SILVERLIGHT
+#if !MECHANICAL_NET4 && !SILVERLIGHT
             foreach( var ctor in typeof(T).GetTypeInfo().DeclaredConstructors )
 #else
             foreach( var ctor in typeof(T).GetConstructors() )

@@ -117,7 +117,7 @@ namespace Mechanical.DataStores.Xml
             return new FormatException("Invalid root node!").StoreFileLine(filePath, memberName, lineNumber);
         }
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private bool MoveToNextStartElement()
@@ -131,7 +131,7 @@ namespace Mechanical.DataStores.Xml
             return false;
         }
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private bool MoveToNextStartOrEndElement()
@@ -146,7 +146,7 @@ namespace Mechanical.DataStores.Xml
             return false;
         }
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private bool MoveToNextStartOrEndOrTextElement()

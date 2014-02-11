@@ -42,7 +42,7 @@ namespace Mechanical.DataStores
     {
         #region ThrowIfNull
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         [Conditional("DEBUG")]

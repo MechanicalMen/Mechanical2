@@ -121,7 +121,7 @@ namespace Mechanical.IO
 
         #region Private Methods
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private void FillBuffer( int count )
@@ -152,7 +152,7 @@ namespace Mechanical.IO
             throw new EndOfStreamException().StoreFileLine();
         }
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private byte[] ReadBytes( int count )

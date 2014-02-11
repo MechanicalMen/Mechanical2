@@ -196,7 +196,7 @@ namespace Mechanical.MVVM
             }
             else
             {
-#if MECHANICAL_NET4CP
+#if MECHANICAL_NET4
                 return (TResult)Dispatcher.Invoke(func);
 #elif SILVERLIGHT
                 var waitHandle = new ManualResetEvent(initialState: false); // initialState = non-signaled

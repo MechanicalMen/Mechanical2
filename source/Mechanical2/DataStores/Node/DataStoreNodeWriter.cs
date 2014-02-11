@@ -91,7 +91,7 @@ namespace Mechanical.DataStores.Node
 
         #region Private Members
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private void ThrowIfDisposed()
@@ -100,7 +100,7 @@ namespace Mechanical.DataStores.Node
                 throw new ObjectDisposedException(string.Empty).StoreFileLine();
         }
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private void AddChild( IDataStoreNode node )

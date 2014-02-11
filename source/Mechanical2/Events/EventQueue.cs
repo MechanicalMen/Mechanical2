@@ -30,7 +30,7 @@ namespace Mechanical.Events
         private class HandlerWrapper<T> : HandlerWrapper, IEventHandler<IEvent>
             where T : IEvent
         {
-#if !MECHANICAL_NET4CP && !SILVERLIGHT
+#if !MECHANICAL_NET4 && !SILVERLIGHT
             private readonly WeakReference<IEventHandler<T>> weakRef;
             private IEventHandler<T> temporaryStrongRef = null;
 

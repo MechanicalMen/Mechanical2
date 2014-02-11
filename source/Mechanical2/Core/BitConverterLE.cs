@@ -59,7 +59,7 @@ namespace Mechanical.Core
             public int Flags;
         }
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private static void CheckArgs( byte[] array, int startIndex, int count )
@@ -73,7 +73,7 @@ namespace Mechanical.Core
                 throw new ArgumentOutOfRangeException().Store("startIndex", startIndex).Store("count", count).Store("array.Length", array.Length);
         }
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private static void ConditionalReverse( byte[] array, int startIndex, int count )

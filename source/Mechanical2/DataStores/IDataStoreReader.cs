@@ -73,7 +73,7 @@ namespace Mechanical.DataStores
     {
         #region ThrowIfNull
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         [Conditional("DEBUG")]
@@ -87,7 +87,7 @@ namespace Mechanical.DataStores
                 throw new ArgumentNullException("reader").StoreFileLine(filePath, memberName, lineNumber);
         }
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private static void ThrowIfReadFails(

@@ -159,7 +159,7 @@ namespace Mechanical.DataStores
 
         #region Private Members
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private bool IsDisposed()
@@ -167,7 +167,7 @@ namespace Mechanical.DataStores
             return this.asDisposableObject.NotNullReference() && this.asDisposableObject.IsDisposed;
         }
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private void ThrowIfDisposed()
@@ -176,7 +176,7 @@ namespace Mechanical.DataStores
                 throw new ObjectDisposedException(null).StoreFileLine();
         }
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private void CloseReaders()

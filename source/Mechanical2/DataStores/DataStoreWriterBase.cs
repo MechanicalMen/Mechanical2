@@ -152,7 +152,7 @@ namespace Mechanical.DataStores
 
         #region Private Methods
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private void ThrowIfDisposed()
@@ -162,7 +162,7 @@ namespace Mechanical.DataStores
                 throw new ObjectDisposedException(null).StoreFileLine();
         }
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private void CloseWriters()

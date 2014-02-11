@@ -50,7 +50,7 @@ namespace Mechanical.DataStores.Node
 
         #region Private Methods
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private void PushObject()
@@ -59,7 +59,7 @@ namespace Mechanical.DataStores.Node
             this.parents.Add(info);
         }
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private void PopObject()

@@ -41,7 +41,7 @@ namespace Mechanical.IO.FileSystem
 
         #region Character Tests
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private static bool IsValidPosixPortableFileNameCharacter( char ch )
@@ -54,7 +54,7 @@ namespace Mechanical.IO.FileSystem
                 || ch == '-';
         }
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private static bool InvalidWindowsCharacter( char ch )
@@ -76,7 +76,7 @@ namespace Mechanical.IO.FileSystem
 
         #region IsValid*
 
-#if !MECHANICAL_NET4CP
+#if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private static bool IsValidWindowsNameCore( Substring fileName )
