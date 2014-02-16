@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Text;
 using Mechanical.Collections;
 using Mechanical.Conditions;
 using Mechanical.Core;
+using Mechanical.IO;
 
 namespace Mechanical.FileFormats
 {
@@ -18,9 +18,9 @@ namespace Mechanical.FileFormats
 
         private readonly CsvFormat csvFormat;
         private readonly StringBuilder sb;
-        private readonly List<string> record;
-        private readonly ReadOnlyList.Wrapper<string> readOnlyRecord;
-        private TextReader tr;
+        private readonly List<Substring> record;
+        private readonly ReadOnlyList.Wrapper<Substring> readOnlyRecord;
+        private ITextReader tr;
         private int lineNumber = 0;
 
         #endregion
@@ -30,17 +30,17 @@ namespace Mechanical.FileFormats
         /// <summary>
         /// Initializes a new instance of the <see cref="CsvReader"/> class.
         /// </summary>
-        /// <param name="textReader">The <see cref="TextReader"/> to take ownership of.</param>
+        /// <param name="textReader">The <see cref="ITextReader"/> to take ownership of.</param>
         /// <param name="format">The <see cref="CsvFormat"/> to use.</param>
-        public CsvReader( TextReader textReader, CsvFormat format )
+        public CsvReader( ITextReader textReader, CsvFormat format )
         {
             Ensure.That(textReader).NotNull();
             Ensure.That(format).NotNull();
 
             this.csvFormat = format;
             this.sb = new StringBuilder();
-            this.record = new List<string>();
-            this.readOnlyRecord = new ReadOnlyList.Wrapper<string>(this.record);
+            this.record = new List<Substring>();
+            this.readOnlyRecord = new ReadOnlyList.Wrapper<Substring>(this.record);
             this.tr = textReader;
         }
 
@@ -61,7 +61,7 @@ namespace Mechanical.FileFormats
 
                 if( this.tr != null )
                 {
-                    this.tr.Dispose();
+                    this.tr.Close();
                     this.tr = null;
                 }
             }
@@ -90,12 +90,12 @@ namespace Mechanical.FileFormats
                 return substr.ToString();
         }
 
-        private static int NumDoubleQuotes( string str )
+        private static int NumDoubleQuotes( Substring str )
         {
             return NumDoubleQuotes(str, 0, str.Length);
         }
 
-        private static int NumDoubleQuotes( string str, int startIndex, int count )
+        private static int NumDoubleQuotes( Substring str, int startIndex, int count )
         {
             int num = 0;
             count += startIndex;
@@ -131,8 +131,9 @@ namespace Mechanical.FileFormats
         /// <returns><c>true</c> if a record could be read; <c>false</c> if the end of the stream was reached.</returns>
         public bool Read()
         {
-            string lastLineRead = this.tr.ReadLine();
-            if( lastLineRead.NullReference() )
+            Substring lastLineRead;
+            this.tr.ReadLine(out lastLineRead);
+            if( lastLineRead.Origin.NullReference() )
             {
                 return false;
             }
@@ -150,10 +151,10 @@ namespace Mechanical.FileFormats
                     // append previous line
                     if( this.sb.Length != 0 )
                         this.sb.Append(this.csvFormat.NewLine);
-                    this.sb.Append(lastLineRead);
+                    this.sb.Append(lastLineRead.Origin, lastLineRead.StartIndex, lastLineRead.Length);
 
                     // try to read new line
-                    lastLineRead = this.tr.ReadLine();
+                    this.tr.ReadLine(out lastLineRead);
                     if( lastLineRead.NullReference() )
                         throw new FormatException("Unexpected end of stream: a quote was still open!").Store("LineNumber", this.LineNumber);
                     else
@@ -163,7 +164,7 @@ namespace Mechanical.FileFormats
 
                 // append closing line
                 this.sb.Append(this.csvFormat.NewLine);
-                this.sb.Append(lastLineRead);
+                this.sb.Append(lastLineRead.Origin, lastLineRead.StartIndex, lastLineRead.Length);
 
                 // create record
                 lastLineRead = this.sb.ToString();
@@ -186,11 +187,11 @@ namespace Mechanical.FileFormats
                 if( nextSeparatorAt == -1 )
                     break;
 
-                this.record.Add(this.FromCsvString(new Substring(lastLineRead, startIndex, nextSeparatorAt - startIndex)));
+                this.record.Add(this.FromCsvString(lastLineRead.Substr(startIndex, nextSeparatorAt - startIndex)));
                 startIndex = nextSeparatorAt + 1;
             }
 
-            this.record.Add(this.FromCsvString(new Substring(lastLineRead, startIndex)));
+            this.record.Add(this.FromCsvString(lastLineRead.Substr(startIndex)));
             return true;
         }
 
@@ -207,13 +208,11 @@ namespace Mechanical.FileFormats
         /// Gets the record that was read.
         /// </summary>
         /// <value>The record that was read.</value>
-        public IReadOnlyList<string> Record
+        public IReadOnlyList<Substring> Record
         {
             get { return this.readOnlyRecord; }
         }
 
         #endregion
     }
-
-    //// TODO: switch to ITextWriter, and read and produce substrings
 }

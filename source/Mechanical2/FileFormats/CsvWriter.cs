@@ -1,7 +1,7 @@
 ﻿using System;
-using System.IO;
 using Mechanical.Conditions;
 using Mechanical.Core;
+using Mechanical.IO;
 
 namespace Mechanical.FileFormats
 {
@@ -13,7 +13,7 @@ namespace Mechanical.FileFormats
         #region Private Fields
 
         private readonly CsvFormat csvFormat;
-        private TextWriter tw;
+        private ITextWriter tw;
         private bool firstCell = true;
 
         #endregion
@@ -23,9 +23,9 @@ namespace Mechanical.FileFormats
         /// <summary>
         /// Initializes a new instance of the <see cref="CsvWriter"/> class.
         /// </summary>
-        /// <param name="textWriter">The <see cref="TextWriter"/> to take ownership of.</param>
+        /// <param name="textWriter">The <see cref="ITextWriter"/> to take ownership of.</param>
         /// <param name="format">The <see cref="CsvFormat"/> to use.</param>
-        public CsvWriter( TextWriter textWriter, CsvFormat format )
+        public CsvWriter( ITextWriter textWriter, CsvFormat format )
         {
             Ensure.That(textWriter).NotNull();
             Ensure.That(format).NotNull();
@@ -49,9 +49,9 @@ namespace Mechanical.FileFormats
                 //// dispose-only (i.e. non-finalizable) logic
                 //// (managed, disposable resources you own)
 
-                if( this.tw != null )
+                if( this.tw.NotNullReference() )
                 {
-                    this.tw.Dispose();
+                    this.tw.Close();
                     this.tw = null;
                 }
             }

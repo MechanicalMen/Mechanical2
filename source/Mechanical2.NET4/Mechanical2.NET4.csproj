@@ -63,6 +63,15 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Mechanical2.NET4CP\Collections\IReadOnlyCollection.cs">
+      <Link>Collections\IReadOnlyCollection.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2.NET4CP\Collections\IReadOnlyDictionary.cs">
+      <Link>Collections\IReadOnlyDictionary.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2.NET4CP\Collections\IReadOnlyList.cs">
+      <Link>Collections\IReadOnlyList.cs</Link>
+    </Compile>
     <Compile Include="..\Mechanical2\Bootstrap.cs">
       <Link>Bootstrap.cs</Link>
     </Compile>
@@ -507,9 +516,6 @@
     <Compile Include="..\Mechanical2\MVVM\ViewModelBase.cs">
       <Link>MVVM\ViewModelBase.cs</Link>
     </Compile>
-    <Compile Include="Collections\IReadOnlyCollection.cs" />
-    <Compile Include="Collections\IReadOnlyDictionary.cs" />
-    <Compile Include="Collections\IReadOnlyList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

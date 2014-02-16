@@ -277,6 +277,12 @@
     <Compile Include="..\Mechanical2\FileFormats\CsvWriter.cs">
       <Link>FileFormats\CsvWriter.cs</Link>
     </Compile>
+    <Compile Include="..\Mechanical2\FileFormats\JsonToken.cs">
+      <Link>FileFormats\JsonToken.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\FileFormats\JsonWriter.cs">
+      <Link>FileFormats\JsonWriter.cs</Link>
+    </Compile>
     <Compile Include="..\Mechanical2\IO\Base64WriterLE.cs">
       <Link>IO\Base64WriterLE.cs</Link>
     </Compile>

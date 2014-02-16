@@ -418,6 +418,25 @@ namespace Mechanical.Core
 
         #endregion
 
+        #region IndexOf
+
+        /// <summary>
+        /// Reports the zero-based index of the first occurrence of the specified string in the current String object. Parameters specify the starting search position in the current string and the type of search to use for the specified string.
+        /// </summary>
+        /// <param name="value">The string to seek.</param>
+        /// <param name="startIndex">The search starting position.</param>
+        /// <param name="comparisonType">One of the enumeration values that specifies the rules for the search.</param>
+        /// <returns>The zero-based index position of the value parameter if that string is found, or <c>-1</c> if it is not. If <paramref name="value"/> is <see cref="string.Empty"/>, the return value is <paramref name="startIndex"/>.</returns>
+        public int IndexOf( string value, int startIndex, StringComparison comparisonType )
+        {
+            if( this.Origin.NullReference() )
+                return -1;
+
+            return this.Origin.IndexOf(value, this.StartIndex + startIndex, this.Length - startIndex, comparisonType);
+        }
+
+        #endregion
+
         #region LastIndexOf
 
         /// <summary>
