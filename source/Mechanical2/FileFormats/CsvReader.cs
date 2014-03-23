@@ -77,17 +77,17 @@ namespace Mechanical.FileFormats
 
         #region Private Methods
 
-        private string FromCsvString( Substring substr )
+        private Substring FromCsvString( Substring substr )
         {
             if( substr.Length == 0
-             || substr.CompareTo("\"\"", CompareOptions.Ordinal, CultureInfo.InvariantCulture) == 0 )
-                return string.Empty;
+             || substr.Equals("\"\"", CompareOptions.Ordinal, CultureInfo.InvariantCulture) )
+                return Substring.Empty;
 
             if( substr[0] == '"'
              && substr[substr.Length - 1] == '"' )
                 return substr.Substr(1, substr.Length - 2).ToString().Replace("\"\"", "\"");
             else
-                return substr.ToString();
+                return substr;
         }
 
         private static int NumDoubleQuotes( Substring str )

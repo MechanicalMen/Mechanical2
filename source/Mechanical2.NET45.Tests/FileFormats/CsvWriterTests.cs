@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using Mechanical.FileFormats;
 using Mechanical.IO;
 using NUnit.Framework;
@@ -11,8 +10,8 @@ namespace Mechanical.Tests.FileFormats
     {
         private static string Write( CsvFormat csvFormat, Action<CsvWriter> action )
         {
-            using( var sw = new System.IO.StringWriter() )
-            using( var writer = new CsvWriter(IOWrapper.Wrap(sw), csvFormat) )
+            var sw = new StringWriter();
+            using( var writer = new CsvWriter(sw, csvFormat) )
             {
                 action(writer);
 

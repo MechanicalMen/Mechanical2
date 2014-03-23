@@ -84,18 +84,20 @@ namespace Mechanical.DataStores.Node
             if( reader.NullReference() )
                 throw new ArgumentNullException("reader").StoreFileLine();
 
+            // at this point we are at the ObjectStart token
             var obj = new DataStoreObject(reader.Name);
-            while( reader.Token != DataStoreToken.ObjectEnd )
+
+            while( reader.Read()
+                && reader.Token != DataStoreToken.ObjectEnd )
             {
-                if( reader.Token == DataStoreToken.BinaryValue
-                 || reader.Token == DataStoreToken.TextValue )
+                if( reader.IsValue() )
                 {
-                    var value = reader.Read(this.valueSerializer);
+                    var value = reader.Deserialize(this.valueSerializer);
                     obj.Nodes.Add(value);
                 }
                 else
                 {
-                    var o = reader.Read(this);
+                    var o = reader.Deserialize(this);
                     obj.Nodes.Add(o);
                 }
             }

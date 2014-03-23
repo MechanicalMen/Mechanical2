@@ -9,7 +9,7 @@ using Mechanical.IO;
 namespace Mechanical.FileFormats
 {
     /// <summary>
-    /// A low level JSON writer. No checks are made to ensure correct syntax.
+    /// A low level JSON writer. Does not enforce correct syntax.
     /// </summary>
     public class JsonWriter : DisposableObject
     {
@@ -28,7 +28,7 @@ namespace Mechanical.FileFormats
         /// <summary>
         /// Initializes a new instance of the <see cref="JsonWriter"/> class.
         /// </summary>
-        /// <param name="textWriter">The <see cref="ITextWriter"/> to write to.</param>
+        /// <param name="textWriter">The <see cref="ITextWriter"/> to take ownership of.</param>
         /// <param name="indent"><c>true</c> to indent the output; otherwise, <c>false</c>.</param>
         /// <param name="produceAscii"><c>true</c> to write only ASCII characters (and encode others using unicode escape codes); otherwise, <c>false</c>. Non printable ASCII characters are always escaped, unless handled by the JSON standard.</param>
         public JsonWriter( ITextWriter textWriter, bool indent = true, bool produceAscii = false )
@@ -386,6 +386,17 @@ namespace Mechanical.FileFormats
 
             this.WriteStringLiteral(str);
             this.prevToken = JsonToken.StringValue;
+        }
+
+        /// <summary>
+        /// Flushes buffered data to the underlying stream.
+        /// </summary>
+        public void Flush()
+        {
+            if( this.IsDisposed )
+                throw new ObjectDisposedException(string.Empty).StoreFileLine();
+
+            this.textWriter.Flush();
         }
 
         #endregion

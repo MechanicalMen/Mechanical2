@@ -215,6 +215,12 @@
     <Compile Include="..\Mechanical2\DataStores\ISO8601.cs">
       <Link>DataStores\ISO8601.cs</Link>
     </Compile>
+    <Compile Include="..\Mechanical2\DataStores\Json\JsonDataStoreReader.cs">
+      <Link>DataStores\Json\JsonDataStoreReader.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\DataStores\Json\JsonDataStoreWriter.cs">
+      <Link>DataStores\Json\JsonDataStoreWriter.cs</Link>
+    </Compile>
     <Compile Include="..\Mechanical2\DataStores\Node\DataStoreBinaryValue.cs">
       <Link>DataStores\Node\DataStoreBinaryValue.cs</Link>
     </Compile>
@@ -295,6 +301,15 @@
     </Compile>
     <Compile Include="..\Mechanical2\FileFormats\CsvWriter.cs">
       <Link>FileFormats\CsvWriter.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\FileFormats\JsonReader.cs">
+      <Link>FileFormats\JsonReader.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\FileFormats\JsonToken.cs">
+      <Link>FileFormats\JsonToken.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\FileFormats\JsonWriter.cs">
+      <Link>FileFormats\JsonWriter.cs</Link>
     </Compile>
     <Compile Include="..\Mechanical2\IO\Base64WriterLE.cs">
       <Link>IO\Base64WriterLE.cs</Link>

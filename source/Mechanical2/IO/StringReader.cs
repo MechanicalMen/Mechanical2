@@ -25,6 +25,15 @@ namespace Mechanical.IO
             this.Set(Substring.Empty);
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StringReader"/> class.
+        /// </summary>
+        /// <param name="substr">The substring to read from.</param>
+        public StringReader( Substring substr )
+        {
+            this.Set(substr);
+        }
+
         #endregion
 
         #region StringReaderBase

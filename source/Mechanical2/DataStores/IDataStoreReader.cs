@@ -71,7 +71,7 @@ namespace Mechanical.DataStores
     /// </content>
     public static partial class DataStoresExtensions
     {
-        #region ThrowIfNull
+        #region ThrowIfNull, ThrowIfReadFails
 
 #if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -98,6 +98,24 @@ namespace Mechanical.DataStores
         {
             if( !reader.Read() )
                 throw new InvalidOperationException("There is nothing more to read!").StoreFileLine(filePath, memberName, lineNumber);
+        }
+
+        #endregion
+
+        #region IsValue
+
+        /// <summary>
+        /// Determines whether the current token is either a text or binary value, or neither.
+        /// </summary>
+        /// <param name="reader">The <see cref="IDataStoreReader"/> to use.</param>
+        /// <returns><c>true</c> if the current token is a text or binary value; otherwise, <c>false</c>.</returns>
+#if !MECHANICAL_NET4
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        public static bool IsValue( this IDataStoreReader reader )
+        {
+            return reader.Token == DataStoreToken.TextValue
+                || reader.Token == DataStoreToken.BinaryValue;
         }
 
         #endregion

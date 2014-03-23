@@ -432,7 +432,11 @@ namespace Mechanical.Core
             if( this.Origin.NullReference() )
                 return -1;
 
-            return this.Origin.IndexOf(value, this.StartIndex + startIndex, this.Length - startIndex, comparisonType);
+            int result = this.Origin.IndexOf(value, this.StartIndex + startIndex, this.Length - startIndex, comparisonType);
+            if( result == -1 )
+                return result;
+            else
+                return result - this.StartIndex;
         }
 
         #endregion

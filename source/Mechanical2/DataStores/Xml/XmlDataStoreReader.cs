@@ -230,7 +230,7 @@ namespace Mechanical.DataStores.Xml
                 break;
 
             case XmlNodeType.EndElement:
-                if( this.Depth == 0 )
+                if( this.Depth == -1 )
                 {
                     if( !string.Equals(this.xmlReader.Name, XmlDataStoreWriter.RootName, StringComparison.Ordinal) )
                         throw this.CreateInvalidRootException();

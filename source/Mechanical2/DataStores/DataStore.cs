@@ -33,8 +33,8 @@ namespace Mechanical.DataStores
 
         #region Private Fields
 
-        private const int MaxNameLength = 255 - 1; // '\0'
-        private const int MaxPathLength = 260 - 3 - 1; // "c:\"
+        private const int MaxNameLength = 255 - 1; // '\0' --> -1
+        private const int MaxPathLength = 260 - 3 - 1; // "c:\" --> -3
         private const char EscapeCharacter = '_';
 
         private static readonly char[] ValidFirstCharacters;

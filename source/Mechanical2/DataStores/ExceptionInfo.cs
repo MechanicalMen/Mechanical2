@@ -315,7 +315,7 @@ namespace Mechanical.DataStores
                     {
                         string key, value;
                         while( reader.Read()
-                            && reader.Token == DataStoreToken.TextValue )
+                            && reader.IsValue() )
                         {
                             value = reader.DeserializeAsValue<string>(out key);
                             value = DecodeStoredValue(value);

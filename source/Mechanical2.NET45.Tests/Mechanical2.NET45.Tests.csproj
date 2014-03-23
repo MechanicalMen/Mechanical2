@@ -52,8 +52,12 @@
     <Compile Include="Core\StringTests.cs" />
     <Compile Include="Core\SubstringTests.cs" />
     <Compile Include="DataStores\DataStoreTests.cs" />
+    <Compile Include="DataStores\Json\JsonDataStoreReaderTests.cs" />
+    <Compile Include="DataStores\Json\JsonDataStoreWriterTests.cs" />
     <Compile Include="DataStores\Xml\XmlDataStoreWriterTests.cs" />
     <Compile Include="DataStores\Xml\XmlDataStoreReaderTests.cs" />
+    <Compile Include="FileFormats\JsonReaderTests.cs" />
+    <Compile Include="FileFormats\JsonWriterTests.cs" />
     <Compile Include="FileFormats\CsvReaderTests.cs" />
     <Compile Include="FileFormats\CsvWriterTests.cs" />
     <Compile Include="MagicBag\AllocatorTests.cs" />

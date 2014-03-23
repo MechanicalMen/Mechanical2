@@ -1,7 +1,8 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
+using Mechanical.Core;
 using Mechanical.FileFormats;
+using Mechanical.IO;
 using NUnit.Framework;
 
 namespace Mechanical.Tests.FileFormats
@@ -9,9 +10,9 @@ namespace Mechanical.Tests.FileFormats
     [TestFixture]
     public class CsvReaderTests
     {
-        private static void Read( CsvFormat csvFormat, string content, params Action<string[]>[] actions )
+        private static void Read( CsvFormat csvFormat, string content, params Action<Substring[]>[] actions )
         {
-            using( var sr = new StringReader(content) )
+            var sr = new StringReader(content);
             using( var reader = new CsvReader(sr, csvFormat) )
             {
                 foreach( var a in actions )

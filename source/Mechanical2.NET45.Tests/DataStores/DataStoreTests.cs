@@ -15,7 +15,8 @@ namespace Mechanical.Tests.DataStores
             Assert.False(DataStore.IsValidName(null));
             Assert.False(DataStore.IsValidName(string.Empty));
             Assert.False(DataStore.IsValidName(new string('a', count: 256)));
-            Assert.True(DataStore.IsValidName(new string('a', count: 255)));
+            Assert.False(DataStore.IsValidName(new string('a', count: 255)));
+            Assert.True(DataStore.IsValidName(new string('a', count: 254)));
             Assert.True(DataStore.IsValidName("A"));
             Assert.True(DataStore.IsValidName("_"));
             Assert.False(DataStore.IsValidName("á"));

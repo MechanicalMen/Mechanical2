@@ -28,7 +28,7 @@ namespace Mechanical.Tests.DataStores.Xml
         }
 
         [Test]
-        public void ReaderTests()
+        public void WriterTests()
         {
             var xml = this.WriteNode(DataStoreTests.EmptyDataStore, indent: true) + DataStore.DefaultNewLine;
             Assert.True(string.Equals(XmlDataStoreReaderTests.EmptyDataStore, xml, StringComparison.Ordinal));

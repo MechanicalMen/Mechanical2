@@ -16,37 +16,22 @@ namespace Mechanical.Tests.DataStores.Xml
             Test.MakeSureBootstrapRun();
         }
 
-        private static string ReplaceNewLines( string str )
-        {
-            using( var reader = new StringReader(str) )
-            using( var writer = new StringWriter() )
-            {
-                writer.NewLine = DataStore.DefaultNewLine;
-
-                string line;
-                while( (line = reader.ReadLine()).NotNullReference() )
-                    writer.WriteLine(line);
-
-                return writer.ToString();
-            }
-        }
-
-        internal static readonly string EmptyDataStore = ReplaceNewLines(@"<?xml version=""1.0"" encoding=""utf-8""?>
+        internal static readonly string EmptyDataStore = Test.ReplaceNewLines(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <root></root>");
 
         internal static readonly string TextValueRoot = @"<root><textRoot>abc</textRoot></root>";
 
-        internal static readonly string EmptyObjectRoot = ReplaceNewLines(@"<?xml version=""1.0"" encoding=""utf-8""?>
+        internal static readonly string EmptyObjectRoot = Test.ReplaceNewLines(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <root>
   <objectRoot></objectRoot>
 </root>");
 
-        internal static readonly string EmptyValueRoot = ReplaceNewLines(@"<?xml version=""1.0"" encoding=""utf-8""?>
+        internal static readonly string EmptyValueRoot = Test.ReplaceNewLines(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <root>
   <valueRoot />
 </root>");
 
-        internal static readonly string SimpleRoot = ReplaceNewLines(@"<?xml version=""1.0"" encoding=""utf-8""?>
+        internal static readonly string SimpleRoot = Test.ReplaceNewLines(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <root>
   <rootObject>
     <a>a2</a>
