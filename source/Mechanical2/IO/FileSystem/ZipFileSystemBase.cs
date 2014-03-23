@@ -10,7 +10,7 @@ namespace Mechanical.IO.FileSystem
     /// <summary>
     /// Helps implementing a .zip file based abstract file system.
     /// </summary>
-    public abstract class ZipFileSystemBase : DisposableObject, IFileSystem
+    public abstract class ZipFileSystemBase : DisposableObject, IFileSystemReader, IFileSystemWriter
     {
         #region EchoStream
 
@@ -339,7 +339,7 @@ namespace Mechanical.IO.FileSystem
 
         #endregion
 
-        #region IDataStoreFileSystemReader
+        #region IFileSystemReader
 
         /// <summary>
         /// Gets a value indicating whether the names of files and directories are escaped.
@@ -625,52 +625,6 @@ namespace Mechanical.IO.FileSystem
                 // create new entry
                 var stream = this.FlushAfterDispose(this.CreateFileEntry(zipFilePath));
                 return IOWrapper.ToBinaryWriter(stream);
-            }
-            catch( Exception ex )
-            {
-                ex.Store("dataStorePath", dataStorePath);
-                throw;
-            }
-        }
-
-        #endregion
-
-        #region IFileSystem
-
-        /// <summary>
-        /// Opens an existing file, or creates a new one, for reading and writing.
-        /// </summary>
-        /// <param name="dataStorePath">The data store path specifying the file to open.</param>
-        /// <returns>An <see cref="IBinaryStream"/> representing the file opened.</returns>
-        public IBinaryStream OpenBinary( string dataStorePath )
-        {
-            try
-            {
-                if( this.IsDisposed )
-                    throw new ObjectDisposedException(null).StoreFileLine();
-
-                if( dataStorePath.NullOrEmpty()
-                 || !DataStore.IsValidPath(dataStorePath) )
-                    throw new ArgumentException("Invalid data store path!").StoreFileLine();
-
-                // try to open existing entry
-                Stream stream;
-                var zipFilePath = this.ToZipPath(dataStorePath, isDirectory: false);
-                if( !this.ContainsEntry(zipFilePath) )
-                {
-                    // create directory
-                    var parentDataStorePath = DataStore.GetParentPath(dataStorePath);
-                    if( !parentDataStorePath.NullOrEmpty() )
-                        this.CreateDirectoryRecursively(parentDataStorePath);
-
-                    // create new entry
-                    stream = this.CreateFileEntry(zipFilePath);
-                }
-                else
-                    stream = this.OpenRead(zipFilePath);
-
-                stream = this.FlushAfterDispose(stream);
-                return IOWrapper.ToBinaryStream(stream);
             }
             catch( Exception ex )
             {

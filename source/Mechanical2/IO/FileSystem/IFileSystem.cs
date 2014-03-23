@@ -9,7 +9,7 @@ namespace Mechanical.IO.FileSystem
     public interface IFileSystem : IFileSystemReader, IFileSystemWriter
     {
         /// <summary>
-        /// Opens an existing file, or creates a new one, for reading and writing.
+        /// Opens an existing file, or creates a new one, for both reading and writing.
         /// </summary>
         /// <param name="dataStorePath">The data store path specifying the file to open.</param>
         /// <returns>An <see cref="IBinaryStream"/> representing the file opened.</returns>
