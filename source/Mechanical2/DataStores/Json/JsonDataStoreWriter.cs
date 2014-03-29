@@ -190,7 +190,7 @@ namespace Mechanical.DataStores.Json
             var value = this.textWriter.ToString();
             this.textWriter.Clear();
 
-            this.jsonWriter.WriteValue(value);
+            this.jsonWriter.WriteUnknownValue(value);
         }
 
         #endregion

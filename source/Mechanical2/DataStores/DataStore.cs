@@ -563,15 +563,14 @@ namespace Mechanical.DataStores
         /// </summary>
         /// <typeparam name="T">The type of value to serialize.</typeparam>
         /// <param name="value">The value to serialize.</param>
-        /// <param name="magicBag">The <see cref="IMagicBag"/> to use for serialization; or <c>null</c> for the default magic bag.</param>
+        /// <param name="serializer">The serializer to use.</param>
         /// <returns>The text-based data store value representation.</returns>
-        public static string ToString<T>( T value, IMagicBag magicBag = null )
+        public static string ToString<T>( T value, IDataStoreValueSerializer<T> serializer )
         {
-            if( magicBag.NullReference() )
-                magicBag = Mechanical.MagicBag.MagicBag.Default;
+            if( serializer.NullReference() )
+                throw new ArgumentNullException().StoreFileLine();
 
             var writer = StringWriter.Value;
-            var serializer = magicBag.Pull<IDataStoreValueSerializer<T>>();
             serializer.Serialize(value, writer);
 
             var result = writer.ToString();
@@ -580,20 +579,35 @@ namespace Mechanical.DataStores
         }
 
         /// <summary>
-        /// Deserializes the specified text-based data store value representation.
+        /// Serializes the specified value to it's text-based data store value representation.
         /// </summary>
-        /// <typeparam name="T">The type of value to deserialize.</typeparam>
-        /// <param name="value">The text-based data store value representation.</param>
-        /// <param name="name">The data store name of the value.</param>
-        /// <param name="magicBag">The <see cref="IMagicBag"/> to use for deserialization; or <c>null</c> for the default magic bag.</param>
-        /// <returns>The deserialized value.</returns>
-        public static T Parse<T>( Substring value, string name = "a", IMagicBag magicBag = null )
+        /// <typeparam name="T">The type of value to serialize.</typeparam>
+        /// <param name="value">The value to serialize.</param>
+        /// <param name="magicBag">The <see cref="IMagicBag"/> to use for serialization; or <c>null</c> for the default magic bag.</param>
+        /// <returns>The text-based data store value representation.</returns>
+        public static string ToString<T>( T value, IMagicBag magicBag = null )
         {
             if( magicBag.NullReference() )
                 magicBag = Mechanical.MagicBag.MagicBag.Default;
 
+            var serializer = magicBag.Pull<IDataStoreValueSerializer<T>>();
+            return ToString<T>(value, serializer);
+        }
+
+        /// <summary>
+        /// Deserializes the specified text-based data store value representation.
+        /// </summary>
+        /// <typeparam name="T">The type of value to deserialize.</typeparam>
+        /// <param name="value">The text-based data store value representation.</param>
+        /// <param name="deserializer">The object handling deserialization.</param>
+        /// <param name="name">The data store name of the value. Ignored by most during deserialization.</param>
+        /// <returns>The deserialized value.</returns>
+        public static T Parse<T>( Substring value, IDataStoreValueDeserializer<T> deserializer, string name = "a" )
+        {
+            if( deserializer.NullReference() )
+                throw new ArgumentNullException().StoreFileLine();
+
             var reader = StringReader.Value;
-            var deserializer = magicBag.Pull<IDataStoreValueDeserializer<T>>();
             reader.Set(value);
 
             var result = deserializer.Deserialize(name, reader);
@@ -602,19 +616,59 @@ namespace Mechanical.DataStores
         }
 
         /// <summary>
+        /// Deserializes the specified text-based data store value representation.
+        /// </summary>
+        /// <typeparam name="T">The type of value to deserialize.</typeparam>
+        /// <param name="value">The text-based data store value representation.</param>
+        /// <param name="magicBag">The <see cref="IMagicBag"/> to use for deserialization; or <c>null</c> for the default magic bag.</param>
+        /// <param name="name">The data store name of the value. Ignored by most during deserialization.</param>
+        /// <returns>The deserialized value.</returns>
+        public static T Parse<T>( Substring value, IMagicBag magicBag = null, string name = "a" )
+        {
+            if( magicBag.NullReference() )
+                magicBag = Mechanical.MagicBag.MagicBag.Default;
+
+            var deserializer = magicBag.Pull<IDataStoreValueDeserializer<T>>();
+            return Parse<T>(value, deserializer, name);
+        }
+
+        /// <summary>
         /// Tries to deserialize the specified text-based data store value representation.
         /// </summary>
         /// <typeparam name="T">The type of value to deserialize.</typeparam>
         /// <param name="value">The text-based data store value representation.</param>
         /// <param name="result">The deserialized value; or the default value of the type, if deserialization failed.</param>
-        /// <param name="name">The data store name of the value.</param>
-        /// <param name="magicBag">The <see cref="IMagicBag"/> to use for deserialization; or <c>null</c> for the default magic bag.</param>
+        /// <param name="deserializer">The object handling deserialization.</param>
+        /// <param name="name">The data store name of the value. Ignored by most during deserialization.</param>
         /// <returns><c>true</c> if the deserialization succeeded; otherwise <c>false</c>.</returns>
-        public static bool TryParse<T>( Substring value, out T result, string name = "a", IMagicBag magicBag = null )
+        public static bool TryParse<T>( Substring value, out T result, IDataStoreValueDeserializer<T> deserializer, string name = "a" )
         {
             try
             {
-                result = Parse<T>(value, name, magicBag);
+                result = Parse<T>(value, deserializer, name);
+                return true;
+            }
+            catch
+            {
+                result = default(T);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Tries to deserialize the specified text-based data store value representation.
+        /// </summary>
+        /// <typeparam name="T">The type of value to deserialize.</typeparam>
+        /// <param name="value">The text-based data store value representation.</param>
+        /// <param name="result">The deserialized value; or the default value of the type, if deserialization failed.</param>
+        /// <param name="magicBag">The <see cref="IMagicBag"/> to use for deserialization; or <c>null</c> for the default magic bag.</param>
+        /// <param name="name">The data store name of the value. Ignored by most during deserialization.</param>
+        /// <returns><c>true</c> if the deserialization succeeded; otherwise <c>false</c>.</returns>
+        public static bool TryParse<T>( Substring value, out T result, IMagicBag magicBag = null, string name = "a" )
+        {
+            try
+            {
+                result = Parse<T>(value, magicBag, name);
                 return true;
             }
             catch
@@ -757,7 +811,6 @@ namespace Mechanical.DataStores
 
         //// TODO: unit tests
         //// TODO: binary data store (seekable?! - what about network streams?)
-        //// TODO: json data store (do not store number/true/false/null as strings)
         //// TODO: test datastores for attempting to read or write multiple roots
     }
 }

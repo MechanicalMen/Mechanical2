@@ -389,6 +389,60 @@ namespace Mechanical.FileFormats
         }
 
         /// <summary>
+        /// Writes a non-null value, whose token is to be determined. If not a number or boolean, then string is assumed.
+        /// </summary>
+        /// <param name="str">The string representation of some kind of JSON value.</param>
+        public void WriteUnknownValue( Substring str )
+        {
+            if( this.IsDisposed )
+                throw new ObjectDisposedException(string.Empty).StoreFileLine();
+
+            if( this.parents.Peek() == JsonToken.ArrayStart )
+                this.WriteCommaIfRequired();
+
+            var trimmed = str.Trim();
+            if( trimmed.Equals("true", CompareOptions.Ordinal)
+             || trimmed.Equals("false", CompareOptions.Ordinal) )
+            {
+                this.textWriter.Write(trimmed);
+                this.prevToken = JsonToken.BooleanValue;
+            }
+            else
+            {
+                // NOTE: double.Parse would be shorter and less error prone, but this is faster
+                //       for now, we allow for false positives, and perhaps implement a stricter version at a later time
+                bool onlyNumberChars = true;
+                char ch;
+                for( int i = 0; i < trimmed.Length; ++i )
+                {
+                    ch = trimmed[i];
+                    if( !(('0' <= ch && ch <= '9')
+                       || ch == '.'
+                       || ch == 'e'
+                       || ch == 'E'
+                       || ch == '+'
+                       || ch == '-') )
+                    {
+                        onlyNumberChars = false;
+                        break;
+                    }
+                }
+
+                if( onlyNumberChars
+                 && trimmed.Length != 0 )
+                {
+                    this.textWriter.Write(trimmed);
+                    this.prevToken = JsonToken.NumberValue;
+                }
+                else
+                {
+                    this.WriteStringLiteral(str);
+                    this.prevToken = JsonToken.StringValue;
+                }
+            }
+        }
+
+        /// <summary>
         /// Flushes buffered data to the underlying stream.
         /// </summary>
         public void Flush()
