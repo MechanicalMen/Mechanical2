@@ -4,9 +4,18 @@ using Mechanical.Conditions;
 namespace Mechanical.IO.FileSystem
 {
     /// <summary>
-    /// Represents an abstract file system, both readable and writable.
+    /// Represents an abstract file system, that's both readable and writable.
+    /// This interface is enough most of the time, for saving and loading.
     /// </summary>
-    public interface IFileSystem : IFileSystemReader, IFileSystemWriter
+    public interface IFileSystemReaderWriter : IFileSystemReader, IFileSystemWriter
+    {
+    }
+
+    /// <summary>
+    /// Represents an abstract file system, that's both readable and writable.
+    /// Allows for reading and writing a stream at the same time.
+    /// </summary>
+    public interface IFileSystem : IFileSystemReaderWriter
     {
         /// <summary>
         /// Opens an existing file, or creates a new one, for both reading and writing.

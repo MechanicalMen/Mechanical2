@@ -10,7 +10,7 @@ namespace Mechanical.IO.FileSystem
     /// <summary>
     /// Helps implementing a .zip file based abstract file system.
     /// </summary>
-    public abstract class ZipFileSystemBase : DisposableObject, IFileSystemReader, IFileSystemWriter
+    public abstract class ZipFileSystemBase : DisposableObject, IFileSystemReaderWriter
     {
         #region EchoStream
 
