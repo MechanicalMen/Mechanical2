@@ -759,6 +759,22 @@ namespace Mechanical.DataStores
         }
 
         /// <summary>
+        /// Gets the name of the first node in the specified path.
+        /// </summary>
+        /// <param name="path">The data store path to look at, and the remaining part of the path. Empty, if there was </param>
+        /// <param name="result">The data store name found.</param>
+        public static void GetRootName( ref Substring path, out Substring result )
+        {
+            if( path.Origin.NullReference() )
+                throw new ArgumentException("Not a valid data store path!").Store("path", path);
+
+            if( path.Length == 0 )
+                result = Substring.Empty;
+            else
+                result = Substring.SplitFirst(ref path, PathSeparatorArray, StringSplitOptions.None);
+        }
+
+        /// <summary>
         /// Gets the names of the path, from left to right.
         /// </summary>
         /// <param name="path">The data store path to look at.</param>
