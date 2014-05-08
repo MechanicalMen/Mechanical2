@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -109,28 +110,21 @@ namespace Mechanical.DataStores
 
         #endregion
 
-        #region GenerateName
+        #region GenerateHash, GenerateNames
 
         private static readonly Random Rnd = new Random();
 
         /// <summary>
-        /// Generates a data store name. The generated name may still not be valid
+        /// Generates a data store compatible hash string. The generated name may still not be valid
         /// if it is added to a data store object, with a child of the same name.
-        /// The generated name may be completely different than the one provided,
-        /// therefore it should be saved, if restoring the original name is desired.
         /// </summary>
         /// <param name="from">The string to generate the name from deterministically; or <c>null</c> to generate a random hash based name.</param>
         /// <returns>The data store name generated.</returns>
-        public static string GenerateName( string from = null )
+        public static string GenerateHash( string from = null )
         {
             if( !from.NullOrEmpty() )
             {
-                // always try to escape, even if it would be data store compatible (think underscores!)
-                var escaped = EscapeName(from);
-                if( DataStore.IsValidName(escaped) )
-                    return escaped;
-
-                // escape didn't work, generate deterministic (case-sensitive) hash
+                // generate deterministic (case-sensitive) hash
                 byte[] bytes = DefaultEncoding.GetBytes(from);
                 var sb = new StringBuilder(32);
 #if !SILVERLIGHT
@@ -144,12 +138,179 @@ namespace Mechanical.DataStores
                     sb[0] = '_'; // does not decrease hash deviation (unlike a letter would)
                 return sb.ToString();
             }
+            else
+            {
+                // generate random hash
+                var guid = Guid.NewGuid().ToString("N");
+                if( !IsValidFirstCharacter(guid[0]) )
+                    guid = ValidFirstCharacters[Rnd.Next(ValidFirstCharacters.Length)] + guid.Substring(startIndex: 1);
+                return guid;
+            }
+        }
 
-            // generate random name
-            var guid = Guid.NewGuid().ToString("N");
-            if( !IsValidFirstCharacter(guid[0]) )
-                guid = ValidFirstCharacters[Rnd.Next(ValidFirstCharacters.Length)] + guid.Substring(startIndex: 1);
-            return guid;
+        /// <summary>
+        /// Generates unique data store names, starting with the shortest
+        /// possible lengths.
+        /// </summary>
+        /// <returns>The data store names generated.</returns>
+        public static IEnumerable<string> GenerateNames()
+        {
+            var sb = new StringBuilder();
+            var digits = new List<IEnumerator<char>>();
+            while( true )
+            {
+                MoveNext(digits);
+                if( digits.Count > MaxNameLength )
+                    yield break;
+
+                sb.Clear();
+                for( int i = 0; i < digits.Count; ++i )
+                    sb.Append(digits[i].Current);
+
+                yield return sb.ToString();
+            }
+        }
+
+        private static IEnumerable<char> GenerateUniqueCharacters( bool firstCharacter )
+        {
+            char ch;
+
+            for( ch = 'a'; ch <= 'z'; ++ch )
+                yield return ch;
+
+            for( ch = 'A'; ch <= 'Z'; ++ch )
+                yield return ch;
+
+            if( !firstCharacter )
+            {
+                for( ch = '0'; ch <= '9'; ++ch )
+                    yield return ch;
+            }
+
+            yield return '_';
+        }
+
+        private static void MoveNext( List<IEnumerator<char>> digits )
+        {
+            // increment "digits"
+            for( int i = digits.Count - 1; i >= 0; --i )
+            {
+                if( digits[i].MoveNext() )
+                {
+                    // "digit" increased, nothing to "carry over"
+                    return;
+                }
+                else
+                {
+                    // no more characters for current "digit":
+                    // reset it, and let the previous one be increased
+                    digits[i] = GenerateUniqueCharacters(firstCharacter: false).GetEnumerator();
+                    digits[i].MoveNext();
+                }
+            }
+
+            // all "digits" reset: we need an extra digit at the front
+            digits.Insert(0, GenerateUniqueCharacters(firstCharacter: true).GetEnumerator());
+            digits[0].MoveNext();
+        }
+
+        /// <summary>
+        /// Generates data store names. Each item (starting with the second),
+        /// appends a unique suffix to the end.
+        /// </summary>
+        /// <param name="from">The string to generate the names from.</param>
+        /// <returns>The data store names generated.</returns>
+        public static IEnumerable<string> GenerateNames( string from )
+        {
+            if( from.NullOrEmpty() )
+                return GenerateNames();
+
+            from = RemoveSpecialCharacters(from);
+            if( from.NullOrEmpty() )
+                return GenerateNames(from);
+
+            return GenerateNamesUsing(from);
+        }
+
+        private static string RemoveSpecialCharacters( string str )
+        {
+            //// NOTE: string.Normalize might come in handy here,
+            ////       but Silverlight and WinRT do no currently support it
+
+            // do nothing if there is nothing to work with
+            if( str.NullOrEmpty() )
+                return str;
+
+            // do nothing if already valid...
+            str = str.Trim(); // ... except for leading and trailing white space
+            if( DataStore.IsValidName(str) )
+                return str;
+
+#if !SILVERLIGHT
+            // remove diacritics
+            str = string.Join(string.Empty, str.Normalize(NormalizationForm.FormD).Where(c => char.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark));
+#else
+            // an alternative, that works surprisingly well (though probably not perfectly)
+            // works nicely with this string: "éáűőúöüóí ÉÁŰŐÚÖÜÓÍ ıİçÇğĞşŞ"
+            str = Encoding.ASCII.GetString(Encoding.GetEncoding("iso-8859-8").GetBytes(str));;
+#endif
+            if( str.NullOrEmpty()
+             || DataStore.IsValidName(str) )
+                return str;
+
+            // remove unsupported characters
+            // (replaces ' ' with '_')
+            var chars = new List<char>(str.ToCharArray());
+            while( chars.Count > 0
+                && !IsValidFirstCharacter(chars[0]) )
+            {
+                if( chars[0] == ' ' )
+                {
+                    chars[0] = '_';
+                    break;
+                }
+                else
+                    chars.RemoveAt(0);
+            }
+            for( int i = 1; i < chars.Count; )
+            {
+                if( IsValidMiddleCharacter(chars[i]) )
+                {
+                    ++i;
+                }
+                else
+                {
+                    if( chars[i] == ' ' )
+                    {
+                        chars[i] = '_';
+                        ++i;
+                    }
+                    else
+                        chars.RemoveAt(i);
+                }
+            }
+            return new string(chars.ToArray());
+        }
+
+        private static IEnumerable<string> GenerateNamesUsing( string dataStoreName )
+        {
+            yield return dataStoreName;
+
+            int length, newLength;
+            foreach( var suffix in GenerateNames() )
+            {
+                length = dataStoreName.Length + 1 + suffix.Length;
+                if( length > MaxNameLength )
+                {
+                    newLength = dataStoreName.Length - (length - MaxNameLength);
+                    if( newLength <= 0 )
+                        yield return suffix; // return suffixes only from this point on
+                    else
+                        yield return dataStoreName.Substring(0, newLength) + '_' + suffix;
+                }
+
+                yield return dataStoreName + '_' + suffix;
+            }
         }
 
         #endregion
