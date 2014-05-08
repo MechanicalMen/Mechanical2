@@ -250,9 +250,7 @@ namespace Mechanical.DataStores
             // remove diacritics
             str = string.Join(string.Empty, str.Normalize(NormalizationForm.FormD).Where(c => char.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark));
 #else
-            // an alternative, that works surprisingly well (though probably not perfectly)
-            // works nicely with this string: "éáűőúöüóí ÉÁŰŐÚÖÜÓÍ ıİçÇğĞşŞ"
-            str = Encoding.ASCII.GetString(Encoding.GetEncoding("iso-8859-8").GetBytes(str));;
+            //// silverlight is missing String.Normalize and Encoding.ASCII. I know of no simple way to do this, without reimplementing those features.
 #endif
             if( str.NullOrEmpty()
              || DataStore.IsValidName(str) )

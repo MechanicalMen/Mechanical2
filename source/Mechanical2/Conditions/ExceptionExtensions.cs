@@ -66,7 +66,7 @@ namespace Mechanical.Conditions
 #else
             if( !DataStore.IsValidName(key) )
             {
-                var newKey = DataStore.GenerateName();
+                var newKey = DataStore.GenerateHash();
                 Add(e, newKey + "_OriginalKey", key);
                 key = newKey;
             }
