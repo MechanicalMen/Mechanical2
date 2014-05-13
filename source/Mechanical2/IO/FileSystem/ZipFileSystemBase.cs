@@ -35,11 +35,6 @@ namespace Mechanical.IO.FileSystem
                     if( this.onDispose.NotNullReference() )
                         this.onDispose();
                 }
-                catch( Exception eee ) // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                {
-                    var str = SafeString.DebugPrint(eee);
-                    str.ToString();
-                }
                 finally
                 {
                     this.onDispose = null;

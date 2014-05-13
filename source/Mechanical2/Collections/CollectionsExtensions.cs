@@ -298,6 +298,53 @@ namespace Mechanical.Collections
                 return null;
         }
 
+        /// <summary>
+        /// Returns the first element of a sequence that satisfies a condition, or <c>null</c> if no such element is found.
+        /// </summary>
+        /// <typeparam name="T">The type of the items.</typeparam>
+        /// <param name="sequence">The sequence to return the first element of.</param>
+        /// <param name="predicate">A function to test each element for a condition.</param>
+        /// <returns>The first element of the sequence; or <c>null</c> if it is empty.</returns>
+        public static T? FirstOrNullable<T>( this IEnumerable<T> sequence, Func<T, bool> predicate )
+            where T : struct
+        {
+            if( sequence.NullReference() )
+                throw new ArgumentNullException("sequence").StoreFileLine(); // same as FirstOrDefault
+
+            if( predicate.NullReference() )
+                throw new ArgumentNullException("predicate").StoreFileLine();
+
+            var list = sequence as IList<T>;
+            if( list.NotNullReference() )
+            {
+                for( int i = 0; i < list.Count; ++i )
+                {
+                    if( predicate(list[i]) )
+                        return list[i];
+                }
+                return null;
+            }
+
+            var readOnlyList = sequence as IReadOnlyList<T>;
+            if( readOnlyList.NotNullReference() )
+            {
+                for( int i = 0; i < readOnlyList.Count; ++i )
+                {
+                    if( predicate(readOnlyList[i]) )
+                        return readOnlyList[i];
+                }
+                return null;
+            }
+
+            var enumerator = sequence.GetEnumerator();
+            while( enumerator.MoveNext() )
+            {
+                if( predicate(enumerator.Current) )
+                    return enumerator.Current;
+            }
+            return null;
+        }
+
         #endregion
     }
 }

@@ -331,6 +331,9 @@
     <Compile Include="..\Mechanical2\IO\FileSystem\SubdirectoryFileSystem.cs">
       <Link>IO\FileSystem\SubdirectoryFileSystem.cs</Link>
     </Compile>
+    <Compile Include="..\Mechanical2\IO\FileSystem\SubdirectoryFileSystemReaderWriter.cs">
+      <Link>IO\FileSystem\SubdirectoryFileSystemReaderWriter.cs</Link>
+    </Compile>
     <Compile Include="..\Mechanical2\IO\FileSystem\ZipFileSystem.cs">
       <Link>IO\FileSystem\ZipFileSystem.cs</Link>
     </Compile>
