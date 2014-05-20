@@ -45,6 +45,35 @@ namespace Mechanical.FileFormats
 
         #endregion
 
+        #region IDisposableObject
+
+        /// <summary>
+        /// Called when the object is being disposed of. Inheritors must call base.OnDispose to be properly disposed.
+        /// </summary>
+        /// <param name="disposing">If set to <c>true</c>, release both managed and unmanaged resources; otherwise release only the unmanaged resources.</param>
+        protected override void OnDispose( bool disposing )
+        {
+            if( disposing )
+            {
+                //// dispose-only (i.e. non-finalizable) logic
+                //// (managed, disposable resources you own)
+
+                if( this.reader.NotNullReference() )
+                {
+                    this.reader.Close();
+                    this.reader = null;
+                }
+            }
+
+            //// shared cleanup logic
+            //// (unmanaged resources)
+
+
+            base.OnDispose(disposing);
+        }
+
+        #endregion
+
         #region Private Methods
 
 #if !MECHANICAL_NET4
