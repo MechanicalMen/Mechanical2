@@ -148,6 +148,9 @@
     <Compile Include="..\Mechanical2\Core\StringExtensions.cs">
       <Link>Core\StringExtensions.cs</Link>
     </Compile>
+    <Compile Include="..\Mechanical2\Core\StringPattern.cs">
+      <Link>Core\StringPattern.cs</Link>
+    </Compile>
     <Compile Include="..\Mechanical2\Core\Substring.cs">
       <Link>Core\Substring.cs</Link>
     </Compile>
