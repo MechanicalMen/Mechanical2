@@ -1800,6 +1800,44 @@ namespace Mechanical.IO
                 writer.Write(buffer, 0, bytesRead);
         }
 
+        /// <summary>
+        /// Copies the contents of one stream to another.
+        /// </summary>
+        /// <param name="source">The source, to read data from.</param>
+        /// <param name="writer">The destination, to write data to.</param>
+        public static void CopyTo( this Stream source, IBinaryWriter writer )
+        {
+            Ensure.Debug(source, s => s.NotNull());
+            Ensure.That(writer).NotNull();
+
+            if( !source.CanRead )
+                throw new ArgumentException("Source stream not readable!").StoreFileLine();
+
+            int bytesRead;
+            var buffer = CopyBuffer.Value;
+            while( (bytesRead = source.Read(buffer, 0, buffer.Length)) != 0 )
+                writer.Write(buffer, 0, bytesRead);
+        }
+
+        /// <summary>
+        /// Copies the contents of one stream to another.
+        /// </summary>
+        /// <param name="reader">The source, to read data from.</param>
+        /// <param name="destination">The destination, to write data to.</param>
+        public static void CopyTo( this IBinaryReader reader, Stream destination )
+        {
+            Ensure.Debug(reader, r => r.NotNull());
+            Ensure.That(destination).NotNull();
+
+            if( !destination.CanWrite )
+                throw new ArgumentException("Destination stream not writable!").StoreFileLine();
+
+            int bytesRead;
+            var buffer = CopyBuffer.Value;
+            while( (bytesRead = reader.Read(buffer, 0, buffer.Length)) != 0 )
+                destination.Write(buffer, 0, bytesRead);
+        }
+
         #endregion
     }
 }

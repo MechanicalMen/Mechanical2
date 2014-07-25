@@ -116,6 +116,8 @@ namespace Mechanical.Collections
         //// NOTE: for these three we have to use IEnumerable<T>
         ////       because overloading can easily lead to ambiguity.
 
+        //// NOTE: arrays implement ICollection<T>, IList<T> as well.
+
         #region NullOrEmpty
 
         /// <summary>
