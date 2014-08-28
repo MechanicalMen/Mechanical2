@@ -10,7 +10,7 @@ using Mechanical.DataStores.Xml;
 namespace Mechanical.Log
 {
     /// <summary>
-    /// Serializes log events.
+    /// Serializes log events. Thread-safe.
     /// </summary>
     public class LogEntrySerializer : LogBase
     {
@@ -20,6 +20,7 @@ namespace Mechanical.Log
 
         #region Private Fields
 
+        private readonly object syncLock = new object();
         private XmlDataStoreWriter writer;
         private int logEntryIndex = 0;
 
@@ -109,15 +110,20 @@ namespace Mechanical.Log
         /// Logs the specified <see cref="LogEntry"/>.
         /// </summary>
         /// <param name="entry">The <see cref="LogEntry"/> to log.</param>
-        protected override void Log( LogEntry entry )
+        protected internal override void Log( LogEntry entry )
         {
             // NOTE: when the disk is full, trying to write and then failing
             //       may result in an infinite cycle
             try
             {
-                this.writer.Write("e" + this.logEntryIndex.ToString(CultureInfo.InvariantCulture), entry, LogEntry.Serializer.Default);
-                this.writer.Flush();
-                ++this.logEntryIndex;
+                // this might cause a dead-lock, if the data store writer tries to log
+                // (our writers don't, and other writers should be debugged a different way)
+                lock( this.syncLock )
+                {
+                    this.writer.Write("e" + this.logEntryIndex.ToString(CultureInfo.InvariantCulture), entry, LogEntry.Serializer.Default);
+                    this.writer.Flush();
+                    ++this.logEntryIndex;
+                }
             }
             catch
             {

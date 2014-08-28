@@ -225,6 +225,16 @@ namespace Mechanical.DataStores
         public class Serializer : IDataStoreObjectSerializer<ExceptionInfo>,
                                   IDataStoreObjectDeserializer<ExceptionInfo>
         {
+            /* NOTE: Normally you'd want to simply depend on the serializers
+             *       provided through the default magic bag.
+             *       This time however we will explicitly pass each on ourselves.
+             *       There are two main reasons for this:
+             *         - We want it to be possible, to log errors from
+             *       setting up the magic bag itself.
+             *         - We want to format to be uniform across all applications,
+             *       platforms, cultures, ... etc.
+             */
+
             /// <summary>
             /// The default instance of the class.
             /// </summary>
@@ -271,9 +281,9 @@ namespace Mechanical.DataStores
                 if( writer.NullReference() )
                     throw new ArgumentNullException("writer").StoreFileLine();
 
-                writer.Write(Keys.Type, obj.Type);
-                writer.Write(Keys.Message, obj.Message);
-                writer.Write(Keys.StackTrace, obj.StackTrace);
+                writer.Write(Keys.Type, obj.Type, BasicSerialization.Default);
+                writer.Write(Keys.Message, obj.Message, BasicSerialization.Default);
+                writer.Write(Keys.StackTrace, obj.StackTrace, BasicSerialization.Default);
 
                 writer.Write(
                     Keys.Store,
@@ -281,7 +291,7 @@ namespace Mechanical.DataStores
                     info =>
                     {
                         foreach( var pair in info.Store )
-                            writer.Write(pair.Key, EncodeStoredValue(pair.Value));
+                            writer.Write(pair.Key, EncodeStoredValue(pair.Value), BasicSerialization.Default);
                     });
 
                 writer.Write(
@@ -304,9 +314,10 @@ namespace Mechanical.DataStores
                 if( reader.NullReference() )
                     throw new ArgumentNullException("reader").StoreFileLine();
 
-                var type = reader.ReadString(Keys.Type);
-                var message = reader.ReadString(Keys.Message);
-                var stackTrace = reader.ReadString(Keys.StackTrace);
+                // NOTE: normally you'd use reader.ReadString(...)
+                var type = reader.Read((IDataStoreValueDeserializer<string>)BasicSerialization.Default, Keys.Type);
+                var message = reader.Read((IDataStoreValueDeserializer<string>)BasicSerialization.Default, Keys.Message);
+                var stackTrace = reader.Read((IDataStoreValueDeserializer<string>)BasicSerialization.Default, Keys.StackTrace);
                 var info = new ExceptionInfo(type, message, stackTrace);
 
                 reader.Read(
@@ -317,7 +328,8 @@ namespace Mechanical.DataStores
                         while( reader.Read()
                             && reader.IsValue() )
                         {
-                            value = reader.DeserializeAsValue<string>(out key);
+                            // NOTE: normally you'd use reader.DeserializeAsValue<string>(...)
+                            value = reader.Deserialize((IDataStoreValueDeserializer<string>)BasicSerialization.Default, out key);
                             value = DecodeStoredValue(value);
                             info.store.Add(key, value);
                         }

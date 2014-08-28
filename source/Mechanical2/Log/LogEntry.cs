@@ -155,6 +155,11 @@ namespace Mechanical.Log
         public class Serializer : IDataStoreObjectSerializer<LogEntry>,
                                   IDataStoreObjectDeserializer<LogEntry>
         {
+            /* NOTE: Normally you'd want to simply depend on the serializers
+             *       provided through the default magic bag.
+             *       See notes on ExceptionInfo, on why we didn't do so this time.
+             */
+
             /// <summary>
             /// The default instance of the class.
             /// </summary>
@@ -185,18 +190,18 @@ namespace Mechanical.Log
                 if( writer.NullReference() )
                     throw new ArgumentNullException("writer").StoreFileLine();
 
-                writer.Write(Keys.Timestamp, obj.timestamp);
-                writer.Write(Keys.Level, obj.Level.Wrap().ToString());
-                writer.Write(Keys.Message, obj.Message);
+                writer.Write(Keys.Timestamp, obj.timestamp, BasicSerialization.Default);
+                writer.Write(Keys.Level, obj.Level.Wrap().ToString(), BasicSerialization.Default);
+                writer.Write(Keys.Message, obj.Message, BasicSerialization.Default);
 
                 bool hasException = obj.Exception.NotNullReference();
-                writer.Write(Keys.HasException, hasException);
+                writer.Write(Keys.HasException, hasException, BasicSerialization.Default);
                 if( hasException )
                     writer.Write(Keys.Exception, obj.Exception, ExceptionInfo.Serializer.Default);
 
-                writer.Write(Keys.FileName, obj.FileName);
-                writer.Write(Keys.MemberName, obj.MemberName);
-                writer.Write(Keys.LineNumber, obj.LineNumber);
+                writer.Write(Keys.FileName, obj.FileName, BasicSerialization.Default);
+                writer.Write(Keys.MemberName, obj.MemberName, BasicSerialization.Default);
+                writer.Write(Keys.LineNumber, obj.LineNumber, BasicSerialization.Default);
             }
 
             /// <summary>
@@ -209,20 +214,20 @@ namespace Mechanical.Log
                 if( reader.NullReference() )
                     throw new ArgumentNullException("reader").StoreFileLine();
 
-                var timestamp = reader.ReadDateTime(Keys.Timestamp);
-                var level = Enum<LogLevel>.Parse(reader.ReadString(Keys.Level));
-                var message = reader.ReadString(Keys.Message);
+                var timestamp = reader.Read((IDataStoreValueDeserializer<DateTime>)BasicSerialization.Default, Keys.Timestamp);
+                var level = Enum<LogLevel>.Parse(reader.Read((IDataStoreValueDeserializer<string>)BasicSerialization.Default, Keys.Level));
+                var message = reader.Read((IDataStoreValueDeserializer<string>)BasicSerialization.Default, Keys.Message);
 
-                var hasException = reader.ReadBoolean(Keys.HasException);
+                var hasException = reader.Read((IDataStoreValueDeserializer<bool>)BasicSerialization.Default, Keys.HasException);
                 ExceptionInfo info;
                 if( hasException )
                     info = reader.Read(ExceptionInfo.Serializer.Default);
                 else
                     info = null;
 
-                var fileName = reader.ReadString(Keys.FileName);
-                var memberName = reader.ReadString(Keys.MemberName);
-                var lineNumber = reader.ReadInt32(Keys.LineNumber);
+                var fileName = reader.Read((IDataStoreValueDeserializer<string>)BasicSerialization.Default, Keys.FileName);
+                var memberName = reader.Read((IDataStoreValueDeserializer<string>)BasicSerialization.Default, Keys.MemberName);
+                var lineNumber = reader.Read((IDataStoreValueDeserializer<int>)BasicSerialization.Default, Keys.LineNumber);
 
                 return new LogEntry(timestamp, level, message, info, fileName, memberName, lineNumber);
             }

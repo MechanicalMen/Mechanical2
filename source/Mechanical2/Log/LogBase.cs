@@ -27,13 +27,13 @@ namespace Mechanical.Log
 
         #endregion
 
-        #region Protected Abstract Methods
+        #region Protected Methods
 
         /// <summary>
         /// Logs the specified <see cref="LogEntry"/>.
         /// </summary>
         /// <param name="entry">The <see cref="LogEntry"/> to log.</param>
-        protected abstract void Log( LogEntry entry );
+        protected internal abstract void Log( LogEntry entry );
 
         #endregion
 
