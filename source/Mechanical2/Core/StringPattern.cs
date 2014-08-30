@@ -44,7 +44,7 @@ namespace Mechanical.Core
             {
                 lock( invariantCulturePatterns ) // Regex is thread-safe, but Dictionary is not
                 {
-                    if( invariantCulturePatterns.TryGetValue(pattern, out regex) )
+                    if( !invariantCulturePatterns.TryGetValue(pattern, out regex) )
                     {
                         regex = CreateRegex(pattern, invariantCulture, compile: true);
                         invariantCulturePatterns.Add(pattern, regex);
@@ -55,7 +55,7 @@ namespace Mechanical.Core
             {
                 lock( currentCulturePatterns ) // Regex is thread-safe, but Dictionary is not
                 {
-                    if( currentCulturePatterns.TryGetValue(pattern, out regex) )
+                    if( !currentCulturePatterns.TryGetValue(pattern, out regex) )
                     {
                         regex = CreateRegex(pattern, invariantCulture, compile: true);
                         currentCulturePatterns.Add(pattern, regex);
