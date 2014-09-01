@@ -164,6 +164,9 @@
     <Compile Include="..\Mechanical2\Conditions\StringConditions.cs">
       <Link>Conditions\StringConditions.cs</Link>
     </Compile>
+    <Compile Include="..\Mechanical2\Core\AppEssentials.cs">
+      <Link>Core\AppEssentials.cs</Link>
+    </Compile>
     <Compile Include="..\Mechanical2\Core\BitConverterLE.cs">
       <Link>Core\BitConverterLE.cs</Link>
     </Compile>

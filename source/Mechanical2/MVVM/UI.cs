@@ -25,22 +25,24 @@ namespace Mechanical.MVVM
 
         #region Dispatcher
 
-        private static Dispatcher dispatcher = null;
+        private static Tuple<Dispatcher> dispatcher = null;
 
         internal static void SetDispatcherFromCurrent()
         {
-            Bootstrap.ThrowIfAlreadyInitialized();
-
 #if !SILVERLIGHT
-            Interlocked.Exchange(ref dispatcher, Dispatcher.CurrentDispatcher);
+            var previousValue = Interlocked.CompareExchange(ref dispatcher, Tuple.Create(Dispatcher.CurrentDispatcher), comparand: null);
 #else
-            Interlocked.Exchange(ref dispatcher, Deployment.Current.Dispatcher);
+            var previousValue = Interlocked.CompareExchange(ref dispatcher, Tuple.Create(Deployment.Current.Dispatcher), comparand: null);
 #endif
+            if( previousValue.NotNullReference() )
+                throw new InvalidOperationException("UI Dispatcher already initialized!").StoreFileLine();
         }
 
         internal static void SetDispatcherForConsole()
         {
-            Interlocked.Exchange(ref dispatcher, null); // not strictly necessary. Only here to be explicit.
+            var previousValue = Interlocked.CompareExchange(ref dispatcher, Tuple.Create<Dispatcher>(null), comparand: null); // not strictly necessary. Only here to be explicit.
+            if( previousValue.NotNullReference() )
+                throw new InvalidOperationException("UI Dispatcher already initialized!").StoreFileLine();
         }
 
         /// <summary>
@@ -51,9 +53,11 @@ namespace Mechanical.MVVM
         {
             get
             {
-                Bootstrap.ThrowIfUninitialized();
-
-                return dispatcher;
+                var d = dispatcher;
+                if( d.NullReference() )
+                    throw new InvalidOperationException("The UI Dispatcher was not yet initialized!").StoreFileLine();
+                else
+                    return d.Item1;
             }
         }
 
@@ -65,14 +69,16 @@ namespace Mechanical.MVVM
 
         internal static void SetSchedulerFromCurrent()
         {
-            Bootstrap.ThrowIfAlreadyInitialized();
-
-            Interlocked.Exchange(ref scheduler, TaskScheduler.FromCurrentSynchronizationContext());
+            var previousValue = Interlocked.CompareExchange(ref scheduler, TaskScheduler.FromCurrentSynchronizationContext(), comparand: null);
+            if( previousValue.NotNullReference() )
+                throw new InvalidOperationException("UI Scheduler already initialized!").StoreFileLine();
         }
 
         internal static void SetSchedulerForConsole()
         {
-            Interlocked.Exchange(ref scheduler, TaskScheduler.Default); // not strictly necessary. Only here to be explicit.
+            var previousValue = Interlocked.CompareExchange(ref scheduler, TaskScheduler.Default, comparand: null); // not strictly necessary. Only here to be explicit.
+            if( previousValue.NotNullReference() )
+                throw new InvalidOperationException("UI Scheduler already initialized!").StoreFileLine();
         }
 
         /// <summary>
@@ -83,9 +89,11 @@ namespace Mechanical.MVVM
         {
             get
             {
-                Bootstrap.ThrowIfUninitialized();
-
-                return scheduler;
+                var s = scheduler;
+                if( s.NullReference() )
+                    throw new InvalidOperationException("The UI Scheduler was not yet initialized!").StoreFileLine();
+                else
+                    return s;
             }
         }
 

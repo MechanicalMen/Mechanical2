@@ -14,25 +14,21 @@ namespace Mechanical.Log
     {
         private static ILog logInstance;
 
-        static Log()
-        {
-            var magicBag = Mechanical.MagicBag.MagicBag.Default;
-            if( magicBag.IsRegistered<ILog>() )
-                logInstance = magicBag.Pull<ILog>();
-        }
-
         /// <summary>
         /// Sets the <see cref="ILog"/> interface to use.
         /// </summary>
         /// <param name="log">The <see cref="ILog"/> interface to use.</param>
         public static void Set( ILog log )
         {
-            Ensure.That(log).NotNull();
-
             Interlocked.Exchange(ref logInstance, log);
         }
 
-        private static ILog Instance
+        /// <summary>
+        /// Gets the logger currently in use, if there is one.
+        /// Otherwise an exception is thrown.
+        /// </summary>
+        /// <value>The logger currently in use.</value>
+        public static ILog Instance
         {
             get
             {

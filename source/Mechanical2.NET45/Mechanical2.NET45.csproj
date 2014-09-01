@@ -121,6 +121,9 @@
     <Compile Include="..\Mechanical2\Conditions\StringConditions.cs">
       <Link>Conditions\StringConditions.cs</Link>
     </Compile>
+    <Compile Include="..\Mechanical2\Core\AppEssentials.cs">
+      <Link>Core\AppEssentials.cs</Link>
+    </Compile>
     <Compile Include="..\Mechanical2\Core\BitConverterLE.cs">
       <Link>Core\BitConverterLE.cs</Link>
     </Compile>
@@ -390,6 +393,9 @@
     </Compile>
     <Compile Include="..\Mechanical2\Log\LogLevel.cs">
       <Link>Log\LogLevel.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Log\MemoryLog.cs">
+      <Link>Log\MemoryLog.cs</Link>
     </Compile>
     <Compile Include="..\Mechanical2\MagicBag\Allocators\ConstructorAllocator.cs">
       <Link>MagicBag\Allocators\ConstructorAllocator.cs</Link>

@@ -73,7 +73,7 @@ namespace Mechanical.Tests.MagicBag
                 Map<int>.To(() => 5).AsTransient(),
                 Map<float>.To(() => 3.14f).AsTransient());
 
-            var bag = new Mechanical.MagicBag.MagicBag.Supplement(
+            var bag = new Mechanical.MagicBag.MagicBag.Extend(
                 parentBag,
                 Map<int>.To(() => 6).AsTransient(),
                 Map<string>.To(() => "abc").AsTransient());

@@ -180,12 +180,12 @@ namespace Mechanical.MagicBag
 
         #endregion
 
-        #region Supplement
+        #region Extend
 
         /// <summary>
         /// A magic bag that looks at it's parent first, before falling back to it's mappings.
         /// </summary>
-        public class Supplement : Basic
+        public class Extend : Basic
         {
             #region Private Fields
 
@@ -196,11 +196,11 @@ namespace Mechanical.MagicBag
             #region Constructors
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="Supplement"/> class.
+            /// Initializes a new instance of the <see cref="Extend"/> class.
             /// </summary>
             /// <param name="parent">The parent to supplement.</param>
             /// <param name="mappings">The mappings to use for this magic bag.</param>
-            public Supplement( IMagicBag parent, params Mapping[] mappings )
+            public Extend( IMagicBag parent, params Mapping[] mappings )
                 : base(mappings)
             {
                 Ensure.That(parent).NotNull();
@@ -209,12 +209,12 @@ namespace Mechanical.MagicBag
             }
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="Supplement"/> class.
+            /// Initializes a new instance of the <see cref="Extend"/> class.
             /// </summary>
             /// <param name="parent">The parent to supplement.</param>
             /// <param name="mappings">The mappings to use for this magic bag.</param>
             /// <param name="generators">The generators extending the mappings to be used.</param>
-            public Supplement( IMagicBag parent, Mapping[] mappings, params IMappingGenerator[] generators )
+            public Extend( IMagicBag parent, Mapping[] mappings, params IMappingGenerator[] generators )
                 : base(mappings, generators)
             {
                 Ensure.That(parent).NotNull();
@@ -406,8 +406,6 @@ namespace Mechanical.MagicBag
 
         internal static void CreateDefault( IMagicBag parentBag )
         {
-            Bootstrap.ThrowIfAlreadyInitialized();
-
             // NOTE: specify default mappings here
             var mappings = new List<Mapping>();
             mappings.Add(Map<DateTime>.To(() => DateTime.UtcNow).AsTransient());
@@ -417,10 +415,14 @@ namespace Mechanical.MagicBag
             mappings.AddRange(Mechanical.Events.EventQueue.GetMappings());
 #endif
 
+            IMagicBag oldBag;
             if( parentBag.NullReference() )
-                Interlocked.CompareExchange(ref defaultBag, new Basic(mappings.ToArray(), MappingGenerators.Defaults), comparand: null);
+                oldBag = Interlocked.CompareExchange(ref defaultBag, new Basic(mappings.ToArray(), MappingGenerators.Defaults), comparand: null);
             else
-                Interlocked.CompareExchange(ref defaultBag, new Supplement(parentBag, mappings.ToArray(), MappingGenerators.Defaults), comparand: null);
+                oldBag = Interlocked.CompareExchange(ref defaultBag, new Extend(parentBag, mappings.ToArray(), MappingGenerators.Defaults), comparand: null);
+
+            if( oldBag.NotNullReference() )
+                throw new InvalidOperationException("Default magic bag alraedy initialized!").StoreFileLine();
         }
 
         /// <summary>
@@ -430,9 +432,10 @@ namespace Mechanical.MagicBag
         {
             get
             {
-                Bootstrap.ThrowIfUninitialized();
-
-                return defaultBag;
+                if( defaultBag.NullReference() )
+                    throw new InvalidOperationException("Default magic bag not yet initialized!").StoreFileLine();
+                else
+                    return defaultBag;
             }
         }
 
