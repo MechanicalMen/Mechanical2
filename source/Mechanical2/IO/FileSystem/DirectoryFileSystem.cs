@@ -379,7 +379,7 @@ namespace Mechanical.IO.FileSystem
 
                 var fullHostPath = this.ToFullFilePath(dataStorePath);
                 Directory.CreateDirectory(Path.GetDirectoryName(fullHostPath));
-                return IOWrapper.ToTextWriter(File.OpenWrite(fullHostPath), DataStore.DefaultEncoding, DataStore.DefaultNewLine);
+                return IOWrapper.ToTextWriter(new FileStream(fullHostPath, FileMode.Create, FileAccess.Write, FileShare.Read), DataStore.DefaultEncoding, DataStore.DefaultNewLine);
             }
             catch( Exception ex )
             {
@@ -403,7 +403,7 @@ namespace Mechanical.IO.FileSystem
 
                 var fullHostPath = this.ToFullFilePath(dataStorePath);
                 Directory.CreateDirectory(Path.GetDirectoryName(fullHostPath));
-                return IOWrapper.ToBinaryWriter(File.OpenWrite(fullHostPath));
+                return IOWrapper.ToBinaryWriter(new FileStream(fullHostPath, FileMode.Create, FileAccess.Write, FileShare.Read));
             }
             catch( Exception ex )
             {
