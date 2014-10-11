@@ -8,13 +8,28 @@ namespace Mechanical.Tests
 {
     internal static class Test
     {
-        private static bool initialized = false;
-        internal static void MakeSureBootstrapRun()
+        internal class App : AppEssentials
         {
-            if( !initialized )
+            protected App()
+                : base()
             {
-                initialized = true;
-                Mechanical.Bootstrap.InitializeConsole();
+            }
+
+            public static new Test.App Instance
+            {
+                get { return (Test.App)AppEssentials.Instance; }
+            }
+
+            public static void Initialize()
+            {
+                if( Instance.NullReference() )
+                {
+                    new Test.App();
+
+                    Instance.SetupReadOnlyMemory();
+                    Instance.InitializeUIForConsole();
+                    Instance.InitializeMagicBag();
+                }
             }
         }
 

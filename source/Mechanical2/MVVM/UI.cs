@@ -3,7 +3,9 @@ using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+#if !ANDROID
 using System.Windows.Threading;
+#endif
 using Mechanical.Conditions;
 using Mechanical.Core;
 
@@ -18,13 +20,15 @@ namespace Mechanical.MVVM
 
         static UI()
         {
+#if !ANDROID
             SetIsInDesigner();
+#endif
         }
 
         #endregion
 
         #region Dispatcher
-
+#if !ANDROID
         private static Tuple<Dispatcher> dispatcher = null;
 
         internal static void SetDispatcherFromCurrent()
@@ -60,7 +64,7 @@ namespace Mechanical.MVVM
                     return d.Item1;
             }
         }
-
+#endif
         #endregion
 
         #region Scheduler
@@ -100,7 +104,7 @@ namespace Mechanical.MVVM
         #endregion
 
         #region IsConsole
-
+#if !ANDROID
         /// <summary>
         /// Gets a value indicating whether this is a console application.
         /// </summary>
@@ -109,11 +113,11 @@ namespace Mechanical.MVVM
         {
             get { return Dispatcher.NullReference(); }
         }
-
+#endif
         #endregion
 
         #region IsInDesigner
-
+#if !ANDROID
         private static bool isInDesigner = false;
 
         private static void SetIsInDesigner()
@@ -138,10 +142,19 @@ namespace Mechanical.MVVM
         {
             get { return isInDesigner; }
         }
-
+#endif
         #endregion
 
         #region Invoke, InvokeAsync
+
+        private static IUIThreadHandler uiThreadHandler = null;
+
+        internal static void SetUIThreadHandler( IUIThreadHandler handler )
+        {
+            var previousValue = Interlocked.CompareExchange(ref uiThreadHandler, handler, comparand: null);
+            if( previousValue.NotNullReference() )
+                throw new InvalidOperationException("UI thread handler already initialized!").StoreFileLine();
+        }
 
         /// <summary>
         /// Executes the specified <see cref="Action"/> synchronously on the UI thread.
@@ -152,38 +165,14 @@ namespace Mechanical.MVVM
             if( action.NullReference() )
                 throw new ArgumentNullException().StoreFileLine();
 
-            if( IsConsole
-             || Dispatcher.CheckAccess() )
-            {
+            var handler = uiThreadHandler;
+            if( handler.NullReference() )
+                throw new InvalidOperationException("The UI thread handler was not yet initialized!").StoreFileLine();
+
+            if( handler.IsOnUIThread() )
                 action();
-            }
             else
-            {
-#if !SILVERLIGHT
-                Dispatcher.Invoke(action);
-#else
-                // NOTE: code segment comes from Caliburn.Micro
-                var waitHandle = new ManualResetEvent(initialState: false); // initialState = non-signaled
-                Exception exception = null;
-
-                Dispatcher.BeginInvoke(() =>
-                {
-                    try
-                    {
-                        action();
-                    }
-                    catch( Exception ex )
-                    {
-                        exception = ex;
-                    }
-                    waitHandle.Set();
-                });
-
-                waitHandle.WaitOne();
-                if( exception.NotNullReference() )
-                    throw new System.Reflection.TargetInvocationException("An error occurred while dispatching a call to the UI Thread", exception);
-#endif
-            }
+                handler.Invoke(action);
         }
 
         /// <summary>
@@ -197,41 +186,19 @@ namespace Mechanical.MVVM
             if( func.NullReference() )
                 throw new ArgumentNullException().StoreFileLine();
 
-            if( IsConsole
-             || Dispatcher.CheckAccess() )
+            var handler = uiThreadHandler;
+            if( handler.NullReference() )
+                throw new InvalidOperationException("The UI thread handler was not yet initialized!").StoreFileLine();
+
+            if( handler.IsOnUIThread() )
             {
                 return func();
             }
             else
             {
-#if MECHANICAL_NET4
-                return (TResult)Dispatcher.Invoke(func);
-#elif SILVERLIGHT
-                var waitHandle = new ManualResetEvent(initialState: false); // initialState = non-signaled
-                Exception exception = null;
-                TResult retval = default(TResult);
-
-                Dispatcher.BeginInvoke(() =>
-                {
-                    try
-                    {
-                        retval = func();
-                    }
-                    catch( Exception ex )
-                    {
-                        exception = ex;
-                    }
-                    waitHandle.Set();
-                });
-
-                waitHandle.WaitOne();
-                if( exception.NotNullReference() )
-                    throw new System.Reflection.TargetInvocationException("An error occurred while dispatching a call to the UI Thread", exception);
-                else
-                    return retval;
-#else
-                return Dispatcher.Invoke(func);
-#endif
+                var result = default(TResult);
+                handler.Invoke(() => result = func());
+                return result;
             }
         }
 
@@ -245,7 +212,11 @@ namespace Mechanical.MVVM
             if( action.NullReference() )
                 throw new ArgumentNullException().StoreFileLine();
 
-            return Task.Factory.StartNew(action, CancellationToken.None, TaskCreationOptions.None, Scheduler);
+            var handler = uiThreadHandler;
+            if( handler.NullReference() )
+                throw new InvalidOperationException("The UI thread handler was not yet initialized!").StoreFileLine();
+
+            return handler.InvokeAsync(action);
         }
 
         /// <summary>
@@ -259,7 +230,13 @@ namespace Mechanical.MVVM
             if( func.NullReference() )
                 throw new ArgumentNullException().StoreFileLine();
 
-            return Task.Factory.StartNew(func, CancellationToken.None, TaskCreationOptions.None, Scheduler);
+            var handler = uiThreadHandler;
+            if( handler.NullReference() )
+                throw new InvalidOperationException("The UI thread handler was not yet initialized!").StoreFileLine();
+
+            var result = default(TResult);
+            return handler.InvokeAsync(() => result = func())
+                          .ContinueWith(prevTask => result, TaskContinuationOptions.OnlyOnRanToCompletion);
         }
 
         #endregion

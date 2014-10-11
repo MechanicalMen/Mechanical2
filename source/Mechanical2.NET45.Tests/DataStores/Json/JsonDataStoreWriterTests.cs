@@ -13,7 +13,7 @@ namespace Mechanical.Tests.DataStores.Json
     {
         static JsonDataStoreWriterTests()
         {
-            Test.MakeSureBootstrapRun();
+            Test.App.Initialize();
         }
 
         private string WriteNode( IDataStoreNode node, bool indent )

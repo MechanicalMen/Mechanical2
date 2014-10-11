@@ -13,7 +13,7 @@ namespace Mechanical.Tests.DataStores.Xml
     {
         static XmlDataStoreReaderTests()
         {
-            Test.MakeSureBootstrapRun();
+            Test.App.Initialize();
         }
 
         internal static readonly string EmptyDataStore = Test.ReplaceNewLines(@"<?xml version=""1.0"" encoding=""utf-8""?>

@@ -193,11 +193,24 @@ namespace Mechanical.Common
         }
 
         /// <summary>
+        /// Call this at the start of the application, from the main thread.
+        /// </summary>
+        public static void InitializeConsole()
+        {
+            // create instance if necessary
+            if( Instance.NullReference() )
+                new MechanicalApp();
+
+            // do basic initialization
+            MechanicalApp.Instance.SetupConsole();
+        }
+
+        /// <summary>
         /// Call this at the start of the application, from the UI thread.
         /// </summary>
         /// <param name="currentApp">The <see cref="System.Windows.Application"/> object that raises the event.</param>
         /// <param name="window">The <see cref="Window"/> to link to the lifespan of the main event queue.</param>
-        public static void Initialize( Application currentApp, Window window )
+        public static void InitializeGUI( Application currentApp, Window window )
         {
             // create instance if necessary
             if( Instance.NullReference() )

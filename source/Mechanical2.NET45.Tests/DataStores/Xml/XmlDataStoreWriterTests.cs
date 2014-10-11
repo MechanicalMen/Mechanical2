@@ -13,7 +13,7 @@ namespace Mechanical.Tests.DataStores.Xml
     {
         static XmlDataStoreWriterTests()
         {
-            Test.MakeSureBootstrapRun();
+            Test.App.Initialize();
         }
 
         private string WriteNode( IDataStoreNode node, bool indent )

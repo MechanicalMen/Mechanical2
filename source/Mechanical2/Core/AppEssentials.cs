@@ -243,13 +243,14 @@ namespace Mechanical.Core
         }
 
         /// <summary>
-        /// Creates a new log file in the specified directory.
-        /// If no directory is specified, the log file is placed
-        /// into the application folder.
+        /// Sets up a custom logger. Transfer memory logs, if there are any.
         /// </summary>
-        /// <param name="directory">The directory to create the log file at, or <c>null</c> to use the application folder.</param>
-        public void StartXmlLog( string directory = null )
+        /// <param name="customLogger">The new logger to use.</param>
+        public void StartCustomLog( ILog customLogger )
         {
+            if( logger.NullReference() )
+                throw new ArgumentNullException().StoreFileLine();
+
             lock( SyncLock )
             {
                 // check if we neet to run at all
@@ -262,28 +263,44 @@ namespace Mechanical.Core
                 }
 
                 // no logger, or memory logger set up:
-                // setup xml logger
-                if( directory.NullOrEmpty() )
-                {
-                    directory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                    directory = Path.GetFullPath(directory);
-                }
-
-                var filePath = Path.Combine(directory, LogFileName);
-
-                if( File.Exists(filePath) )
-                    File.Delete(filePath);
-                var newLogger = LogEntrySerializer.ToXmlFile(filePath);
-                this.logger = newLogger;
+                // setup custom logger
+                this.logger = customLogger;
                 Mechanical.Log.Log.Set(this.logger);
 
                 // transmit previous log entries, if applicable
+                var asLogBase = customLogger as LogBase;
                 if( memoryLogger.NotNullReference() )
                 {
-                    memoryLogger.FlushLogs(newLogger);
+                    if( asLogBase.NullReference() )
+                        customLogger.Warn("Logger does not implement LogBase. Memory logs are present, but could not be passed on!");
+                    else
+                        memoryLogger.FlushLogs(asLogBase);
                     memoryLogger.Dispose();
                 }
             }
+        }
+
+        /// <summary>
+        /// Creates a new log file in the specified directory.
+        /// If no directory is specified, the log file is placed
+        /// into the application folder.
+        /// </summary>
+        /// <param name="directory">The directory to create the log file at, or <c>null</c> to use the application folder.</param>
+        public void StartXmlLog( string directory = null )
+        {
+            if( directory.NullOrEmpty() )
+            {
+                directory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                directory = Path.GetFullPath(directory);
+            }
+
+            var filePath = Path.Combine(directory, LogFileName);
+
+            if( File.Exists(filePath) )
+                File.Delete(filePath);
+            var newLogger = LogEntrySerializer.ToXmlFile(filePath);
+
+            this.StartCustomLog(newLogger);
         }
 
         private void ReleaseLog()
@@ -307,20 +324,28 @@ namespace Mechanical.Core
 
         private bool uiInitialized = false;
 
+        //// NOTE: We do not set the UI thread handler from the magic bag,
+        ////       in case the magic bag initialization depends on it.
+
         /// <summary>
         /// Initializes the UI dispatcher and scheduler from the current ones.
         /// </summary>
         protected void InitializeUIFromCurrent()
         {
+#if ANDROID
+            throw new NotSupportedException().StoreFileLine();
+#else
             lock( SyncLock )
             {
                 if( !this.uiInitialized )
                 {
                     UI.SetDispatcherFromCurrent();
                     UI.SetSchedulerFromCurrent();
+                    UI.SetUIThreadHandler(new UIDispatcherHandler(UI.Dispatcher, UI.Scheduler));
                     this.uiInitialized = true;
                 }
             }
+#endif
         }
 
         /// <summary>
@@ -332,12 +357,33 @@ namespace Mechanical.Core
             {
                 if( !this.uiInitialized )
                 {
+#if !ANDROID
                     UI.SetDispatcherForConsole();
+#endif
                     UI.SetSchedulerForConsole();
+                    UI.SetUIThreadHandler(new ConsoleThreadHandler(UI.Scheduler));
                     this.uiInitialized = true;
                 }
             }
         }
+
+#if ANDROID
+        /// <summary>
+        /// Initializes the UI dispatcher and scheduler from the default ones.
+        /// </summary>
+        protected void InitializeUIForAndroid( Func<Android.App.Activity> getActivity )
+        {
+            lock( SyncLock )
+            {
+                if( !this.uiInitialized )
+                {
+                    UI.SetSchedulerForConsole();
+                    UI.SetUIThreadHandler(new AndroidUIThreadHandler(getActivity));
+                    this.uiInitialized = true;
+                }
+            }
+        }
+#endif
 
         #endregion
 
@@ -446,10 +492,41 @@ namespace Mechanical.Core
         }
 
         /// <summary>
+        /// Initializes a common console application.
+        /// </summary>
+        /// <param name="logDirectory">The directory to create the log file at, or <c>null</c> to use the application folder.</param>
+        /// <param name="parentBag">Optional mappings overriding any of the default ones.</param>
+        protected void SetupConsole( string logDirectory = null, IMagicBag parentBag = null )
+        {
+            // memory logging may or may not have been set up
+            // instead of checking, just create a common baseline
+            this.SetupReadOnlyMemory();
+
+            // start logging, so that we can have
+            // something other then screenshots when debugging
+            // (this may have been set up as well, in which case it will be silently skipped)
+            this.StartXmlLog(logDirectory);
+
+            // specify UI Dispatcher and TaskScheduler:
+            // do these first, in case some mappings need them next
+            this.InitializeUIForConsole();
+
+            // initialize our IoC container, so that
+            // we will have basic resources available
+            this.InitializeMagicBag(parentBag);
+
+            // spin up the event queue
+#if !SILVERLIGHT
+            this.InitializeEvents();
+#endif
+        }
+
+        /// <summary>
         /// Initializes a common GUI application.
         /// </summary>
         /// <param name="logDirectory">The directory to create the log file at, or <c>null</c> to use the application folder.</param>
-        protected void SetupBasicWindow( string logDirectory = null )
+        /// <param name="parentBag">Optional mappings overriding any of the default ones.</param>
+        protected void SetupBasicWindow( string logDirectory = null, IMagicBag parentBag = null )
         {
             // memory logging may or may not have been set up
             // instead of checking, just create a common baseline
@@ -466,7 +543,7 @@ namespace Mechanical.Core
 
             // initialize our IoC container, so that
             // we will have basic resources available
-            this.InitializeMagicBag();
+            this.InitializeMagicBag(parentBag);
 
             // spin up the event queue
 #if !SILVERLIGHT

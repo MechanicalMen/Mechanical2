@@ -86,9 +86,6 @@
     <Compile Include="..\Mechanical2.NET4CP\Collections\IReadOnlyList.cs">
       <Link>Collections\IReadOnlyList.cs</Link>
     </Compile>
-    <Compile Include="..\Mechanical2\Bootstrap.cs">
-      <Link>Bootstrap.cs</Link>
-    </Compile>
     <Compile Include="..\Mechanical2\Collections\Collection.Base.cs">
       <Link>Collections\Collection.Base.cs</Link>
     </Compile>
@@ -464,6 +461,9 @@
     <Compile Include="..\Mechanical2\MagicBag\Parameters\MagicBagParameters.cs">
       <Link>MagicBag\Parameters\MagicBagParameters.cs</Link>
     </Compile>
+    <Compile Include="..\Mechanical2\MVVM\ConsoleThreadHandler.cs">
+      <Link>MVVM\ConsoleThreadHandler.cs</Link>
+    </Compile>
     <Compile Include="..\Mechanical2\MVVM\ConverterBase.cs">
       <Link>MVVM\ConverterBase.cs</Link>
     </Compile>
@@ -485,6 +485,9 @@
     <Compile Include="..\Mechanical2\MVVM\DelegateCommand.cs">
       <Link>MVVM\DelegateCommand.cs</Link>
     </Compile>
+    <Compile Include="..\Mechanical2\MVVM\IUIThreadHandler.cs">
+      <Link>MVVM\IUIThreadHandler.cs</Link>
+    </Compile>
     <Compile Include="..\Mechanical2\MVVM\PropertyChangedBase.cs">
       <Link>MVVM\PropertyChangedBase.cs</Link>
     </Compile>
@@ -496,6 +499,9 @@
     </Compile>
     <Compile Include="..\Mechanical2\MVVM\UI.cs">
       <Link>MVVM\UI.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\MVVM\UIDispatcherHandler.cs">
+      <Link>MVVM\UIDispatcherHandler.cs</Link>
     </Compile>
     <Compile Include="..\Mechanical2\MVVM\ViewModelBase.cs">
       <Link>MVVM\ViewModelBase.cs</Link>

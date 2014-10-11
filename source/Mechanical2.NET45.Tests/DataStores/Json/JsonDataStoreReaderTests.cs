@@ -11,7 +11,7 @@ namespace Mechanical.Tests.DataStores.Json
     {
         static JsonDataStoreReaderTests()
         {
-            Test.MakeSureBootstrapRun();
+            Test.App.Initialize();
         }
 
         internal static readonly string EmptyDataStore = Test.ReplaceNewLines(@"{}");
