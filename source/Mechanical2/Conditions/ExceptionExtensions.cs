@@ -2,8 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Mechanical.Core;
 using Mechanical.DataStores;
 
@@ -97,7 +97,7 @@ namespace Mechanical.Conditions
                     // already added both:
                     if( forceNewKey )
                     {
-                        actualKey = key + i.ToString(CultureInfo.InvariantCulture);
+                        actualKey = key + i.ToString("D", CultureInfo.InvariantCulture);
                         ++i;
                     }
                     else
@@ -109,7 +109,7 @@ namespace Mechanical.Conditions
 
                 case SearchResult.KeyFound:
                     // same key, different value: try again with another key
-                    actualKey = key + i.ToString(CultureInfo.InvariantCulture);
+                    actualKey = key + i.ToString("D", CultureInfo.InvariantCulture);
                     ++i;
                     break;
 
@@ -152,10 +152,7 @@ namespace Mechanical.Conditions
 
         #region StoreFileLine, Store( IConditionContext )
 
-        internal const string File = "SourceFile";
-        internal const string Member = "SourceMember";
-        internal const string Line = "SourceLine";
-
+        internal const string PartialStackTrace = "PartialStackTrace";
         private static readonly char[] DirectorySeparatorChars = new char[] { '\\', '/' };
 
         internal static string SanitizeFilePath( [CallerFilePath] string filePath = "" )
@@ -178,6 +175,19 @@ namespace Mechanical.Conditions
             return filePath;
         }
 
+        private static string ToStackTraceFormat( string filePath, string memberName, int lineNumber = 0 )
+        {
+            const int InitialCapacity = 32 + 64 + 64; // 64 characters for file and member names, 32 for everything else
+            var sb = new StringBuilder(InitialCapacity);
+            sb.Append("   at ");
+            sb.Append(string.IsNullOrEmpty(memberName) ? "?" : memberName);
+            sb.Append(" in ");
+            sb.Append(string.IsNullOrEmpty(filePath) ? "?" : SanitizeFilePath(filePath));
+            sb.Append(":line ");
+            sb.Append(lineNumber.ToString("D", System.Globalization.CultureInfo.InvariantCulture));
+            return sb.ToString();
+        }
+
         /// <summary>
         /// Stores the current source file position. If they are already present, then - unlike other Store calls - duplicates will(!) be produced.
         /// </summary>
@@ -194,19 +204,15 @@ namespace Mechanical.Conditions
             [CallerLineNumber] int lineNumber = 0 )
             where TException : Exception
         {
-            return e.Add(File, SanitizeFilePath(filePath), forceNewKey: true)
-                    .Add(Member, memberName, forceNewKey: true)
-                    .Add(Line, lineNumber, forceNewKey: true);
+            return e.Add(PartialStackTrace, ToStackTraceFormat(filePath, memberName, lineNumber), forceNewKey: true);
         }
 
         private static TException StoreFileLine_OnFirstCall<TException>( this TException e, string filePath, string memberName, int lineNumber )
             where TException : Exception
         {
-            if( Contains(e, File, null) == SearchResult.NotFound )
+            if( Contains(e, PartialStackTrace, null) == SearchResult.NotFound )
             {
-                return e.Add(File, SanitizeFilePath(filePath))
-                        .Add(Member, memberName)
-                        .Add(Line, lineNumber);
+                return e.Add(PartialStackTrace, ToStackTraceFormat(filePath, memberName, lineNumber));
             }
             else
             {

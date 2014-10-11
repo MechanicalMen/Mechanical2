@@ -248,7 +248,7 @@ namespace Mechanical.Core
         /// <param name="customLogger">The new logger to use.</param>
         public void StartCustomLog( ILog customLogger )
         {
-            if( logger.NullReference() )
+            if( this.logger.NullReference() )
                 throw new ArgumentNullException().StoreFileLine();
 
             lock( SyncLock )

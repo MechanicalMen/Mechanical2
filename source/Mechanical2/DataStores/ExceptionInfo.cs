@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 using Mechanical.Collections;
 using Mechanical.Conditions;
 using Mechanical.Core;
@@ -15,6 +16,15 @@ namespace Mechanical.DataStores
     {
         #region Private Fields
 
+        // NOTE: we are making the pattern a bit more accepting than strictly necessary,
+        //       in case a platform uses a slightly different format. The pattern matches:
+        //       " in " + filePath + (newLine OR ":line " + digits + newLine)
+#if !SILVERLIGHT
+        private static readonly Regex StackTraceLineRegex = new Regex(@"(\s+in\s+)(.*)(($)|(\s*\:\s*line\s+\d+$))", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Multiline);
+#else
+        private static readonly Regex StackTraceLineRegex = new Regex(@"(\s+in\s+)(.*)(($)|(\s*\:\s*line\s+\d+$))", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Multiline);
+#endif
+
         private readonly string type;
         private readonly string message;
         private readonly ListDictionary<string, string> store;
@@ -27,6 +37,11 @@ namespace Mechanical.DataStores
 
         #region Constructors
 
+        private ExceptionInfo( Exception exception )
+            : this(SafeString.DebugPrint(exception.GetType()), exception.Message, SanitizeStackTrace(exception.StackTrace))
+        {
+        }
+
         private ExceptionInfo( string type, string message, string stackTrace )
         {
             this.type = type.NullReference() ? string.Empty : type;
@@ -36,6 +51,30 @@ namespace Mechanical.DataStores
             this.stackTrace = stackTrace.NullReference() ? string.Empty : stackTrace;
             this.innerExceptions = new List<ExceptionInfo>();
             this.readOnlyInnerExceptions = new ReadOnlyList.Wrapper<ExceptionInfo>(this.innerExceptions);
+        }
+
+        private static string SanitizeStackTrace( string stackTrace )
+        {
+            //// NOTE: since we sanitize our partial stack traces already, this makes sense as well
+
+            if( stackTrace.NullOrWhiteSpace() )
+                return stackTrace;
+
+            return StackTraceLineRegex.Replace(stackTrace, StackTraceMatchEvaluator);
+        }
+
+        private static string StackTraceMatchEvaluator( Match match )
+        {
+            try
+            {
+                return match.Groups[1].Value + ConditionsExtensions.SanitizeFilePath(match.Groups[2].Value) + match.Groups[3].Value;
+            }
+            catch
+            {
+                // something went wrong: keep everything
+                // (we don't want to accidentally loose data)
+                return match.ToString();
+            }
         }
 
         /// <summary>
@@ -48,13 +87,55 @@ namespace Mechanical.DataStores
             if( exception.NullReference() )
                 throw new NullReferenceException().StoreFileLine();
 
-            var info = new ExceptionInfo(
-                SafeString.DebugPrint(exception.GetType()),
-                exception.Message,
-                exception.StackTrace);
+            var info = new ExceptionInfo(exception); // sanitize stack trace
 
+            // add contents of Data, except for partial stack trace entries
+            var partialStackTrace = new List<Tuple<int, string>>();
             foreach( var pair in exception.Retrieve() )
-                info.store.Add(pair.Key, pair.Value); // the value being null is perfectly fine for us, but not so much for the serializer
+            {
+                if( pair.Key.IndexOf(ConditionsExtensions.PartialStackTrace, StringComparison.Ordinal) == 0 )
+                {
+                    // do not add to Store
+                    try
+                    {
+                        int index;
+                        if( pair.Key.Length == ConditionsExtensions.PartialStackTrace.Length )
+                            index = 0;
+                        else
+                            index = int.Parse(pair.Key.Substring(startIndex: ConditionsExtensions.PartialStackTrace.Length), NumberStyles.None, CultureInfo.InvariantCulture);
+                        partialStackTrace.Add(Tuple.Create(index, pair.Value));
+                    }
+                    catch
+                    {
+                        //// bad name format? perhaps the user tried to add their own info?
+                    }
+                }
+                else
+                {
+                    // not a partial stack trace
+                    info.store.Add(pair.Key, pair.Value); // the value being null is perfectly fine for us, but not so much for the serializer
+                }
+            }
+
+            // compile and add partial stack trace
+            if( partialStackTrace.Count != 0 )
+            {
+                var sb = new StringBuilder();
+                partialStackTrace.Sort(( x, y ) => x.Item1.CompareTo(y.Item2));
+                for( int i = 0; ; ++i )
+                {
+                    if( i != partialStackTrace.Count - 1 )
+                    {
+                        sb.AppendLine(partialStackTrace[i].Item2);
+                    }
+                    else
+                    {
+                        sb.Append(partialStackTrace[i].Item2);
+                        break;
+                    }
+                }
+                info.store.Add(ConditionsExtensions.PartialStackTrace, sb.ToString());
+            }
 
             if( exception.InnerException.NotNullReference() )
             {
@@ -114,6 +195,22 @@ namespace Mechanical.DataStores
         }
 
         /// <summary>
+        /// Gets the exception's partial stack trace (added manually using StoreFileLine).
+        /// </summary>
+        /// <value>The exception's partial stack trace.</value>
+        public string PartialStackTrace
+        {
+            get
+            {
+                string value;
+                if( this.Store.TryGetValue(ConditionsExtensions.PartialStackTrace, out value) )
+                    return value;
+                else
+                    return null;
+            }
+        }
+
+        /// <summary>
         /// Gets the <see cref="ExceptionInfo"/> that caused the current exception.
         /// </summary>
         /// <value>The <see cref="ExceptionInfo"/> that caused the current exception.</value>
@@ -153,13 +250,17 @@ namespace Mechanical.DataStores
                 sb.Append(info.Message);
             }
 
-            if( info.Store.Count != 0 )
+            int minStoreCount = info.Store.ContainsKey(ConditionsExtensions.PartialStackTrace) ? 1 : 0;
+            if( info.Store.Count > minStoreCount )
             {
                 sb.AppendLine();
                 sb.Append("Store:"); // no newline here
 
                 foreach( var pair in info.Store )
                 {
+                    if( string.Equals(pair.Key, ConditionsExtensions.PartialStackTrace, StringComparison.Ordinal) )
+                        continue;
+
                     sb.AppendLine(); // newline here
                     sb.Append(' ', 2);
                     sb.Append(pair.Key); // valid data store name
@@ -176,6 +277,16 @@ namespace Mechanical.DataStores
 
                 sb.AppendLine("StackTrace:");
                 sb.Append(info.StackTrace);
+            }
+
+            var partialStackTrace = info.PartialStackTrace;
+            if( !partialStackTrace.NullReference() )
+            {
+                sb.AppendLine();
+                sb.AppendLine();
+
+                sb.AppendLine(ConditionsExtensions.PartialStackTrace + ':');
+                sb.Append(partialStackTrace);
             }
 
             if( info.InnerExceptions.Count != 0 )
@@ -318,7 +429,7 @@ namespace Mechanical.DataStores
                 var type = reader.Read((IDataStoreValueDeserializer<string>)BasicSerialization.Default, Keys.Type);
                 var message = reader.Read((IDataStoreValueDeserializer<string>)BasicSerialization.Default, Keys.Message);
                 var stackTrace = reader.Read((IDataStoreValueDeserializer<string>)BasicSerialization.Default, Keys.StackTrace);
-                var info = new ExceptionInfo(type, message, stackTrace);
+                var info = new ExceptionInfo(type, message, stackTrace); // do not sanitize stack trace again
 
                 reader.Read(
                     Keys.Store,
