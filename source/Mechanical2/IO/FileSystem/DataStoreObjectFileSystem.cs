@@ -436,7 +436,10 @@ namespace Mechanical.IO.FileSystem
 
         #endregion
 
-        #region IFileSystemReader
+        #region IFileSystemBase
+
+        //// NOTE: We could actually support host paths (since they are just data store paths),
+        ////       but we don't want them to be mixed up with actual host paths accidentally.
 
         /// <summary>
         /// Gets a value indicating whether the names of files and directories are escaped.
@@ -448,6 +451,50 @@ namespace Mechanical.IO.FileSystem
         {
             get { return this.escapeFileNames; }
         }
+
+
+        /// <summary>
+        /// Gets a value indicating whether the ToHostFilePath method is supported.
+        /// </summary>
+        /// <value><c>true</c> if the method is supported; otherwise, <c>false</c>.</value>
+        public bool SupportsToHostFilePath
+        {
+            get { return false; }
+        }
+
+        /// <summary>
+        /// Gets the string the underlying system uses to represent the specified file.
+        /// </summary>
+        /// <param name="dataStorePath">The data store path specifying the file.</param>
+        /// <returns>The host file path.</returns>
+        public string ToHostFilePath( string dataStorePath )
+        {
+            throw new NotSupportedException().StoreFileLine();
+        }
+
+
+        /// <summary>
+        /// Gets a value indicating whether the ToHostDirectoryPath method is supported.
+        /// </summary>
+        /// <value><c>true</c> if the method is supported; otherwise, <c>false</c>.</value>
+        public bool SupportsToHostDirectoryPath
+        {
+            get { return false; }
+        }
+
+        /// <summary>
+        /// Gets the string the underlying system uses to represent the specified directory.
+        /// </summary>
+        /// <param name="dataStorePath">The data store path specifying the directory.</param>
+        /// <returns>The host directory path.</returns>
+        public string ToHostDirectoryPath( string dataStorePath )
+        {
+            throw new NotSupportedException().StoreFileLine();
+        }
+
+        #endregion
+
+        #region IFileSystemReader
 
         /// <summary>
         /// Gets the names of the files found directly in the specified directory.
@@ -559,6 +606,16 @@ namespace Mechanical.IO.FileSystem
             }
         }
 
+
+        /// <summary>
+        /// Gets a value indicating whether the GetFileSize method is supported.
+        /// </summary>
+        /// <value><c>true</c> if the method is supported; otherwise, <c>false</c>.</value>
+        public bool SupportsGetFileSize
+        {
+            get { return true; }
+        }
+
         /// <summary>
         /// Gets the size, in bytes, of the specified file.
         /// </summary>
@@ -598,17 +655,6 @@ namespace Mechanical.IO.FileSystem
         #endregion
 
         #region IFileSystemWriter
-
-        /// <summary>
-        /// Gets a value indicating whether the names of files and directories are escaped.
-        /// If <c>false</c>, the data store path maps directly to the file path; otherwise escaping needs to be used, both by the implementation, as well as the calling code.
-        /// Setting it to <c>true</c> is the only way to influence file names, but then even valid data store names may need to be escaped (underscores!).
-        /// </summary>
-        /// <value>Indicates whether the names of files and directories are escaped.</value>
-        bool IFileSystemWriter.EscapesNames
-        {
-            get { return this.escapeFileNames; }
-        }
 
         /// <summary>
         /// Creates the specified directory (and any directories along the path) should it not exist.
@@ -731,16 +777,47 @@ namespace Mechanical.IO.FileSystem
             }
         }
 
+
+        /// <summary>
+        /// Gets a value indicating whether the CreateWriteThroughBinary method is supported.
+        /// </summary>
+        /// <value><c>true</c> if the method is supported; otherwise, <c>false</c>.</value>
+        public bool SupportsCreateWriteThroughBinary
+        {
+            get { return false; }
+        }
+
+        /// <summary>
+        /// Always creates a new empty file, and opens it for writing.
+        /// No intermediate buffers are kept: all operations access the file directly.
+        /// This hurts performance, but is important for log files (less is lost in case of a crash).
+        /// </summary>
+        /// <param name="dataStorePath">The data store path specifying the file to open.</param>
+        /// <returns>An <see cref="IBinaryWriter"/> representing the file opened.</returns>
+        public IBinaryWriter CreateWriteThroughBinary( string dataStorePath )
+        {
+            throw new NotSupportedException();
+        }
+
         #endregion
 
         #region IFileSystem
+
+        /// <summary>
+        /// Gets a value indicating whether the ReadWriteBinary method is supported.
+        /// </summary>
+        /// <value><c>true</c> if the method is supported; otherwise, <c>false</c>.</value>
+        public bool SupportsReadWriteBinary
+        {
+            get { return true; }
+        }
 
         /// <summary>
         /// Opens an existing file, or creates a new one, for both reading and writing.
         /// </summary>
         /// <param name="dataStorePath">The data store path specifying the file to open.</param>
         /// <returns>An <see cref="IBinaryStream"/> representing the file opened.</returns>
-        public IBinaryStream OpenBinary( string dataStorePath )
+        public IBinaryStream ReadWriteBinary( string dataStorePath )
         {
             try
             {

@@ -354,6 +354,9 @@
     <Compile Include="..\Mechanical2\IO\FileSystem\IFileSystem.cs">
       <Link>IO\FileSystem\IFileSystem.cs</Link>
     </Compile>
+    <Compile Include="..\Mechanical2\IO\FileSystem\IFileSystemBase.cs">
+      <Link>IO\FileSystem\IFileSystemBase.cs</Link>
+    </Compile>
     <Compile Include="..\Mechanical2\IO\FileSystem\IFileSystemReader.cs">
       <Link>IO\FileSystem\IFileSystemReader.cs</Link>
     </Compile>
@@ -365,9 +368,6 @@
     </Compile>
     <Compile Include="..\Mechanical2\IO\FileSystem\SubdirectoryFileSystem.cs">
       <Link>IO\FileSystem\SubdirectoryFileSystem.cs</Link>
-    </Compile>
-    <Compile Include="..\Mechanical2\IO\FileSystem\SubdirectoryFileSystemReaderWriter.cs">
-      <Link>IO\FileSystem\SubdirectoryFileSystemReaderWriter.cs</Link>
     </Compile>
     <Compile Include="..\Mechanical2\IO\FileSystem\ZipFileSystemBase.cs">
       <Link>IO\FileSystem\ZipFileSystemBase.cs</Link>

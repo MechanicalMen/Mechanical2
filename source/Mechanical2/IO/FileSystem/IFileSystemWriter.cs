@@ -7,16 +7,8 @@ namespace Mechanical.IO.FileSystem
     /// <summary>
     /// Represents an abstract, writable file system.
     /// </summary>
-    public interface IFileSystemWriter
+    public interface IFileSystemWriter : IFileSystemBase
     {
-        /// <summary>
-        /// Gets a value indicating whether the names of files and directories are escaped.
-        /// If <c>false</c>, the data store path maps directly to the file path; otherwise escaping needs to be used, both by the implementation, as well as the calling code.
-        /// Setting it to <c>true</c> is the only way to influence file names, but then even valid data store names may need to be escaped (underscores!).
-        /// </summary>
-        /// <value>Indicates whether the names of files and directories are escaped.</value>
-        bool EscapesNames { get; }
-
         /// <summary>
         /// Creates the specified directory (and any directories along the path) should it not exist.
         /// </summary>
@@ -48,6 +40,22 @@ namespace Mechanical.IO.FileSystem
         /// <param name="dataStorePath">The data store path specifying the file to open.</param>
         /// <returns>An <see cref="IBinaryWriter"/> representing the file opened.</returns>
         IBinaryWriter CreateNewBinary( string dataStorePath );
+
+
+        /// <summary>
+        /// Gets a value indicating whether the CreateWriteThroughBinary method is supported.
+        /// </summary>
+        /// <value><c>true</c> if the method is supported; otherwise, <c>false</c>.</value>
+        bool SupportsCreateWriteThroughBinary { get; }
+
+        /// <summary>
+        /// Always creates a new empty file, and opens it for writing.
+        /// No intermediate buffers are kept: all operations access the file directly.
+        /// This hurts performance, but is important for log files (less is lost in case of a crash).
+        /// </summary>
+        /// <param name="dataStorePath">The data store path specifying the file to open.</param>
+        /// <returns>An <see cref="IBinaryWriter"/> representing the file opened.</returns>
+        IBinaryWriter CreateWriteThroughBinary( string dataStorePath );
     }
 
     /// <content>

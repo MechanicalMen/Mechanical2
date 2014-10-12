@@ -10,12 +10,14 @@ namespace Mechanical.IO.FileSystem
     /// <summary>
     /// Helps implementing a .zip file based abstract file system.
     /// </summary>
-    public abstract class ZipFileSystemBase : DisposableObject, IFileSystemReaderWriter
+    public abstract class ZipFileSystemBase : DisposableObject, IFileSystem
     {
         #region EchoStream
 
         private class EchoStream : Stream
         {
+            //// NOTE: runs delegate on dispose. Does not automatically dispose wrapped stream.
+
             private readonly Stream wrappedStream;
             private Action onDispose;
 
@@ -334,7 +336,7 @@ namespace Mechanical.IO.FileSystem
 
         #endregion
 
-        #region IFileSystemReader
+        #region IFileSystemBase
 
         /// <summary>
         /// Gets a value indicating whether the names of files and directories are escaped.
@@ -352,6 +354,76 @@ namespace Mechanical.IO.FileSystem
                 return this.escapeFileNames;
             }
         }
+
+
+        /// <summary>
+        /// Gets a value indicating whether the ToHostFilePath method is supported.
+        /// </summary>
+        /// <value><c>true</c> if the method is supported; otherwise, <c>false</c>.</value>
+        public bool SupportsToHostFilePath
+        {
+            get
+            {
+                if( this.IsDisposed )
+                    throw new ObjectDisposedException(null).StoreFileLine();
+
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Gets the string the underlying system uses to represent the specified file.
+        /// </summary>
+        /// <param name="dataStorePath">The data store path specifying the file.</param>
+        /// <returns>The host file path.</returns>
+        public string ToHostFilePath( string dataStorePath )
+        {
+            if( this.IsDisposed )
+                throw new ObjectDisposedException(null).StoreFileLine();
+
+            if( dataStorePath.NullOrEmpty()
+             || !DataStore.IsValidPath(dataStorePath) )
+                throw new ArgumentException("Invalid data store path!").StoreFileLine();
+
+            return this.ToZipPath(dataStorePath, isDirectory: false);
+        }
+
+
+        /// <summary>
+        /// Gets a value indicating whether the ToHostDirectoryPath method is supported.
+        /// </summary>
+        /// <value><c>true</c> if the method is supported; otherwise, <c>false</c>.</value>
+        public bool SupportsToHostDirectoryPath
+        {
+            get
+            {
+                if( this.IsDisposed )
+                    throw new ObjectDisposedException(null).StoreFileLine();
+
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Gets the string the underlying system uses to represent the specified directory.
+        /// </summary>
+        /// <param name="dataStorePath">The data store path specifying the directory.</param>
+        /// <returns>The host directory path.</returns>
+        public string ToHostDirectoryPath( string dataStorePath )
+        {
+            if( this.IsDisposed )
+                throw new ObjectDisposedException(null).StoreFileLine();
+
+            if( dataStorePath.NullOrEmpty()
+             || !DataStore.IsValidPath(dataStorePath) )
+                throw new ArgumentException("Invalid data store path!").StoreFileLine();
+
+            return this.ToZipPath(dataStorePath, isDirectory: true);
+        }
+
+        #endregion
+
+        #region IFileSystemReader
 
         /// <summary>
         /// Gets the names of the files found directly in the specified directory.
@@ -433,6 +505,22 @@ namespace Mechanical.IO.FileSystem
             }
         }
 
+
+        /// <summary>
+        /// Gets a value indicating whether the GetFileSize method is supported.
+        /// </summary>
+        /// <value><c>true</c> if the method is supported; otherwise, <c>false</c>.</value>
+        public bool SupportsGetFileSize
+        {
+            get
+            {
+                if( this.IsDisposed )
+                    throw new ObjectDisposedException(null).StoreFileLine();
+
+                return true;
+            }
+        }
+
         /// <summary>
         /// Gets the size, in bytes, of the specified file.
         /// </summary>
@@ -466,17 +554,6 @@ namespace Mechanical.IO.FileSystem
         #endregion
 
         #region IFileSystemWriter
-
-        /// <summary>
-        /// Gets a value indicating whether the names of files and directories are escaped.
-        /// If <c>false</c>, the data store path maps directly to the file path; otherwise escaping needs to be used, both by the implementation, as well as the calling code.
-        /// Setting it to <c>true</c> is the only way to influence file names, but then even valid data store names may need to be escaped (underscores!).
-        /// </summary>
-        /// <value>Indicates whether the names of files and directories are escaped.</value>
-        bool IFileSystemWriter.EscapesNames
-        {
-            get { return this.escapeFileNames; }
-        }
 
         /// <summary>
         /// Creates the specified directory (and any directories along the path) should it not exist.
@@ -626,6 +703,63 @@ namespace Mechanical.IO.FileSystem
                 ex.Store("dataStorePath", dataStorePath);
                 throw;
             }
+        }
+
+
+        /// <summary>
+        /// Gets a value indicating whether the CreateWriteThroughBinary method is supported.
+        /// </summary>
+        /// <value><c>true</c> if the method is supported; otherwise, <c>false</c>.</value>
+        public bool SupportsCreateWriteThroughBinary
+        {
+            get
+            {
+                if( this.IsDisposed )
+                    throw new ObjectDisposedException(null).StoreFileLine();
+
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Always creates a new empty file, and opens it for writing.
+        /// No intermediate buffers are kept: all operations access the file directly.
+        /// This hurts performance, but is important for log files (less is lost in case of a crash).
+        /// </summary>
+        /// <param name="dataStorePath">The data store path specifying the file to open.</param>
+        /// <returns>An <see cref="IBinaryWriter"/> representing the file opened.</returns>
+        public IBinaryWriter CreateWriteThroughBinary( string dataStorePath )
+        {
+            throw new NotSupportedException().StoreFileLine();
+        }
+
+        #endregion
+
+        #region IFileSystem
+
+        /// <summary>
+        /// Gets a value indicating whether the ReadWriteBinary method is supported.
+        /// </summary>
+        /// <value><c>true</c> if the method is supported; otherwise, <c>false</c>.</value>
+        public bool SupportsReadWriteBinary
+        {
+            get
+            {
+                if( this.IsDisposed )
+                    throw new ObjectDisposedException(null).StoreFileLine();
+
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Opens an existing file, or creates a new one, for both reading and writing.
+        /// </summary>
+        /// <param name="dataStorePath">The data store path specifying the file to open.</param>
+        /// <returns>An <see cref="IBinaryStream"/> representing the file opened.</returns>
+        public IBinaryStream ReadWriteBinary( string dataStorePath )
+        {
+            throw new NotSupportedException().StoreFileLine();
         }
 
         #endregion

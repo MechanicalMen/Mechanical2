@@ -3,26 +3,55 @@ using Mechanical.Conditions;
 
 namespace Mechanical.IO.FileSystem
 {
-    /// <summary>
-    /// Represents an abstract file system, that's both readable and writable.
-    /// This interface is enough most of the time, for saving and loading.
-    /// </summary>
-    public interface IFileSystemReaderWriter : IFileSystemReader, IFileSystemWriter
-    {
-    }
+    /* NOTE: Consider that the library has to work on platforms, with different:
+     *         - case sensitiveness
+     *         - invalid characters
+     *         - maximum file name length
+     *         - maximum path length
+     *         - ... etc.
+     * 
+     *       The goal was not to find the common denominator (google for POSIX and file names about that one),
+     *       rather to find a small, "reasonably" portable and reliable feature set, that could be
+     *       made to fit well into the data store toolset (through a wrapper).
+     * 
+     *       The main way this is achieved is, that all files (and directories) are accessed through
+     *       unique data store paths. The mapping from host path to data store path is left to the
+     *       implementation. Consuming code should never have to worry about host paths
+     *       (or what kind of platform they originated on). This way, a "recent file list" saved on windows,
+     *       can be opened in linux without having to write a single extra line.
+     * 
+     *       Translating between paths is done consistently, in one of two ways:
+     *         A) Only those original file names are preserved, which are data store compatible.
+     *            The main benefit is, that file paths gain "cross-platform uniqueness",
+     *            while the main drawback is a lack of file extensions.
+     *            (This is recommended for resources created and edited programmatically (and not manually).)
+     * 
+     *         B) All original file names can also be automatically escaped (using the usual data store method).
+     *            This way, they preserve their names, but data store paths, used in code or in resources,
+     *            may become somewhat unwieldy (and should be generated and edited programmatically (and not manually)).
+     *            (This is recommended for user files.)
+     * 
+     *       As long as your needs are fairly basic, this will work out of the box,
+     *       between multiple platforms, and with minimal effort.
+     */
 
     /// <summary>
     /// Represents an abstract file system, that's both readable and writable.
-    /// Allows for reading and writing a stream at the same time.
     /// </summary>
-    public interface IFileSystem : IFileSystemReaderWriter
+    public interface IFileSystem : IFileSystemReader, IFileSystemWriter
     {
+        /// <summary>
+        /// Gets a value indicating whether the ReadWriteBinary method is supported.
+        /// </summary>
+        /// <value><c>true</c> if the method is supported; otherwise, <c>false</c>.</value>
+        bool SupportsReadWriteBinary { get; }
+
         /// <summary>
         /// Opens an existing file, or creates a new one, for both reading and writing.
         /// </summary>
         /// <param name="dataStorePath">The data store path specifying the file to open.</param>
         /// <returns>An <see cref="IBinaryStream"/> representing the file opened.</returns>
-        IBinaryStream OpenBinary( string dataStorePath );
+        IBinaryStream ReadWriteBinary( string dataStorePath );
     }
 
     /// <content>

@@ -6,51 +6,11 @@ using Mechanical.DataStores;
 
 namespace Mechanical.IO.FileSystem
 {
-    /* NOTE: Consider that the library has to work on platforms, with different:
-     *         - case sensitiveness
-     *         - invalid characters
-     *         - maximum file length
-     *         - maximum path length
-     *         - ... etc.
-     * 
-     *       The goal was not to find the common denominator (google POSIX and file names for that one),
-     *       rather to find a small, "reasonably" portable and reliable feature set, that could be
-     *       made to fit well into the data store toolset (through a wrapper).
-     * 
-     *       The main way this is achieved is, that all files (and directories) are accessed through
-     *       unique data store paths. The mapping from host path to data store path is left to the
-     *       implementation. Consuming code should never have to worry about host paths
-     *       (or what kind of platform they originated on). This way, a "recent file list" saved on windows,
-     *       can be opened in linux without having to write a single extra line.
-     * 
-     *       Translating between paths is done consistently, in one of two ways:
-     *         A) The original file names are preserved only if they are data store compatible.
-     *            The main benefit is, that file paths gain "cross-platform uniqueness",
-     *            while the main drawback is a lack of file extensions.
-     *            (This is recommended for resource files, compiled through a tool utilizing this library.)
-     * 
-     *         B) The original file names can also be automatically escaped (using the usual data store method).
-     *            This way, they preserve their names, but data store paths, used in code or in resources,
-     *            may become somewhat unwieldy.
-     *            (This is recommended for the files of the user.)
-     * 
-     *       The main thing to remember is, that this is not a one size fits all solution. But it is one
-     *       that works out of the box between multiple platforms, with minimal work.
-     */
-
     /// <summary>
     /// Represents an abstract, readable file system.
     /// </summary>
-    public interface IFileSystemReader
+    public interface IFileSystemReader : IFileSystemBase
     {
-        /// <summary>
-        /// Gets a value indicating whether the names of files and directories are escaped.
-        /// If <c>false</c>, the data store path maps directly to the file path; otherwise escaping needs to be used, both by the implementation, as well as the calling code.
-        /// Setting it to <c>true</c> is the only way to influence file names, but then even valid data store names may need to be escaped (underscores!).
-        /// </summary>
-        /// <value>Indicates whether the names of files and directories are escaped.</value>
-        bool EscapesNames { get; }
-
         /// <summary>
         /// Gets the names of the files found directly in the specified directory.
         /// Subdirectories are not searched.
@@ -80,6 +40,13 @@ namespace Mechanical.IO.FileSystem
         /// <param name="dataStorePath">The data store path specifying the file to open.</param>
         /// <returns>An <see cref="IBinaryReader"/> representing the file opened.</returns>
         IBinaryReader ReadBinary( string dataStorePath );
+
+
+        /// <summary>
+        /// Gets a value indicating whether the GetFileSize method is supported.
+        /// </summary>
+        /// <value><c>true</c> if the method is supported; otherwise, <c>false</c>.</value>
+        bool SupportsGetFileSize { get; }
 
         /// <summary>
         /// Gets the size, in bytes, of the specified file.

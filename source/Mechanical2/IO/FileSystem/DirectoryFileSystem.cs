@@ -50,9 +50,9 @@ namespace Mechanical.IO.FileSystem
 
         #endregion
 
-        #region Internal Static Methods
+        #region Private Methods
 
-        internal static string ToRelativeHostPath( string dataStorePath, bool escapeNames )
+        private string ToRelativeHostPath( string dataStorePath )
         {
             try
             {
@@ -60,7 +60,7 @@ namespace Mechanical.IO.FileSystem
                     return string.Empty;
 
                 string hostPath;
-                if( escapeNames )
+                if( this.EscapesNames )
                 {
                     hostPath = DataStore.UnescapePath(dataStorePath);
                     hostPath = hostPath.Replace(DataStore.PathSeparator, Path.DirectorySeparatorChar);
@@ -73,12 +73,19 @@ namespace Mechanical.IO.FileSystem
             catch( Exception ex )
             {
                 ex.Store("dataStorePath", dataStorePath);
-                ex.Store("escapeNames", escapeNames);
+                ex.Store("EscapesNames", this.EscapesNames);
                 throw;
             }
         }
 
-        internal static string FromRelativeHostPath( string hostPath, bool escapeNames )
+        private string ToFullHostPath( string dataStorePath )
+        {
+            var relativeHostPath = this.ToRelativeHostPath(dataStorePath);
+            var fullHostPath = Path.Combine(this.rootDirectoryFullPath, relativeHostPath);
+            return fullHostPath;
+        }
+
+        private string FromRelativeHostPath( string hostPath )
         {
             try
             {
@@ -91,11 +98,11 @@ namespace Mechanical.IO.FileSystem
                 }
                 else
                 {
-                    parentPath = FromRelativeHostPath(parentPath, escapeNames);
+                    parentPath = this.FromRelativeHostPath(parentPath);
                     name = Path.GetFileName(hostPath);
                 }
 
-                if( escapeNames )
+                if( this.EscapesNames )
                     name = DataStore.EscapeName(name);
                 if( !DataStore.IsValidName(name) )
                     throw new ArgumentException("Invalid data store name!");
@@ -105,14 +112,10 @@ namespace Mechanical.IO.FileSystem
             catch( Exception ex )
             {
                 ex.Store("hostPath", hostPath);
-                ex.Store("escapeNames", escapeNames);
+                ex.Store("EscapesNames", this.EscapesNames);
                 throw;
             }
         }
-
-        #endregion
-
-        #region Private Methods
 
         private string[] GetNames( string dataStorePath, Func<string, string[]> getFilesOrDirectories )
         {
@@ -122,7 +125,7 @@ namespace Mechanical.IO.FileSystem
                  && !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                var fullHostPath = this.ToFullFilePath(dataStorePath);
+                var fullHostPath = this.ToFullHostPath(dataStorePath);
                 var filesOrDirectories = getFilesOrDirectories(fullHostPath);
 
                 string relativeHostPath;
@@ -132,7 +135,7 @@ namespace Mechanical.IO.FileSystem
                     relativeHostPath = f.Substring(startIndex: fullHostPath.Length + 1);
                     try
                     {
-                        dataStorePath = FromRelativeHostPath(relativeHostPath, this.EscapesNames);
+                        dataStorePath = this.FromRelativeHostPath(relativeHostPath);
                         results.Add(dataStorePath);
                     }
                     catch
@@ -173,7 +176,7 @@ namespace Mechanical.IO.FileSystem
 
         #endregion
 
-        #region IFileSystemReader
+        #region IFileSystemBase
 
         /// <summary>
         /// Gets a value indicating whether the names of files and directories are escaped.
@@ -185,6 +188,50 @@ namespace Mechanical.IO.FileSystem
         {
             get { return this.escapeFileNames; }
         }
+
+
+        /// <summary>
+        /// Gets a value indicating whether the ToHostFilePath method is supported.
+        /// </summary>
+        /// <value><c>true</c> if the method is supported; otherwise, <c>false</c>.</value>
+        public bool SupportsToHostFilePath
+        {
+            get { return true; }
+        }
+
+        /// <summary>
+        /// Gets the string the underlying system uses to represent the specified file.
+        /// </summary>
+        /// <param name="dataStorePath">The data store path specifying the file.</param>
+        /// <returns>The host file path.</returns>
+        public string ToHostFilePath( string dataStorePath )
+        {
+            return this.ToFullHostPath(dataStorePath);
+        }
+
+
+        /// <summary>
+        /// Gets a value indicating whether the ToHostDirectoryPath method is supported.
+        /// </summary>
+        /// <value><c>true</c> if the method is supported; otherwise, <c>false</c>.</value>
+        public bool SupportsToHostDirectoryPath
+        {
+            get { return true; }
+        }
+
+        /// <summary>
+        /// Gets the string the underlying system uses to represent the specified directory.
+        /// </summary>
+        /// <param name="dataStorePath">The data store path specifying the directory.</param>
+        /// <returns>The host directory path.</returns>
+        public string ToHostDirectoryPath( string dataStorePath )
+        {
+            return this.ToFullHostPath(dataStorePath);
+        }
+
+        #endregion
+
+        #region IFileSystemReader
 
         /// <summary>
         /// Gets the names of the files found directly in the specified directory.
@@ -221,8 +268,8 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                var fullHostPath = this.ToFullFilePath(dataStorePath);
-                var fs = File.OpenRead(fullHostPath);
+                var fullHostPath = this.ToFullHostPath(dataStorePath);
+                var fs = new FileStream(fullHostPath, FileMode.Open, FileAccess.Read, FileShare.Read);
                 return IOWrapper.ToTextReader(fs);
             }
             catch( Exception ex )
@@ -245,14 +292,24 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                var fullHostPath = this.ToFullFilePath(dataStorePath);
-                return IOWrapper.ToBinaryReader(File.OpenRead(fullHostPath));
+                var fullHostPath = this.ToFullHostPath(dataStorePath);
+                return IOWrapper.ToBinaryReader(new FileStream(fullHostPath, FileMode.Open, FileAccess.Read, FileShare.Read));
             }
             catch( Exception ex )
             {
                 ex.Store("dataStorePath", dataStorePath);
                 throw;
             }
+        }
+
+
+        /// <summary>
+        /// Gets a value indicating whether the GetFileSize method is supported.
+        /// </summary>
+        /// <value><c>true</c> if the method is supported; otherwise, <c>false</c>.</value>
+        public bool SupportsGetFileSize
+        {
+            get { return true; }
         }
 
         /// <summary>
@@ -268,7 +325,7 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                var fullHostPath = this.ToFullFilePath(dataStorePath);
+                var fullHostPath = this.ToFullHostPath(dataStorePath);
                 return new FileInfo(fullHostPath).Length;
             }
             catch( Exception ex )
@@ -283,17 +340,6 @@ namespace Mechanical.IO.FileSystem
         #region IFileSystemWriter
 
         /// <summary>
-        /// Gets a value indicating whether the names of files and directories are escaped.
-        /// If <c>false</c>, the data store path maps directly to the file path; otherwise escaping needs to be used, both by the implementation, as well as the calling code.
-        /// Setting it to <c>true</c> is the only way to influence file names, but then even valid data store names may need to be escaped (underscores!).
-        /// </summary>
-        /// <value>Indicates whether the names of files and directories are escaped.</value>
-        bool IFileSystemWriter.EscapesNames
-        {
-            get { return this.escapeFileNames; }
-        }
-
-        /// <summary>
         /// Creates the specified directory (and any directories along the path) should it not exist.
         /// </summary>
         /// <param name="dataStorePath">The data store path specifying the directory to create.</param>
@@ -305,7 +351,7 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                var fullHostPath = this.ToFullFilePath(dataStorePath);
+                var fullHostPath = this.ToFullHostPath(dataStorePath);
                 Directory.CreateDirectory(fullHostPath);
             }
             catch( Exception ex )
@@ -327,7 +373,7 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                var fullHostPath = this.ToFullFilePath(dataStorePath);
+                var fullHostPath = this.ToFullHostPath(dataStorePath);
                 if( File.Exists(fullHostPath) )
                 {
                     RemoveReadOnlyAttribute(fullHostPath);
@@ -353,7 +399,7 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                var fullHostPath = this.ToFullFilePath(dataStorePath);
+                var fullHostPath = this.ToFullHostPath(dataStorePath);
                 if( Directory.Exists(fullHostPath) )
                     RecursivelyDeleteExistingDirectory(fullHostPath);
             }
@@ -377,7 +423,7 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                var fullHostPath = this.ToFullFilePath(dataStorePath);
+                var fullHostPath = this.ToFullHostPath(dataStorePath);
                 Directory.CreateDirectory(Path.GetDirectoryName(fullHostPath));
                 return IOWrapper.ToTextWriter(new FileStream(fullHostPath, FileMode.Create, FileAccess.Write, FileShare.Read), DataStore.DefaultEncoding, DataStore.DefaultNewLine);
             }
@@ -401,7 +447,7 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                var fullHostPath = this.ToFullFilePath(dataStorePath);
+                var fullHostPath = this.ToFullHostPath(dataStorePath);
                 Directory.CreateDirectory(Path.GetDirectoryName(fullHostPath));
                 return IOWrapper.ToBinaryWriter(new FileStream(fullHostPath, FileMode.Create, FileAccess.Write, FileShare.Read));
             }
@@ -412,16 +458,72 @@ namespace Mechanical.IO.FileSystem
             }
         }
 
+
+        /// <summary>
+        /// Gets a value indicating whether the CreateWriteThroughBinary method is supported.
+        /// </summary>
+        /// <value><c>true</c> if the method is supported; otherwise, <c>false</c>.</value>
+        public bool SupportsCreateWriteThroughBinary
+        {
+            get
+            {
+#if !SILVERLIGHT
+                return true;
+#else
+                return false;
+#endif
+            }
+        }
+
+        /// <summary>
+        /// Always creates a new empty file, and opens it for writing.
+        /// No intermediate buffers are kept: all operations access the file directly.
+        /// This hurts performance, but is important for log files (less is lost in case of a crash).
+        /// </summary>
+        /// <param name="dataStorePath">The data store path specifying the file to open.</param>
+        /// <returns>An <see cref="IBinaryWriter"/> representing the file opened.</returns>
+        public IBinaryWriter CreateWriteThroughBinary( string dataStorePath )
+        {
+#if SILVERLIGHT
+            throw new NotSupportedException().StoreFileLine();
+#else
+            try
+            {
+                if( dataStorePath.NullOrEmpty()
+                 || !DataStore.IsValidPath(dataStorePath) )
+                    throw new ArgumentException("Invalid data store path!").StoreFileLine();
+
+                var fullHostPath = this.ToFullHostPath(dataStorePath);
+                Directory.CreateDirectory(Path.GetDirectoryName(fullHostPath));
+                return IOWrapper.ToBinaryWriter(new FileStream(fullHostPath, FileMode.Create, FileAccess.Write, FileShare.Read, bufferSize: 4096, options: FileOptions.WriteThrough)); // 4K is the default FileStream buffer size. May not be zero.
+            }
+            catch( Exception ex )
+            {
+                ex.Store("dataStorePath", dataStorePath);
+                throw;
+            }
+#endif
+        }
+
         #endregion
 
         #region IFileSystem
+
+        /// <summary>
+        /// Gets a value indicating whether the ReadWriteBinary method is supported.
+        /// </summary>
+        /// <value><c>true</c> if the method is supported; otherwise, <c>false</c>.</value>
+        public bool SupportsReadWriteBinary
+        {
+            get { return true; }
+        }
 
         /// <summary>
         /// Opens an existing file, or creates a new one, for both reading and writing.
         /// </summary>
         /// <param name="dataStorePath">The data store path specifying the file to open.</param>
         /// <returns>An <see cref="IBinaryStream"/> representing the file opened.</returns>
-        public IBinaryStream OpenBinary( string dataStorePath )
+        public IBinaryStream ReadWriteBinary( string dataStorePath )
         {
             try
             {
@@ -429,7 +531,7 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                var fullHostPath = this.ToFullFilePath(dataStorePath);
+                var fullHostPath = this.ToFullHostPath(dataStorePath);
                 Directory.CreateDirectory(Path.GetDirectoryName(fullHostPath));
                 return IOWrapper.ToBinaryStream(new FileStream(fullHostPath, FileMode.OpenOrCreate, FileAccess.ReadWrite));
             }
@@ -438,24 +540,6 @@ namespace Mechanical.IO.FileSystem
                 ex.Store("dataStorePath", dataStorePath);
                 throw;
             }
-        }
-
-        #endregion
-
-        #region Public Methods
-
-        /// <summary>
-        /// Converts a dataStorePath of the abstract file system,
-        /// to a full file path of the operating system.
-        /// If at all possible, use streams (see <see cref="IOWrapper"/>) instead of this method.
-        /// </summary>
-        /// <param name="dataStorePath">The data store path specifying the file or directory.</param>
-        /// <returns>The full path to the file or directory.</returns>
-        public string ToFullFilePath( string dataStorePath )
-        {
-            var relativeHostPath = ToRelativeHostPath(dataStorePath, this.EscapesNames);
-            var fullHostPath = Path.Combine(this.rootDirectoryFullPath, relativeHostPath);
-            return fullHostPath;
         }
 
         #endregion
