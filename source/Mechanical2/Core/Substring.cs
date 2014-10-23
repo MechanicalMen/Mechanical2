@@ -780,4 +780,6 @@ namespace Mechanical.Core
 
         #endregion
     }
+
+    //// TODO: implement GetHashCode without string.Substring
 }

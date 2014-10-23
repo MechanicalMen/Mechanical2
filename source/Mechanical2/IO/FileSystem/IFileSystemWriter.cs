@@ -28,18 +28,20 @@ namespace Mechanical.IO.FileSystem
         void DeleteDirectory( string dataStorePath );
 
         /// <summary>
-        /// Always creates a new empty file, and opens it for writing.
+        /// Creates a new empty file, and opens it for writing.
         /// </summary>
         /// <param name="dataStorePath">The data store path specifying the file to open.</param>
+        /// <param name="overwriteIfExists"><c>true</c> to overwrite the file in case it already exists (like <see cref="System.IO.FileMode.Create"/>); or <c>false</c> to throw an exception (like <see cref="System.IO.FileMode.CreateNew"/>).</param>
         /// <returns>An <see cref="ITextWriter"/> representing the file opened.</returns>
-        ITextWriter CreateNewText( string dataStorePath );
+        ITextWriter CreateNewText( string dataStorePath, bool overwriteIfExists );
 
         /// <summary>
-        /// Always creates a new empty file, and opens it for writing.
+        /// Creates a new empty file, and opens it for writing.
         /// </summary>
         /// <param name="dataStorePath">The data store path specifying the file to open.</param>
+        /// <param name="overwriteIfExists"><c>true</c> to overwrite the file in case it already exists (like <see cref="System.IO.FileMode.Create"/>); or <c>false</c> to throw an exception (like <see cref="System.IO.FileMode.CreateNew"/>).</param>
         /// <returns>An <see cref="IBinaryWriter"/> representing the file opened.</returns>
-        IBinaryWriter CreateNewBinary( string dataStorePath );
+        IBinaryWriter CreateNewBinary( string dataStorePath, bool overwriteIfExists );
 
 
         /// <summary>
@@ -49,13 +51,14 @@ namespace Mechanical.IO.FileSystem
         bool SupportsCreateWriteThroughBinary { get; }
 
         /// <summary>
-        /// Always creates a new empty file, and opens it for writing.
+        /// Creates a new empty file, and opens it for writing.
         /// No intermediate buffers are kept: all operations access the file directly.
         /// This hurts performance, but is important for log files (less is lost in case of a crash).
         /// </summary>
         /// <param name="dataStorePath">The data store path specifying the file to open.</param>
+        /// <param name="overwriteIfExists"><c>true</c> to overwrite the file in case it already exists (like <see cref="System.IO.FileMode.Create"/>); or <c>false</c> to throw an exception (like <see cref="System.IO.FileMode.CreateNew"/>).</param>
         /// <returns>An <see cref="IBinaryWriter"/> representing the file opened.</returns>
-        IBinaryWriter CreateWriteThroughBinary( string dataStorePath );
+        IBinaryWriter CreateWriteThroughBinary( string dataStorePath, bool overwriteIfExists );
     }
 
     /// <content>
@@ -75,7 +78,7 @@ namespace Mechanical.IO.FileSystem
         {
             Ensure.Debug(fileSystem, f => f.NotNull());
 
-            var writer = fileSystem.CreateNewText(dataStorePath);
+            var writer = fileSystem.CreateNewText(dataStorePath, overwriteIfExists: true);
             if( contents.NotNullReference() ) // same 'null' handling as the standard .NET implementation
                 writer.Write(contents);
             writer.Close();

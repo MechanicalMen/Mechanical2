@@ -411,11 +411,12 @@ namespace Mechanical.IO.FileSystem
         }
 
         /// <summary>
-        /// Always creates a new empty file, and opens it for writing.
+        /// Creates a new empty file, and opens it for writing.
         /// </summary>
         /// <param name="dataStorePath">The data store path specifying the file to open.</param>
+        /// <param name="overwriteIfExists"><c>true</c> to overwrite the file in case it already exists (like <see cref="System.IO.FileMode.Create"/>); or <c>false</c> to throw an exception (like <see cref="System.IO.FileMode.CreateNew"/>).</param>
         /// <returns>An <see cref="ITextWriter"/> representing the file opened.</returns>
-        public ITextWriter CreateNewText( string dataStorePath )
+        public ITextWriter CreateNewText( string dataStorePath, bool overwriteIfExists )
         {
             try
             {
@@ -425,21 +426,23 @@ namespace Mechanical.IO.FileSystem
 
                 var fullHostPath = this.ToFullHostPath(dataStorePath);
                 Directory.CreateDirectory(Path.GetDirectoryName(fullHostPath));
-                return IOWrapper.ToTextWriter(new FileStream(fullHostPath, FileMode.Create, FileAccess.Write, FileShare.Read), DataStore.DefaultEncoding, DataStore.DefaultNewLine);
+                return IOWrapper.ToTextWriter(new FileStream(fullHostPath, overwriteIfExists ? FileMode.Create : FileMode.CreateNew, FileAccess.Write, FileShare.Read), DataStore.DefaultEncoding, DataStore.DefaultNewLine);
             }
             catch( Exception ex )
             {
                 ex.Store("dataStorePath", dataStorePath);
+                ex.Store("overwriteIfExists", overwriteIfExists);
                 throw;
             }
         }
 
         /// <summary>
-        /// Always creates a new empty file, and opens it for writing.
+        /// Creates a new empty file, and opens it for writing.
         /// </summary>
         /// <param name="dataStorePath">The data store path specifying the file to open.</param>
+        /// <param name="overwriteIfExists"><c>true</c> to overwrite the file in case it already exists (like <see cref="System.IO.FileMode.Create"/>); or <c>false</c> to throw an exception (like <see cref="System.IO.FileMode.CreateNew"/>).</param>
         /// <returns>An <see cref="IBinaryWriter"/> representing the file opened.</returns>
-        public IBinaryWriter CreateNewBinary( string dataStorePath )
+        public IBinaryWriter CreateNewBinary( string dataStorePath, bool overwriteIfExists )
         {
             try
             {
@@ -449,11 +452,12 @@ namespace Mechanical.IO.FileSystem
 
                 var fullHostPath = this.ToFullHostPath(dataStorePath);
                 Directory.CreateDirectory(Path.GetDirectoryName(fullHostPath));
-                return IOWrapper.ToBinaryWriter(new FileStream(fullHostPath, FileMode.Create, FileAccess.Write, FileShare.Read));
+                return IOWrapper.ToBinaryWriter(new FileStream(fullHostPath, overwriteIfExists ? FileMode.Create : FileMode.CreateNew, FileAccess.Write, FileShare.Read));
             }
             catch( Exception ex )
             {
                 ex.Store("dataStorePath", dataStorePath);
+                ex.Store("overwriteIfExists", overwriteIfExists);
                 throw;
             }
         }
@@ -476,13 +480,14 @@ namespace Mechanical.IO.FileSystem
         }
 
         /// <summary>
-        /// Always creates a new empty file, and opens it for writing.
+        /// Creates a new empty file, and opens it for writing.
         /// No intermediate buffers are kept: all operations access the file directly.
         /// This hurts performance, but is important for log files (less is lost in case of a crash).
         /// </summary>
         /// <param name="dataStorePath">The data store path specifying the file to open.</param>
+        /// <param name="overwriteIfExists"><c>true</c> to overwrite the file in case it already exists (like <see cref="System.IO.FileMode.Create"/>); or <c>false</c> to throw an exception (like <see cref="System.IO.FileMode.CreateNew"/>).</param>
         /// <returns>An <see cref="IBinaryWriter"/> representing the file opened.</returns>
-        public IBinaryWriter CreateWriteThroughBinary( string dataStorePath )
+        public IBinaryWriter CreateWriteThroughBinary( string dataStorePath, bool overwriteIfExists )
         {
 #if SILVERLIGHT
             throw new NotSupportedException().StoreFileLine();
@@ -495,11 +500,12 @@ namespace Mechanical.IO.FileSystem
 
                 var fullHostPath = this.ToFullHostPath(dataStorePath);
                 Directory.CreateDirectory(Path.GetDirectoryName(fullHostPath));
-                return IOWrapper.ToBinaryWriter(new FileStream(fullHostPath, FileMode.Create, FileAccess.Write, FileShare.Read, bufferSize: 4096, options: FileOptions.WriteThrough)); // 4K is the default FileStream buffer size. May not be zero.
+                return IOWrapper.ToBinaryWriter(new FileStream(fullHostPath, overwriteIfExists ? FileMode.Create : FileMode.CreateNew, FileAccess.Write, FileShare.Read, bufferSize: 4096, options: FileOptions.WriteThrough)); // 4K is the default FileStream buffer size. May not be zero.
             }
             catch( Exception ex )
             {
                 ex.Store("dataStorePath", dataStorePath);
+                ex.Store("overwriteIfExists", overwriteIfExists);
                 throw;
             }
 #endif

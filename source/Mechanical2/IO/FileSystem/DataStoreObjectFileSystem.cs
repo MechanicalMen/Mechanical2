@@ -229,6 +229,7 @@ namespace Mechanical.IO.FileSystem
 
         #region Private Fields
 
+        private readonly object syncLock;
         private readonly DataStoreObject.NodesCollection rootNodes;
         private readonly bool escapeFileNames;
 
@@ -242,6 +243,7 @@ namespace Mechanical.IO.FileSystem
         /// <param name="escapeFileNames">Indicates whether the original file names should be escaped. Sets the appropriate property, but otherwise ignored.</param>
         public DataStoreObjectFileSystem( bool escapeFileNames = false )
         {
+            this.syncLock = new object();
             this.rootNodes = new DataStoreObject.NodesCollection();
             this.escapeFileNames = escapeFileNames;
         }
@@ -504,7 +506,8 @@ namespace Mechanical.IO.FileSystem
         /// <returns>The names of the files found.</returns>
         public string[] GetFileNames( string dataStorePath = "" )
         {
-            return this.GetEntries(dataStorePath, getFiles: true);
+            lock( this.syncLock )
+                return this.GetEntries(dataStorePath, getFiles: true);
         }
 
         /// <summary>
@@ -515,7 +518,8 @@ namespace Mechanical.IO.FileSystem
         /// <returns>The names of the directories found.</returns>
         public string[] GetDirectoryNames( string dataStorePath = "" )
         {
-            return this.GetEntries(dataStorePath, getFiles: false);
+            lock( this.syncLock )
+                return this.GetEntries(dataStorePath, getFiles: false);
         }
 
         /// <summary>
@@ -531,30 +535,33 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                var node = this.GetNodeAt(dataStorePath);
-                if( node.NullReference() )
-                    throw new FileNotFoundException("File system entry not found!").StoreFileLine();
-                if( !(node is IDataStoreValue) )
-                    throw new FileNotFoundException("File system entry is not a file!").StoreFileLine();
-
-                var textValue = node as IDataStoreTextValue;
-                if( textValue.NotNullReference() )
+                lock( this.syncLock )
                 {
-                    var reader = new StringReader();
-                    reader.Set(textValue.Content);
-                    return reader;
-                }
+                    var node = this.GetNodeAt(dataStorePath);
+                    if( node.NullReference() )
+                        throw new FileNotFoundException("File system entry not found!").StoreFileLine();
+                    if( !(node is IDataStoreValue) )
+                        throw new FileNotFoundException("File system entry is not a file!").StoreFileLine();
 
-                var binaryValue = node as IDataStoreBinaryValue;
-                if( binaryValue.NotNullReference() )
-                {
-                    var ms = new MemoryStream(capacity: binaryValue.Content.Count);
-                    ms.Write(binaryValue.Content.Array, binaryValue.Content.Offset, binaryValue.Content.Count);
-                    ms.Position = 0;
-                    return IOWrapper.ToTextReader(ms);
-                }
+                    var textValue = node as IDataStoreTextValue;
+                    if( textValue.NotNullReference() )
+                    {
+                        var reader = new StringReader();
+                        reader.Set(textValue.Content);
+                        return reader;
+                    }
 
-                throw new Exception("Data store node value is neither text, nor binary based!").Store("nodeType", node.GetType());
+                    var binaryValue = node as IDataStoreBinaryValue;
+                    if( binaryValue.NotNullReference() )
+                    {
+                        var ms = new MemoryStream(capacity: binaryValue.Content.Count);
+                        ms.Write(binaryValue.Content.Array, binaryValue.Content.Offset, binaryValue.Content.Count);
+                        ms.Position = 0;
+                        return IOWrapper.ToTextReader(ms);
+                    }
+
+                    throw new Exception("Data store node value is neither text, nor binary based!").Store("nodeType", node.GetType());
+                }
             }
             catch( Exception ex )
             {
@@ -576,28 +583,31 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                var node = this.GetNodeAt(dataStorePath);
-                if( node.NullReference() )
-                    throw new FileNotFoundException("File system entry not found!").StoreFileLine();
-                if( !(node is IDataStoreValue) )
-                    throw new FileNotFoundException("File system entry is not a file!").StoreFileLine();
-
-                var binaryValue = node as IDataStoreBinaryValue;
-                if( binaryValue.NotNullReference() )
+                lock( this.syncLock )
                 {
-                    return new BinaryArrayReaderLE(binaryValue.Content);
-                }
+                    var node = this.GetNodeAt(dataStorePath);
+                    if( node.NullReference() )
+                        throw new FileNotFoundException("File system entry not found!").StoreFileLine();
+                    if( !(node is IDataStoreValue) )
+                        throw new FileNotFoundException("File system entry is not a file!").StoreFileLine();
 
-                var textValue = node as IDataStoreTextValue;
-                if( textValue.NotNullReference() )
-                {
-                    var str = textValue.Content.ToString();
-                    var ms = new MemoryStream(DataStore.DefaultEncoding.GetBytes(str));
-                    ms.Position = 0;
-                    return IOWrapper.ToBinaryReader(ms);
-                }
+                    var binaryValue = node as IDataStoreBinaryValue;
+                    if( binaryValue.NotNullReference() )
+                    {
+                        return new BinaryArrayReaderLE(binaryValue.Content);
+                    }
 
-                throw new Exception("Data store node value is neither text, nor binary based!").Store("nodeType", node.GetType());
+                    var textValue = node as IDataStoreTextValue;
+                    if( textValue.NotNullReference() )
+                    {
+                        var str = textValue.Content.ToString();
+                        var ms = new MemoryStream(DataStore.DefaultEncoding.GetBytes(str));
+                        ms.Position = 0;
+                        return IOWrapper.ToBinaryReader(ms);
+                    }
+
+                    throw new Exception("Data store node value is neither text, nor binary based!").Store("nodeType", node.GetType());
+                }
             }
             catch( Exception ex )
             {
@@ -629,21 +639,24 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                var node = this.GetNodeAt(dataStorePath);
-                if( node.NullReference() )
-                    throw new FileNotFoundException("File system entry not found!").StoreFileLine();
-                if( !(node is IDataStoreValue) )
-                    throw new FileNotFoundException("File system entry is not a file!").StoreFileLine();
+                lock( this.syncLock )
+                {
+                    var node = this.GetNodeAt(dataStorePath);
+                    if( node.NullReference() )
+                        throw new FileNotFoundException("File system entry not found!").StoreFileLine();
+                    if( !(node is IDataStoreValue) )
+                        throw new FileNotFoundException("File system entry is not a file!").StoreFileLine();
 
-                var binaryValue = node as IDataStoreBinaryValue;
-                if( binaryValue.NotNullReference() )
-                    return binaryValue.Content.Count;
+                    var binaryValue = node as IDataStoreBinaryValue;
+                    if( binaryValue.NotNullReference() )
+                        return binaryValue.Content.Count;
 
-                var textValue = node as IDataStoreTextValue;
-                if( textValue.NotNullReference() )
-                    return DataStore.DefaultEncoding.GetByteCount(textValue.Content.ToString());
+                    var textValue = node as IDataStoreTextValue;
+                    if( textValue.NotNullReference() )
+                        return DataStore.DefaultEncoding.GetByteCount(textValue.Content.ToString());
 
-                throw new Exception("Data store node value is neither text, nor binary based!").Store("nodeType", node.GetType());
+                    throw new Exception("Data store node value is neither text, nor binary based!").Store("nodeType", node.GetType());
+                }
             }
             catch( Exception ex )
             {
@@ -668,7 +681,8 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                this.CreateDirectoryRecursively(dataStorePath);
+                lock( this.syncLock )
+                    this.CreateDirectoryRecursively(dataStorePath);
             }
             catch( Exception ex )
             {
@@ -685,7 +699,8 @@ namespace Mechanical.IO.FileSystem
         {
             try
             {
-                this.DeleteNode(dataStorePath, expectValue: true);
+                lock( this.syncLock )
+                    this.DeleteNode(dataStorePath, expectValue: true);
             }
             catch( Exception ex )
             {
@@ -702,7 +717,8 @@ namespace Mechanical.IO.FileSystem
         {
             try
             {
-                this.DeleteNode(dataStorePath, expectValue: false);
+                lock( this.syncLock )
+                    this.DeleteNode(dataStorePath, expectValue: false);
             }
             catch( Exception ex )
             {
@@ -712,11 +728,12 @@ namespace Mechanical.IO.FileSystem
         }
 
         /// <summary>
-        /// Always creates a new empty file, and opens it for writing.
+        /// Creates a new empty file, and opens it for writing.
         /// </summary>
         /// <param name="dataStorePath">The data store path specifying the file to open.</param>
+        /// <param name="overwriteIfExists"><c>true</c> to overwrite the file in case it already exists (like <see cref="System.IO.FileMode.Create"/>); or <c>false</c> to throw an exception (like <see cref="System.IO.FileMode.CreateNew"/>).</param>
         /// <returns>An <see cref="ITextWriter"/> representing the file opened.</returns>
-        public ITextWriter CreateNewText( string dataStorePath )
+        public ITextWriter CreateNewText( string dataStorePath, bool overwriteIfExists )
         {
             try
             {
@@ -724,32 +741,37 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                // create parent
-                var parentNodes = this.GetOrCreateParentNodes(dataStorePath);
-
-                // get or create value
-                var textValue = this.GetNodeAt(dataStorePath) as IDataStoreTextValue;
-                if( textValue.NullReference() )
+                lock( this.syncLock )
                 {
-                    textValue = new DataStoreTextValue(DataStore.GetNodeName(dataStorePath), Substring.Empty);
-                    this.SetValueForExistingParent(parentNodes, textValue);
-                }
+                    // create parent
+                    var parentNodes = this.GetOrCreateParentNodes(dataStorePath);
 
-                return new DataStoreTextValueWriter(textValue);
+                    // get or create value
+                    var textValue = this.GetNodeAt(dataStorePath) as IDataStoreTextValue;
+                    if( textValue.NullReference() )
+                    {
+                        textValue = new DataStoreTextValue(DataStore.GetNodeName(dataStorePath), Substring.Empty);
+                        this.SetValueForExistingParent(parentNodes, textValue);
+                    }
+
+                    return new DataStoreTextValueWriter(textValue);
+                }
             }
             catch( Exception ex )
             {
                 ex.Store("dataStorePath", dataStorePath);
+                ex.Store("overwriteIfExists", overwriteIfExists);
                 throw;
             }
         }
 
         /// <summary>
-        /// Always creates a new empty file, and opens it for writing.
+        /// Creates a new empty file, and opens it for writing.
         /// </summary>
         /// <param name="dataStorePath">The data store path specifying the file to open.</param>
+        /// <param name="overwriteIfExists"><c>true</c> to overwrite the file in case it already exists (like <see cref="System.IO.FileMode.Create"/>); or <c>false</c> to throw an exception (like <see cref="System.IO.FileMode.CreateNew"/>).</param>
         /// <returns>An <see cref="IBinaryWriter"/> representing the file opened.</returns>
-        public IBinaryWriter CreateNewBinary( string dataStorePath )
+        public IBinaryWriter CreateNewBinary( string dataStorePath, bool overwriteIfExists )
         {
             try
             {
@@ -757,22 +779,26 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                // create parent
-                var parentNodes = this.GetOrCreateParentNodes(dataStorePath);
-
-                // get or create value
-                var binaryValue = this.GetNodeAt(dataStorePath) as IDataStoreBinaryValue;
-                if( binaryValue.NullReference() )
+                lock( this.syncLock )
                 {
-                    binaryValue = new DataStoreBinaryValue(DataStore.GetNodeName(dataStorePath));
-                    this.SetValueForExistingParent(parentNodes, binaryValue);
-                }
+                    // create parent
+                    var parentNodes = this.GetOrCreateParentNodes(dataStorePath);
 
-                return new DataStoreBinaryValueWriter(binaryValue);
+                    // get or create value
+                    var binaryValue = this.GetNodeAt(dataStorePath) as IDataStoreBinaryValue;
+                    if( binaryValue.NullReference() )
+                    {
+                        binaryValue = new DataStoreBinaryValue(DataStore.GetNodeName(dataStorePath));
+                        this.SetValueForExistingParent(parentNodes, binaryValue);
+                    }
+
+                    return new DataStoreBinaryValueWriter(binaryValue);
+                }
             }
             catch( Exception ex )
             {
                 ex.Store("dataStorePath", dataStorePath);
+                ex.Store("overwriteIfExists", overwriteIfExists);
                 throw;
             }
         }
@@ -788,13 +814,14 @@ namespace Mechanical.IO.FileSystem
         }
 
         /// <summary>
-        /// Always creates a new empty file, and opens it for writing.
+        /// Creates a new empty file, and opens it for writing.
         /// No intermediate buffers are kept: all operations access the file directly.
         /// This hurts performance, but is important for log files (less is lost in case of a crash).
         /// </summary>
         /// <param name="dataStorePath">The data store path specifying the file to open.</param>
+        /// <param name="overwriteIfExists"><c>true</c> to overwrite the file in case it already exists (like <see cref="System.IO.FileMode.Create"/>); or <c>false</c> to throw an exception (like <see cref="System.IO.FileMode.CreateNew"/>).</param>
         /// <returns>An <see cref="IBinaryWriter"/> representing the file opened.</returns>
-        public IBinaryWriter CreateWriteThroughBinary( string dataStorePath )
+        public IBinaryWriter CreateWriteThroughBinary( string dataStorePath, bool overwriteIfExists )
         {
             throw new NotSupportedException();
         }
@@ -825,35 +852,38 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                // create parent
-                var parentNodes = this.GetOrCreateParentNodes(dataStorePath);
-
-                // get node
-                var nodeName = DataStore.GetNodeName(dataStorePath);
-                var node = parentNodes.FirstOrDefault(n => DataStore.Comparer.Equals(n.Name, nodeName));
-                if( node.NotNullReference() && !(node is IDataStoreValue) )
-                    throw new FileNotFoundException("File system entry is not a file!").StoreFileLine();
-
-                // convert text to binary node
-                var textValue = node as IDataStoreTextValue;
-                if( textValue.NotNullReference() )
+                lock( this.syncLock )
                 {
-                    var str = textValue.Content.ToString();
-                    var bytes = DataStore.DefaultEncoding.GetBytes(str);
+                    // create parent
+                    var parentNodes = this.GetOrCreateParentNodes(dataStorePath);
 
-                    var value = new DataStoreBinaryValue(DataStore.GetNodeName(dataStorePath), bytes);
-                    this.SetValueForExistingParent(parentNodes, value);
-                    node = value;
+                    // get node
+                    var nodeName = DataStore.GetNodeName(dataStorePath);
+                    var node = parentNodes.FirstOrDefault(n => DataStore.Comparer.Equals(n.Name, nodeName));
+                    if( node.NotNullReference() && !(node is IDataStoreValue) )
+                        throw new FileNotFoundException("File system entry is not a file!").StoreFileLine();
+
+                    // convert text to binary node
+                    var textValue = node as IDataStoreTextValue;
+                    if( textValue.NotNullReference() )
+                    {
+                        var str = textValue.Content.ToString();
+                        var bytes = DataStore.DefaultEncoding.GetBytes(str);
+
+                        var value = new DataStoreBinaryValue(DataStore.GetNodeName(dataStorePath), bytes);
+                        this.SetValueForExistingParent(parentNodes, value);
+                        node = value;
+                    }
+
+                    var binaryValue = node as IDataStoreBinaryValue;
+                    if( binaryValue.NullReference() )
+                    {
+                        binaryValue = new DataStoreBinaryValue(DataStore.GetNodeName(dataStorePath));
+                        this.SetValueForExistingParent(parentNodes, binaryValue);
+                    }
+
+                    return new DataStoreBinaryValueStream(binaryValue);
                 }
-
-                var binaryValue = node as IDataStoreBinaryValue;
-                if( binaryValue.NullReference() )
-                {
-                    binaryValue = new DataStoreBinaryValue(DataStore.GetNodeName(dataStorePath));
-                    this.SetValueForExistingParent(parentNodes, binaryValue);
-                }
-
-                return new DataStoreBinaryValueStream(binaryValue);
             }
             catch( Exception ex )
             {

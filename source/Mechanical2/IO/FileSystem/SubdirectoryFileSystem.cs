@@ -251,33 +251,35 @@ namespace Mechanical.IO.FileSystem
         }
 
         /// <summary>
-        /// Always creates a new empty file, and opens it for writing.
+        /// Creates a new empty file, and opens it for writing.
         /// </summary>
         /// <param name="dataStorePath">The data store path specifying the file to open.</param>
+        /// <param name="overwriteIfExists"><c>true</c> to overwrite the file in case it already exists (like <see cref="System.IO.FileMode.Create"/>); or <c>false</c> to throw an exception (like <see cref="System.IO.FileMode.CreateNew"/>).</param>
         /// <returns>An <see cref="ITextWriter"/> representing the file opened.</returns>
-        public ITextWriter CreateNewText( string dataStorePath )
+        public ITextWriter CreateNewText( string dataStorePath, bool overwriteIfExists )
         {
             if( !DataStore.IsValidPath(dataStorePath)
              || dataStorePath.Length == 0 )
                 throw new ArgumentException().Store("dataStorePath", dataStorePath);
 
             var parentDataStorePath = this.ToParentDataStorePath(dataStorePath);
-            return this.parentFileSystem.CreateNewText(parentDataStorePath);
+            return this.parentFileSystem.CreateNewText(parentDataStorePath, overwriteIfExists);
         }
 
         /// <summary>
-        /// Always creates a new empty file, and opens it for writing.
+        /// Creates a new empty file, and opens it for writing.
         /// </summary>
         /// <param name="dataStorePath">The data store path specifying the file to open.</param>
+        /// <param name="overwriteIfExists"><c>true</c> to overwrite the file in case it already exists (like <see cref="System.IO.FileMode.Create"/>); or <c>false</c> to throw an exception (like <see cref="System.IO.FileMode.CreateNew"/>).</param>
         /// <returns>An <see cref="IBinaryWriter"/> representing the file opened.</returns>
-        public IBinaryWriter CreateNewBinary( string dataStorePath )
+        public IBinaryWriter CreateNewBinary( string dataStorePath, bool overwriteIfExists )
         {
             if( !DataStore.IsValidPath(dataStorePath)
              || dataStorePath.Length == 0 )
                 throw new ArgumentException().Store("dataStorePath", dataStorePath);
 
             var parentDataStorePath = this.ToParentDataStorePath(dataStorePath);
-            return this.parentFileSystem.CreateNewBinary(parentDataStorePath);
+            return this.parentFileSystem.CreateNewBinary(parentDataStorePath, overwriteIfExists);
         }
 
 
@@ -291,20 +293,21 @@ namespace Mechanical.IO.FileSystem
         }
 
         /// <summary>
-        /// Always creates a new empty file, and opens it for writing.
+        /// Creates a new empty file, and opens it for writing.
         /// No intermediate buffers are kept: all operations access the file directly.
         /// This hurts performance, but is important for log files (less is lost in case of a crash).
         /// </summary>
         /// <param name="dataStorePath">The data store path specifying the file to open.</param>
+        /// <param name="overwriteIfExists"><c>true</c> to overwrite the file in case it already exists (like <see cref="System.IO.FileMode.Create"/>); or <c>false</c> to throw an exception (like <see cref="System.IO.FileMode.CreateNew"/>).</param>
         /// <returns>An <see cref="IBinaryWriter"/> representing the file opened.</returns>
-        public IBinaryWriter CreateWriteThroughBinary( string dataStorePath )
+        public IBinaryWriter CreateWriteThroughBinary( string dataStorePath, bool overwriteIfExists )
         {
             if( !DataStore.IsValidPath(dataStorePath)
              || dataStorePath.Length == 0 )
                 throw new ArgumentException().Store("dataStorePath", dataStorePath);
 
             var parentDataStorePath = this.ToParentDataStorePath(dataStorePath);
-            return this.parentFileSystem.CreateWriteThroughBinary(parentDataStorePath);
+            return this.parentFileSystem.CreateWriteThroughBinary(parentDataStorePath, overwriteIfExists);
         }
 
         #endregion

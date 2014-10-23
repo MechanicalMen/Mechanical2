@@ -102,6 +102,7 @@ namespace Mechanical.IO.FileSystem
 
         private const char ZipDirectorySeparator = '/';
 
+        private readonly object syncLock;
         private readonly bool escapeFileNames;
 
         #endregion
@@ -114,6 +115,7 @@ namespace Mechanical.IO.FileSystem
         /// <param name="escapeFileNames">Indicates whether the original file names are escaped.</param>
         protected ZipFileSystemBase( bool escapeFileNames )
         {
+            this.syncLock = new object();
             this.escapeFileNames = escapeFileNames;
         }
 
@@ -385,7 +387,8 @@ namespace Mechanical.IO.FileSystem
              || !DataStore.IsValidPath(dataStorePath) )
                 throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-            return this.ToZipPath(dataStorePath, isDirectory: false);
+            lock( this.syncLock )
+                return this.ToZipPath(dataStorePath, isDirectory: false);
         }
 
 
@@ -418,7 +421,8 @@ namespace Mechanical.IO.FileSystem
              || !DataStore.IsValidPath(dataStorePath) )
                 throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-            return this.ToZipPath(dataStorePath, isDirectory: true);
+            lock( this.syncLock )
+                return this.ToZipPath(dataStorePath, isDirectory: true);
         }
 
         #endregion
@@ -433,7 +437,8 @@ namespace Mechanical.IO.FileSystem
         /// <returns>The names of the files found.</returns>
         public string[] GetFileNames( string dataStorePath = "" )
         {
-            return this.GetNames(dataStorePath, getFiles: true);
+            lock( this.syncLock )
+                return this.GetNames(dataStorePath, getFiles: true);
         }
 
         /// <summary>
@@ -444,7 +449,8 @@ namespace Mechanical.IO.FileSystem
         /// <returns>The names of the directories found.</returns>
         public string[] GetDirectoryNames( string dataStorePath = "" )
         {
-            return this.GetNames(dataStorePath, getFiles: false);
+            lock( this.syncLock )
+                return this.GetNames(dataStorePath, getFiles: false);
         }
 
         /// <summary>
@@ -463,11 +469,14 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                var zipPath = this.ToZipPath(dataStorePath, isDirectory: false);
-                if( !this.ContainsEntry(zipPath) )
-                    throw new FileNotFoundException().StoreFileLine();
+                lock( this.syncLock )
+                {
+                    var zipPath = this.ToZipPath(dataStorePath, isDirectory: false);
+                    if( !this.ContainsEntry(zipPath) )
+                        throw new FileNotFoundException().StoreFileLine();
 
-                return IOWrapper.ToTextReader(this.OpenRead(zipPath));
+                    return IOWrapper.ToTextReader(this.OpenRead(zipPath));
+                }
             }
             catch( Exception ex )
             {
@@ -492,11 +501,14 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                var zipPath = this.ToZipPath(dataStorePath, isDirectory: false);
-                if( !this.ContainsEntry(zipPath) )
-                    throw new FileNotFoundException().StoreFileLine();
+                lock( this.syncLock )
+                {
+                    var zipPath = this.ToZipPath(dataStorePath, isDirectory: false);
+                    if( !this.ContainsEntry(zipPath) )
+                        throw new FileNotFoundException().StoreFileLine();
 
-                return IOWrapper.ToBinaryReader(this.OpenRead(zipPath));
+                    return IOWrapper.ToBinaryReader(this.OpenRead(zipPath));
+                }
             }
             catch( Exception ex )
             {
@@ -537,12 +549,15 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                var zipPath = this.ToZipPath(dataStorePath, isDirectory: false);
-                var size = this.GetUncompressedSize(zipPath);
-                if( !size.HasValue )
-                    throw new FileNotFoundException().StoreFileLine();
-                else
-                    return size.Value;
+                lock( this.syncLock )
+                {
+                    var zipPath = this.ToZipPath(dataStorePath, isDirectory: false);
+                    var size = this.GetUncompressedSize(zipPath);
+                    if( !size.HasValue )
+                        throw new FileNotFoundException().StoreFileLine();
+                    else
+                        return size.Value;
+                }
             }
             catch( Exception ex )
             {
@@ -570,8 +585,11 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                this.CreateDirectoryRecursively(dataStorePath);
-                this.Flush();
+                lock( this.syncLock )
+                {
+                    this.CreateDirectoryRecursively(dataStorePath);
+                    this.Flush();
+                }
             }
             catch( Exception ex )
             {
@@ -595,9 +613,12 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                var zipFilePath = this.ToZipPath(dataStorePath, isDirectory: false);
-                this.RemoveEntry(zipFilePath);
-                this.Flush();
+                lock( this.syncLock )
+                {
+                    var zipFilePath = this.ToZipPath(dataStorePath, isDirectory: false);
+                    this.RemoveEntry(zipFilePath);
+                    this.Flush();
+                }
             }
             catch( Exception ex )
             {
@@ -621,8 +642,11 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                this.DeleteDirectoryRecursively(dataStorePath);
-                this.Flush();
+                lock( this.syncLock )
+                {
+                    this.DeleteDirectoryRecursively(dataStorePath);
+                    this.Flush();
+                }
             }
             catch( Exception ex )
             {
@@ -632,11 +656,12 @@ namespace Mechanical.IO.FileSystem
         }
 
         /// <summary>
-        /// Always creates a new empty file, and opens it for writing.
+        /// Creates a new empty file, and opens it for writing.
         /// </summary>
         /// <param name="dataStorePath">The data store path specifying the file to open.</param>
+        /// <param name="overwriteIfExists"><c>true</c> to overwrite the file in case it already exists (like <see cref="System.IO.FileMode.Create"/>); or <c>false</c> to throw an exception (like <see cref="System.IO.FileMode.CreateNew"/>).</param>
         /// <returns>An <see cref="ITextWriter"/> representing the file opened.</returns>
-        public ITextWriter CreateNewText( string dataStorePath )
+        public ITextWriter CreateNewText( string dataStorePath, bool overwriteIfExists )
         {
             try
             {
@@ -647,33 +672,43 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                // delete existing entry
-                var zipFilePath = this.ToZipPath(dataStorePath, isDirectory: false);
-                if( this.ContainsEntry(zipFilePath) )
-                    this.RemoveEntry(zipFilePath);
+                lock( this.syncLock )
+                {
+                    // handle existing entry
+                    var zipFilePath = this.ToZipPath(dataStorePath, isDirectory: false);
+                    if( this.ContainsEntry(zipFilePath) )
+                    {
+                        if( overwriteIfExists )
+                            this.RemoveEntry(zipFilePath);
+                        else
+                            throw new IOException("The specified file already exists!").Store("zipFilePath", zipFilePath);
+                    }
 
-                // create directory
-                var parentDataStorePath = DataStore.GetParentPath(dataStorePath);
-                if( !parentDataStorePath.NullOrEmpty() )
-                    this.CreateDirectoryRecursively(parentDataStorePath);
+                    // create directory
+                    var parentDataStorePath = DataStore.GetParentPath(dataStorePath);
+                    if( !parentDataStorePath.NullOrEmpty() )
+                        this.CreateDirectoryRecursively(parentDataStorePath);
 
-                // create new entry
-                var stream = this.FlushAfterDispose(this.CreateFileEntry(zipFilePath));
-                return IOWrapper.ToTextWriter(stream, DataStore.DefaultEncoding, DataStore.DefaultNewLine);
+                    // create new entry
+                    var stream = this.FlushAfterDispose(this.CreateFileEntry(zipFilePath));
+                    return IOWrapper.ToTextWriter(stream, DataStore.DefaultEncoding, DataStore.DefaultNewLine);
+                }
             }
             catch( Exception ex )
             {
                 ex.Store("dataStorePath", dataStorePath);
+                ex.Store("overwriteIfExists", overwriteIfExists);
                 throw;
             }
         }
 
         /// <summary>
-        /// Always creates a new empty file, and opens it for writing.
+        /// Creates a new empty file, and opens it for writing.
         /// </summary>
         /// <param name="dataStorePath">The data store path specifying the file to open.</param>
+        /// <param name="overwriteIfExists"><c>true</c> to overwrite the file in case it already exists (like <see cref="System.IO.FileMode.Create"/>); or <c>false</c> to throw an exception (like <see cref="System.IO.FileMode.CreateNew"/>).</param>
         /// <returns>An <see cref="IBinaryWriter"/> representing the file opened.</returns>
-        public IBinaryWriter CreateNewBinary( string dataStorePath )
+        public IBinaryWriter CreateNewBinary( string dataStorePath, bool overwriteIfExists )
         {
             try
             {
@@ -684,23 +719,32 @@ namespace Mechanical.IO.FileSystem
                  || !DataStore.IsValidPath(dataStorePath) )
                     throw new ArgumentException("Invalid data store path!").StoreFileLine();
 
-                // delete existing entry
-                var zipFilePath = this.ToZipPath(dataStorePath, isDirectory: false);
-                if( this.ContainsEntry(zipFilePath) )
-                    this.RemoveEntry(zipFilePath);
+                lock( this.syncLock )
+                {
+                    // handle existing entry
+                    var zipFilePath = this.ToZipPath(dataStorePath, isDirectory: false);
+                    if( this.ContainsEntry(zipFilePath) )
+                    {
+                        if( overwriteIfExists )
+                            this.RemoveEntry(zipFilePath);
+                        else
+                            throw new IOException("The specified file already exists!").Store("zipFilePath", zipFilePath);
+                    }
 
-                // create directory
-                var parentDataStorePath = DataStore.GetParentPath(dataStorePath);
-                if( !parentDataStorePath.NullOrEmpty() )
-                    this.CreateDirectoryRecursively(parentDataStorePath);
+                    // create directory
+                    var parentDataStorePath = DataStore.GetParentPath(dataStorePath);
+                    if( !parentDataStorePath.NullOrEmpty() )
+                        this.CreateDirectoryRecursively(parentDataStorePath);
 
-                // create new entry
-                var stream = this.FlushAfterDispose(this.CreateFileEntry(zipFilePath));
-                return IOWrapper.ToBinaryWriter(stream);
+                    // create new entry
+                    var stream = this.FlushAfterDispose(this.CreateFileEntry(zipFilePath));
+                    return IOWrapper.ToBinaryWriter(stream);
+                }
             }
             catch( Exception ex )
             {
                 ex.Store("dataStorePath", dataStorePath);
+                ex.Store("overwriteIfExists", overwriteIfExists);
                 throw;
             }
         }
@@ -722,13 +766,14 @@ namespace Mechanical.IO.FileSystem
         }
 
         /// <summary>
-        /// Always creates a new empty file, and opens it for writing.
+        /// Creates a new empty file, and opens it for writing.
         /// No intermediate buffers are kept: all operations access the file directly.
         /// This hurts performance, but is important for log files (less is lost in case of a crash).
         /// </summary>
         /// <param name="dataStorePath">The data store path specifying the file to open.</param>
+        /// <param name="overwriteIfExists"><c>true</c> to overwrite the file in case it already exists (like <see cref="System.IO.FileMode.Create"/>); or <c>false</c> to throw an exception (like <see cref="System.IO.FileMode.CreateNew"/>).</param>
         /// <returns>An <see cref="IBinaryWriter"/> representing the file opened.</returns>
-        public IBinaryWriter CreateWriteThroughBinary( string dataStorePath )
+        public IBinaryWriter CreateWriteThroughBinary( string dataStorePath, bool overwriteIfExists )
         {
             throw new NotSupportedException().StoreFileLine();
         }

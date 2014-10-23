@@ -986,6 +986,6 @@ namespace Mechanical.DataStores
 
         //// TODO: unit tests
         //// TODO: binary data store (seekable?! - what about network streams?)
-        //// TODO: test datastores for attempting to read or write multiple roots
+        //// TODO: (unit) test datastores for attempting to read or write multiple roots
     }
 }
