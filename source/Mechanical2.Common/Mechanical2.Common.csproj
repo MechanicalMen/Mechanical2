@@ -41,6 +41,8 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Log\ProlificDataFileManager.cs" />
+    <Compile Include="Log\ProlificDataFileInfo.cs" />
     <Compile Include="MechanicalApp.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
