@@ -59,7 +59,7 @@ namespace Mechanical.Log
         /// Logs the specified <see cref="LogEntry"/>.
         /// </summary>
         /// <param name="entry">The <see cref="LogEntry"/> to log.</param>
-        protected internal override void Log( LogEntry entry )
+        public override void Log( LogEntry entry )
         {
             lock( this.syncLock )
                 this.entries.Add(entry);

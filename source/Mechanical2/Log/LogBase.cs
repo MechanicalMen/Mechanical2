@@ -27,16 +27,6 @@ namespace Mechanical.Log
 
         #endregion
 
-        #region Protected Methods
-
-        /// <summary>
-        /// Logs the specified <see cref="LogEntry"/>.
-        /// </summary>
-        /// <param name="entry">The <see cref="LogEntry"/> to log.</param>
-        protected internal abstract void Log( LogEntry entry );
-
-        #endregion
-
         #region ILog
 
         /// <summary>
@@ -128,6 +118,16 @@ namespace Mechanical.Log
         {
             this.Log(LogLevel.Fatal, message, ex, filePath, memberName, lineNumber);
         }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Logs the specified <see cref="LogEntry"/>.
+        /// </summary>
+        /// <param name="entry">The <see cref="LogEntry"/> to log.</param>
+        public abstract void Log( LogEntry entry );
 
         #endregion
     }

@@ -30,13 +30,16 @@ namespace Mechanical.Common.Log
      *         - there is more than one hardware or calculation running in parallel (and you don't want to mix such data)
      * 
      *       The trick to managing all this is through a common, case insensitive naming pattern:
-     *         <file manager instance id>_<app instance id>_<creation time><optional file extension>
+     *         <file manager instance id>_<creation time>_<app instance id><optional file extension>
      *         - app instance id: short hash generated once per AppDomain. Allows multiple instances of a single
      *           application, to dump data at the same time, to the same place.
      *         - file manager instance id: a humanly readable identifier of the data source. Necessary, when multiple file managers
      *           are used by the same app. Automatically generated, unless specified.
      *         - creation time: the creation time of the file.
      *         - optional file extension: obvious (though not strictly necessary)
+     * 
+     * NOTE: creation time precedes application instance ID, so that in "actual" file managers,
+     *       sorting by name would sort by time as well.
      */
 
     /// <summary>
@@ -44,7 +47,7 @@ namespace Mechanical.Common.Log
     /// Useful for for files storing a continuous flow of data
     /// (like log files or raw hardware output).
     /// </summary>
-    public class ProlificDataFileManager
+    public class ProlificDataFileManager : DisposableObject
     {
         /* NOTE: The application ID must be unique, and we can only know that
          *       others won't use it, after we created the first file using it.
@@ -67,9 +70,9 @@ namespace Mechanical.Common.Log
         private static readonly char[] HashCharacters = "0123456789ABCDEFGHIJKLMNOPQRSTUV".ToCharArray();
         private static string appInstanceID = null;
 
-        private readonly IFileSystem fileSystem;
         private readonly string fileManagerID;
         private readonly string fileExtension;
+        private IFileSystem fileSystem;
 
         #endregion
 
@@ -78,7 +81,7 @@ namespace Mechanical.Common.Log
         /// <summary>
         /// Initializes a new instance of the <see cref="ProlificDataFileManager"/> class.
         /// </summary>
-        /// <param name="fileSystem">The abstract file system to use the root directory of.</param>
+        /// <param name="fileSystem">The abstract file system to use the root directory of. The <see cref="IFileSystem"/> will be disposed along with this object, if possible.</param>
         /// <param name="fileManagerID">The string identifying this <see cref="ProlificDataFileManager"/> instance; or <c>null</c> to generate it randomly.</param>
         /// <param name="fileExtension">The optional file extension, or <c>null</c>.</param>
         public ProlificDataFileManager( IFileSystem fileSystem, string fileManagerID = null, string fileExtension = null )
@@ -117,6 +120,36 @@ namespace Mechanical.Common.Log
                 ex.Store("fileExtension", fileExtension);
                 throw;
             }
+        }
+
+        #endregion
+
+        #region IDisposableObject
+
+        /// <summary>
+        /// Called when the object is being disposed of. Inheritors must call base.OnDispose to be properly disposed.
+        /// </summary>
+        /// <param name="disposing">If set to <c>true</c>, release both managed and unmanaged resources; otherwise release only the unmanaged resources.</param>
+        protected override void OnDispose( bool disposing )
+        {
+            if( disposing )
+            {
+                //// dispose-only (i.e. non-finalizable) logic
+                //// (managed, disposable resources you own)
+
+                if( this.fileSystem.NotNullReference() )
+                {
+                    var asDisposable = this.fileSystem as IDisposable;
+                    if( asDisposable.NotNullReference() )
+                        asDisposable.Dispose();
+                    this.fileSystem = null;
+                }
+            }
+
+            //// shared cleanup logic
+            //// (unmanaged resources)
+
+            base.OnDispose(disposing);
         }
 
         #endregion
@@ -185,8 +218,8 @@ namespace Mechanical.Common.Log
                 string unescaped = SafeString.InvariantFormat(
                     "{0}_{1}_{2}{3}",
                     fileManagerID, // always non-empty
-                    appInstanceID, // always non-empty
                     creationTime.ToString(CreationTimeFormat, CultureInfo.InvariantCulture), // always non-empty
+                    appInstanceID, // always non-empty
                     fileExtension); // may be empty
 
                 dataStoreName = DataStore.EscapeName(unescaped);
@@ -196,8 +229,8 @@ namespace Mechanical.Common.Log
                 dataStoreName = SafeString.InvariantFormat(
                     "{0}_{1}_{2}",
                     fileManagerID,
-                    appInstanceID,
-                    creationTime.ToString(CreationTimeFormat, CultureInfo.InvariantCulture));
+                    creationTime.ToString(CreationTimeFormat, CultureInfo.InvariantCulture),
+                    appInstanceID);
             }
 
             return new ProlificDataFileInfo(fileManagerID, appInstanceID, creationTime, fileExtension, dataStoreName);
@@ -220,15 +253,15 @@ namespace Mechanical.Common.Log
             }
 
             string fileManagerID = parts[0];
-            string appInstanceID = parts[1];
-            string creationTimeString = parts[2];
+            string creationTimeString = parts[1];
+            string appInstanceID = parts[2];
             string fileExtension = null;
 
             if( escapesFileNames
-             && creationTimeString.Length > 12 )
+             && appInstanceID.Length > DefaultAppIDLength )
             {
-                fileExtension = creationTimeString.Substring(startIndex: CreationTimeFormat.Length + 1);
-                creationTimeString = creationTimeString.Substring(startIndex: 0, length: CreationTimeFormat.Length);
+                fileExtension = appInstanceID.Substring(startIndex: DefaultAppIDLength + 1);
+                appInstanceID = appInstanceID.Substring(startIndex: 0, length: DefaultAppIDLength);
             }
 
             DateTime creationTime;
@@ -392,10 +425,12 @@ namespace Mechanical.Common.Log
         /// Creates a new file, with the correct naming scheme.
         /// </summary>
         /// <param name="fileInfo">The <see cref="ProlificDataFileInfo"/> instance representing the name of the file created.</param>
-        /// <param name="useWriteThroughIfSupported"><c>true</c> to try to use <see cref="IFileSystemWriter.CreateWriteThroughBinary"/> instead of <see cref="IFileSystemWriter.CreateWriteBinary"/>.</param>
+        /// <param name="useWriteThroughIfSupported"><c>true</c> to try to use <see cref="IFileSystemWriter.CreateWriteThroughBinary"/> instead of <see cref="IFileSystemWriter.CreateNewBinary"/>.</param>
         /// <returns>The <see cref="IBinaryWriter"/> representing the file created.</returns>
         public IBinaryWriter CreateFile( out ProlificDataFileInfo fileInfo, bool useWriteThroughIfSupported = false )
         {
+            Ensure.That(this).NotDisposed();
+
             bool writeThroughSupported = false;
             if( useWriteThroughIfSupported )
                 writeThroughSupported = this.fileSystem.SupportsCreateWriteThroughBinary;
@@ -494,6 +529,76 @@ namespace Mechanical.Common.Log
                 // or it was, and we successfully saved it
                 fileInfo = file;
                 return fileStream;
+            }
+        }
+
+        #endregion
+
+        #region Delete old files
+
+        /// <summary>
+        /// Deletes all but the most recent files.
+        /// </summary>
+        /// <param name="fileSystem">The abstract file system to search the root directory of.</param>
+        /// <param name="maxFileAge">The maximum age of the files to keep, or <c>null</c>.</param>
+        /// <param name="maxAppInstanceCount">The maximum number of app instances to keep, or <c>null</c>.</param>
+        /// <param name="maxTotalFileSize">The maximum total file size to keep, or <c>null</c>.</param>
+        public static void DeleteOldFiles( IFileSystem fileSystem, TimeSpan? maxFileAge, int? maxAppInstanceCount, long? maxTotalFileSize )
+        {
+            var allFiles = FindAllFiles(fileSystem);
+            var filesToKeep = FindLatestFiles(fileSystem, maxFileAge, maxAppInstanceCount, maxTotalFileSize);
+
+            foreach( var file in allFiles )
+            {
+                bool keepFile = false;
+                foreach( var f in filesToKeep )
+                {
+                    if( DataStore.Comparer.Equals(file.DataStoreName, f.DataStoreName) )
+                    {
+                        keepFile = true;
+                        break;
+                    }
+                }
+
+                if( keepFile )
+                    continue;
+                else
+                    fileSystem.DeleteFile(file.DataStoreName);
+            }
+        }
+
+        #endregion
+
+        #region Public Properties
+
+        /// <summary>
+        /// Gets the string identifying the current application instance.
+        /// </summary>
+        /// <value>The string identifying the current application instance.</value>
+        public static string AppInstanceID
+        {
+            get
+            {
+                var appID = appInstanceID;
+                if( appID.NullReference() )
+                    throw new InvalidOperationException("The application instance ID can not be determined, before the first file is created!").StoreFileLine();
+
+                return appID;
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="IFileSystem"/> in use by this instance.
+        /// </summary>
+        /// <value>The <see cref="IFileSystem"/> in use.</value>
+        public IFileSystem FileSystem
+        {
+            get
+            {
+                if( this.IsDisposed )
+                    throw new ObjectDisposedException(null).StoreFileLine();
+
+                return this.fileSystem;
             }
         }
 

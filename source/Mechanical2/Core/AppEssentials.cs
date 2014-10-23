@@ -237,6 +237,7 @@ namespace Mechanical.Core
                 if( this.logger.NullReference() )
                 {
                     this.logger = new MemoryLog();
+                    this.logger.Debug("Memory logger initialized!");
                     Mechanical.Log.Log.Set(this.logger);
                 }
             }
@@ -272,9 +273,14 @@ namespace Mechanical.Core
                 if( memoryLogger.NotNullReference() )
                 {
                     if( asLogBase.NullReference() )
+                    {
                         customLogger.Warn("Logger does not implement LogBase. Memory logs are present, but could not be passed on!");
+                    }
                     else
+                    {
                         memoryLogger.FlushLogs(asLogBase);
+                        customLogger.Debug("Memory logger replaced with custom logger. Memory logs transferred.");
+                    }
                     memoryLogger.Dispose();
                 }
             }
@@ -494,9 +500,9 @@ namespace Mechanical.Core
         /// <summary>
         /// Initializes a common console application.
         /// </summary>
-        /// <param name="logDirectory">The directory to create the log file at, or <c>null</c> to use the application folder.</param>
+        /// <param name="customLogger">The custom logger to use; or <c>null</c> to setup basic file-based logging.</param>
         /// <param name="parentBag">Optional mappings overriding any of the default ones.</param>
-        protected void SetupConsole( string logDirectory = null, IMagicBag parentBag = null )
+        protected void SetupConsole( ILog customLogger = null, IMagicBag parentBag = null )
         {
             // memory logging may or may not have been set up
             // instead of checking, just create a common baseline
@@ -505,7 +511,10 @@ namespace Mechanical.Core
             // start logging, so that we can have
             // something other then screenshots when debugging
             // (this may have been set up as well, in which case it will be silently skipped)
-            this.StartXmlLog(logDirectory);
+            if( customLogger.NullReference() )
+                this.StartXmlLog();
+            else
+                this.StartCustomLog(customLogger);
 
             // specify UI Dispatcher and TaskScheduler:
             // do these first, in case some mappings need them next
@@ -524,9 +533,9 @@ namespace Mechanical.Core
         /// <summary>
         /// Initializes a common GUI application.
         /// </summary>
-        /// <param name="logDirectory">The directory to create the log file at, or <c>null</c> to use the application folder.</param>
+        /// <param name="customLogger">The custom logger to use; or <c>null</c> to setup basic file-based logging.</param>
         /// <param name="parentBag">Optional mappings overriding any of the default ones.</param>
-        protected void SetupBasicWindow( string logDirectory = null, IMagicBag parentBag = null )
+        protected void SetupBasicWindow( ILog customLogger = null, IMagicBag parentBag = null )
         {
             // memory logging may or may not have been set up
             // instead of checking, just create a common baseline
@@ -535,7 +544,10 @@ namespace Mechanical.Core
             // start logging, so that we can have
             // something other then screenshots when debugging
             // (this may have been set up as well, in which case it will be silently skipped)
-            this.StartXmlLog(logDirectory);
+            if( customLogger.NullReference() )
+                this.StartXmlLog();
+            else
+                this.StartCustomLog(customLogger);
 
             // specify UI Dispatcher and TaskScheduler:
             // do these first, in case some mappings need them next
@@ -552,5 +564,3 @@ namespace Mechanical.Core
         }
     }
 }
-
-//// TODO: make IEvent handlers private-instance, and create protected-virtual methods where necessary

@@ -1,9 +1,13 @@
 ﻿using System;
+using System.IO;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Threading;
+using Mechanical.Common.Log;
 using Mechanical.Conditions;
 using Mechanical.Core;
 using Mechanical.Events;
+using Mechanical.IO.FileSystem;
 using Mechanical.MVVM;
 
 namespace Mechanical.Common
@@ -123,6 +127,34 @@ namespace Mechanical.Common
 
         #endregion
 
+        #region Logging
+
+        private static AdvancedLogEntrySerializer CreateAdvancedLogEntrySerializer( string directory = null )
+        {
+            if( directory.NullOrEmpty() )
+            {
+                directory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                directory = Path.GetFullPath(directory);
+            }
+
+            var fileSystem = new DirectoryFileSystem(directory, escapeFileNames: true); // we escape file names to have file extensions
+            return new AdvancedLogEntrySerializer(fileSystem, maxLogFileCount: 3);
+        }
+
+        /// <summary>
+        /// Creates a new log file in the specified directory.
+        /// If no directory is specified, the log file is placed
+        /// into the application folder.
+        /// </summary>
+        /// <param name="directory">The directory to create the log file at, or <c>null</c> to use the application folder.</param>
+        public new void StartXmlLog( string directory = null )
+        {
+            var newLogger = CreateAdvancedLogEntrySerializer(directory);
+            this.StartCustomLog(newLogger);
+        }
+
+        #endregion
+
         #region Window
 
         private bool windowInitialized = false;
@@ -195,14 +227,16 @@ namespace Mechanical.Common
         /// <summary>
         /// Call this at the start of the application, from the main thread.
         /// </summary>
-        public static void InitializeConsole()
+        /// <param name="logDirectory">The directory to create the log file at, or <c>null</c> to use the application folder.</param>
+        public static void InitializeConsole( string logDirectory = null )
         {
             // create instance if necessary
             if( Instance.NullReference() )
                 new MechanicalApp();
 
             // do basic initialization
-            MechanicalApp.Instance.SetupConsole();
+            var customLogger = CreateAdvancedLogEntrySerializer(logDirectory);
+            MechanicalApp.Instance.SetupConsole(customLogger);
         }
 
         /// <summary>
@@ -210,7 +244,8 @@ namespace Mechanical.Common
         /// </summary>
         /// <param name="currentApp">The <see cref="System.Windows.Application"/> object that raises the event.</param>
         /// <param name="window">The <see cref="Window"/> to link to the lifespan of the main event queue.</param>
-        public static void InitializeGUI( Application currentApp, Window window )
+        /// <param name="logDirectory">The directory to create the log file at, or <c>null</c> to use the application folder.</param>
+        public static void InitializeGUI( Application currentApp, Window window, string logDirectory = null )
         {
             // create instance if necessary
             if( Instance.NullReference() )
@@ -220,7 +255,8 @@ namespace Mechanical.Common
             MechanicalApp.Instance.HandleDispatcherExceptions(currentApp);
 
             // do basic initialization
-            MechanicalApp.Instance.SetupBasicWindow();
+            var customLogger = CreateAdvancedLogEntrySerializer(logDirectory);
+            MechanicalApp.Instance.SetupBasicWindow(customLogger);
 
             // handle window closing
             MechanicalApp.Instance.LinkWindowToEventQueue(window);

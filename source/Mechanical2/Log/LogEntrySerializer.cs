@@ -6,6 +6,7 @@ using Mechanical.Conditions;
 using Mechanical.Core;
 using Mechanical.DataStores;
 using Mechanical.DataStores.Xml;
+using Mechanical.IO;
 
 namespace Mechanical.Log
 {
@@ -72,6 +73,19 @@ namespace Mechanical.Log
             return new LogEntrySerializer(writer);
         }
 
+        /// <summary>
+        /// Returns a new <see cref="LogEntrySerializer"/> instance.
+        /// If possible, use the other method to create an instance.
+        /// </summary>
+        /// <param name="xmlStream">The <see cref="ITextWriter"/> to write the Xml contents to.</param>
+        /// <returns>The new <see cref="LogEntrySerializer"/> instance created.</returns>
+        public static LogEntrySerializer ToXmlStream( ITextWriter xmlStream )
+        {
+            var writer = new XmlDataStoreWriter(xmlStream);
+            writer.WriteObjectStart("LogEntries");
+            return new LogEntrySerializer(writer);
+        }
+
         #endregion
 
         #region IDisposableObject
@@ -110,7 +124,7 @@ namespace Mechanical.Log
         /// Logs the specified <see cref="LogEntry"/>.
         /// </summary>
         /// <param name="entry">The <see cref="LogEntry"/> to log.</param>
-        protected internal override void Log( LogEntry entry )
+        public override void Log( LogEntry entry )
         {
             // NOTE: when the disk is full, trying to write and then failing
             //       may result in an infinite cycle

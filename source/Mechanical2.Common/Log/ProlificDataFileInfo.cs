@@ -77,9 +77,9 @@ namespace Mechanical.Common.Log
         }
 
         /// <summary>
-        /// Gets the string identifying the current application instance.
+        /// Gets the string identifying the application instance.
         /// </summary>
-        /// <value>The string identifying the current application instance.</value>
+        /// <value>The string identifying the application instance.</value>
         public string AppInstanceID
         {
             get { return this.appInstanceID; }
