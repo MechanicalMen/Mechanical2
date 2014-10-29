@@ -21,6 +21,7 @@ namespace Mechanical.Common
         /// Initializes a new instance of the <see cref="MechanicalApp"/> class.
         /// </summary>
         protected MechanicalApp()
+            : base()
         {
         }
 
@@ -129,16 +130,26 @@ namespace Mechanical.Common
 
         #region Logging
 
+        private static AdvancedLogEntrySerializer advLogger = null;
+
         private static AdvancedLogEntrySerializer CreateAdvancedLogEntrySerializer( string directory = null )
         {
-            if( directory.NullOrEmpty() )
+            lock( AppEssentials.SyncLock )
             {
-                directory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                directory = Path.GetFullPath(directory);
-            }
+                if( advLogger.NullReference() )
+                {
+                    if( directory.NullOrEmpty() )
+                    {
+                        directory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                        directory = Path.GetFullPath(directory);
+                    }
 
-            var fileSystem = new DirectoryFileSystem(directory, escapeFileNames: true); // we escape file names to have file extensions
-            return new AdvancedLogEntrySerializer(fileSystem, maxLogFileCount: 3);
+                    var fileSystem = new DirectoryFileSystem(directory, escapeFileNames: true); // we escape file names to have file extensions
+                    advLogger = new AdvancedLogEntrySerializer(fileSystem, maxLogFileCount: 3);
+                }
+
+                return advLogger;
+            }
         }
 
         /// <summary>
