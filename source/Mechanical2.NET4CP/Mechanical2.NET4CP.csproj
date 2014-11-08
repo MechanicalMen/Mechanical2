@@ -65,6 +65,30 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Mechanical2\Bootstrap\AppDomainExceptionSource.cs">
+      <Link>Bootstrap\AppDomainExceptionSource.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Bootstrap\DispatcherUIHandler.cs">
+      <Link>Bootstrap\DispatcherUIHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Bootstrap\IExceptionSink.cs">
+      <Link>Bootstrap\IExceptionSink.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Bootstrap\IExceptionSource.cs">
+      <Link>Bootstrap\IExceptionSource.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Bootstrap\IUIThreadHandler.cs">
+      <Link>Bootstrap\IUIThreadHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Bootstrap\LogExceptionSink.cs">
+      <Link>Bootstrap\LogExceptionSink.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Bootstrap\TraceExceptionSink.cs">
+      <Link>Bootstrap\TraceExceptionSink.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Bootstrap\UnobservedTaskExceptionSource.cs">
+      <Link>Bootstrap\UnobservedTaskExceptionSource.cs</Link>
+    </Compile>
     <Compile Include="..\Mechanical2\Collections\Collection.Base.cs">
       <Link>Collections\Collection.Base.cs</Link>
     </Compile>
@@ -140,8 +164,8 @@
     <Compile Include="..\Mechanical2\Conditions\StringConditions.cs">
       <Link>Conditions\StringConditions.cs</Link>
     </Compile>
-    <Compile Include="..\Mechanical2\Core\AppEssentials.cs">
-      <Link>Core\AppEssentials.cs</Link>
+    <Compile Include="..\Mechanical2\Core\AppCore.cs">
+      <Link>Core\AppCore.cs</Link>
     </Compile>
     <Compile Include="..\Mechanical2\Core\BitConverterLE.cs">
       <Link>Core\BitConverterLE.cs</Link>
@@ -497,9 +521,6 @@
     <Compile Include="..\Mechanical2\MagicBag\Parameters\MagicBagParameters.cs">
       <Link>MagicBag\Parameters\MagicBagParameters.cs</Link>
     </Compile>
-    <Compile Include="..\Mechanical2\MVVM\ConsoleThreadHandler.cs">
-      <Link>MVVM\ConsoleThreadHandler.cs</Link>
-    </Compile>
     <Compile Include="..\Mechanical2\MVVM\ConverterBase.cs">
       <Link>MVVM\ConverterBase.cs</Link>
     </Compile>
@@ -521,9 +542,6 @@
     <Compile Include="..\Mechanical2\MVVM\DelegateCommand.cs">
       <Link>MVVM\DelegateCommand.cs</Link>
     </Compile>
-    <Compile Include="..\Mechanical2\MVVM\IUIThreadHandler.cs">
-      <Link>MVVM\IUIThreadHandler.cs</Link>
-    </Compile>
     <Compile Include="..\Mechanical2\MVVM\PropertyChangedBase.cs">
       <Link>MVVM\PropertyChangedBase.cs</Link>
     </Compile>
@@ -535,9 +553,6 @@
     </Compile>
     <Compile Include="..\Mechanical2\MVVM\UI.cs">
       <Link>MVVM\UI.cs</Link>
-    </Compile>
-    <Compile Include="..\Mechanical2\MVVM\UIDispatcherHandler.cs">
-      <Link>MVVM\UIDispatcherHandler.cs</Link>
     </Compile>
     <Compile Include="..\Mechanical2\MVVM\ViewModelBase.cs">
       <Link>MVVM\ViewModelBase.cs</Link>
@@ -551,6 +566,7 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\external\StyleCop\StyleCop.Targets" />
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" />

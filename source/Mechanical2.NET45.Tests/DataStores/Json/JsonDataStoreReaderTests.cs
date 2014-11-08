@@ -9,11 +9,6 @@ namespace Mechanical.Tests.DataStores.Json
     [TestFixture]
     public class JsonDataStoreReaderTests
     {
-        static JsonDataStoreReaderTests()
-        {
-            Test.App.Initialize();
-        }
-
         internal static readonly string EmptyDataStore = Test.ReplaceNewLines(@"{}");
 
         internal static readonly string TextValueRoot = @"{""textRoot"":""abc""}";

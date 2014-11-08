@@ -24,12 +24,13 @@ namespace Mechanical.IO.FileSystem
      *         A) Only those original file names are preserved, which are data store compatible.
      *            The main benefit is, that file paths gain "cross-platform uniqueness",
      *            while the main drawback is a lack of file extensions.
-     *            (This is recommended for resources created and edited programmatically.)
+     *            (This does not support file extensions. Recommended for resources created and edited
+     *            programmatically. Can work well with web APIs.)
      * 
      *         B) All original file names can also be automatically escaped (using the usual data store method).
      *            This way, they preserve their names, but data store paths, used in code or in resources,
      *            may become somewhat unwieldy.
-     *            (This is recommended for files named by the user, or files that should be
+     *            (Supports file extensions. Recommended for files named by the user, or files that should be
      *            easily identifiable with a non-data store aware file manager)
      * 
      *       As long as your needs are fairly basic, this will work out of the box,

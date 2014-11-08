@@ -11,11 +11,6 @@ namespace Mechanical.Tests.DataStores.Json
     [TestFixture]
     public class JsonDataStoreWriterTests
     {
-        static JsonDataStoreWriterTests()
-        {
-            Test.App.Initialize();
-        }
-
         private string WriteNode( IDataStoreNode node, bool indent )
         {
             var sb = new StringBuilder();

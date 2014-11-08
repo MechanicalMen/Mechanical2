@@ -396,7 +396,7 @@ namespace Mechanical.DataStores
         public static T DeserializeAsValue<T>( this IDataStoreReader reader, string name = null, IMagicBag magicBag = null )
         {
             if( magicBag.NullReference() )
-                magicBag = Mechanical.MagicBag.MagicBag.Default;
+                magicBag = AppCore.MagicBag;
 
             var deserializer = magicBag.Pull<IDataStoreValueDeserializer<T>>();
             return Deserialize<T>(reader, deserializer, name);
@@ -413,7 +413,7 @@ namespace Mechanical.DataStores
         public static T DeserializeAsValue<T>( this IDataStoreReader reader, out string name, IMagicBag magicBag = null )
         {
             if( magicBag.NullReference() )
-                magicBag = Mechanical.MagicBag.MagicBag.Default;
+                magicBag = AppCore.MagicBag;
 
             var deserializer = magicBag.Pull<IDataStoreValueDeserializer<T>>();
             return Deserialize<T>(reader, deserializer, out name);
@@ -462,7 +462,7 @@ namespace Mechanical.DataStores
         public static T DeserializeAsObject<T>( this IDataStoreReader reader, string name = null, IMagicBag magicBag = null )
         {
             if( magicBag.NullReference() )
-                magicBag = Mechanical.MagicBag.MagicBag.Default;
+                magicBag = AppCore.MagicBag;
 
             var deserializer = magicBag.Pull<IDataStoreObjectDeserializer<T>>();
             return Deserialize<T>(reader, deserializer, name);
@@ -479,7 +479,7 @@ namespace Mechanical.DataStores
         public static T DeserializeAsObject<T>( this IDataStoreReader reader, out string name, IMagicBag magicBag = null )
         {
             if( magicBag.NullReference() )
-                magicBag = Mechanical.MagicBag.MagicBag.Default;
+                magicBag = AppCore.MagicBag;
 
             var deserializer = magicBag.Pull<IDataStoreObjectDeserializer<T>>();
             return Deserialize<T>(reader, deserializer, out name);

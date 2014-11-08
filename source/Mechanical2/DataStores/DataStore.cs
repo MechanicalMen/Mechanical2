@@ -747,7 +747,7 @@ namespace Mechanical.DataStores
         public static string ToString<T>( T value, IMagicBag magicBag = null )
         {
             if( magicBag.NullReference() )
-                magicBag = Mechanical.MagicBag.MagicBag.Default;
+                magicBag = AppCore.MagicBag;
 
             var serializer = magicBag.Pull<IDataStoreValueSerializer<T>>();
             return ToString<T>(value, serializer);
@@ -785,7 +785,7 @@ namespace Mechanical.DataStores
         public static T Parse<T>( Substring value, IMagicBag magicBag = null, string name = "a" )
         {
             if( magicBag.NullReference() )
-                magicBag = Mechanical.MagicBag.MagicBag.Default;
+                magicBag = AppCore.MagicBag;
 
             var deserializer = magicBag.Pull<IDataStoreValueDeserializer<T>>();
             return Parse<T>(value, deserializer, name);

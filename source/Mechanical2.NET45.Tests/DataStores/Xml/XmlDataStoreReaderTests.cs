@@ -11,11 +11,6 @@ namespace Mechanical.Tests.DataStores.Xml
     [TestFixture]
     public class XmlDataStoreReaderTests
     {
-        static XmlDataStoreReaderTests()
-        {
-            Test.App.Initialize();
-        }
-
         internal static readonly string EmptyDataStore = Test.ReplaceNewLines(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <root></root>");
 

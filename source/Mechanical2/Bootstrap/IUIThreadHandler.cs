@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Mechanical.MVVM
+namespace Mechanical.Bootstrap
 {
     /// <summary>
-    /// Exposes methods for running code on the UI thread of the implementing platform.
+    /// Executes delegates on the UI thread of the implementing platform.
     /// </summary>
     public interface IUIThreadHandler
     {

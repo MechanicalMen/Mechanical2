@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using Mechanical.Collections;
 using Mechanical.Conditions;
 using Mechanical.Core;
@@ -395,48 +394,6 @@ namespace Mechanical.MagicBag
             }
 
             #endregion
-        }
-
-        #endregion
-
-
-        #region Default
-
-        private static IMagicBag defaultBag = null;
-
-        internal static void CreateDefault( IMagicBag parentBag )
-        {
-            // NOTE: specify default mappings here
-            var mappings = new List<Mapping>();
-            mappings.Add(Map<DateTime>.To(() => DateTime.UtcNow).AsTransient());
-            mappings.AddRange(Mechanical.DataStores.BasicSerialization.GetMappings());
-            mappings.AddRange(Mechanical.DataStores.Node.DataStoreNode.GetMappings());
-#if !SILVERLIGHT
-            mappings.AddRange(Mechanical.Events.EventQueue.GetMappings());
-#endif
-
-            IMagicBag oldBag;
-            if( parentBag.NullReference() )
-                oldBag = Interlocked.CompareExchange(ref defaultBag, new Basic(mappings.ToArray(), MappingGenerators.Defaults), comparand: null);
-            else
-                oldBag = Interlocked.CompareExchange(ref defaultBag, new Extend(parentBag, mappings.ToArray(), MappingGenerators.Defaults), comparand: null);
-
-            if( oldBag.NotNullReference() )
-                throw new InvalidOperationException("Default magic bag alraedy initialized!").StoreFileLine();
-        }
-
-        /// <summary>
-        /// Gets the default <see cref="IMagicBag"/>. It supplements the magic bag the library was initialized with, using default mappings.
-        /// </summary>
-        public static IMagicBag Default
-        {
-            get
-            {
-                if( defaultBag.NullReference() )
-                    throw new InvalidOperationException("Default magic bag not yet initialized!").StoreFileLine();
-                else
-                    return defaultBag;
-            }
         }
 
         #endregion

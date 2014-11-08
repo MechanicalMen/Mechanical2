@@ -41,6 +41,8 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Bootstrap\DispatcherExceptionSource.cs" />
+    <Compile Include="Bootstrap\MessageBoxExceptionSink.cs" />
     <Compile Include="Log\AdvancedLogEntrySerializer.cs" />
     <Compile Include="Log\ProlificDataFileManager.cs" />
     <Compile Include="Log\ProlificDataFileInfo.cs" />

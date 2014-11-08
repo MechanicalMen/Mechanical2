@@ -123,7 +123,7 @@ namespace Mechanical.DataStores
             ThrowIfNull(writer);
 
             if( magicBag.NullReference() )
-                magicBag = Mechanical.MagicBag.MagicBag.Default;
+                magicBag = AppCore.MagicBag;
 
             var serializer = magicBag.Pull<IDataStoreValueSerializer<T>>();
             Write<T>(writer, name, obj, serializer);
@@ -142,7 +142,7 @@ namespace Mechanical.DataStores
             ThrowIfNull(writer);
 
             if( magicBag.NullReference() )
-                magicBag = Mechanical.MagicBag.MagicBag.Default;
+                magicBag = AppCore.MagicBag;
 
             var serializer = magicBag.Pull<IDataStoreObjectSerializer<T>>();
             Write<T>(writer, name, obj, serializer);

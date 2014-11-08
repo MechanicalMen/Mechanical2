@@ -11,11 +11,6 @@ namespace Mechanical.Tests.DataStores.Xml
     [TestFixture]
     public class XmlDataStoreWriterTests
     {
-        static XmlDataStoreWriterTests()
-        {
-            Test.App.Initialize();
-        }
-
         private string WriteNode( IDataStoreNode node, bool indent )
         {
             var sb = new StringBuilder();

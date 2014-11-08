@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Mechanical.Bootstrap;
 using Mechanical.Core;
 using Mechanical.DataStores;
 using NUnit.Framework;
@@ -8,28 +9,27 @@ namespace Mechanical.Tests
 {
     internal static class Test
     {
-        internal class App : AppEssentials
+        internal class App : AppCore
         {
-            protected App()
+            private App()
                 : base()
             {
             }
 
-            public static new Test.App Instance
+            static App()
             {
-                get { return (Test.App)AppEssentials.Instance; }
-            }
+                // exceptions sources
+                AppCore.Register(new AppDomainExceptionSource());
+                AppCore.Register(new UnobservedTaskExceptionSource());
 
-            public static void Initialize()
-            {
-                if( Instance.NullReference() )
-                {
-                    new Test.App();
+                // exception sinks
+                var logSink = new LogExceptionSink();
+                AppCore.Register(logSink, isFallback: false);
+                AppCore.Register(logSink, isFallback: true);
+                AppCore.Register(new TraceExceptionSink(), isFallback: true);
 
-                    Instance.SetupReadOnlyMemory();
-                    Instance.InitializeUIForConsole();
-                    Instance.InitializeMagicBag();
-                }
+                // UI
+                AppCore.Register((IUIThreadHandler)null);
             }
         }
 

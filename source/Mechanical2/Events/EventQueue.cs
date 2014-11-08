@@ -456,44 +456,11 @@ namespace Mechanical.Events
 
         #region Mappings
 
-        private static EventQueue defaultQueue;
-
-        /// <summary>
-        /// Creates the default event queue.
-        /// </summary>
-        /// <param name="scheduler">The <see cref="TaskScheduler"/> to use; or <c>null</c> to use the default scheduler. Warning: the UI scheduler will end up blocking the UI thread.</param>
-        public static void CreateDefault( TaskScheduler scheduler = null )
-        {
-            var newQueue = new EventQueue(scheduler);
-            var previousValue = Interlocked.CompareExchange(ref defaultQueue, newQueue, comparand: null);
-            if( previousValue.NotNullReference() )
-            {
-                newQueue.BeginShutdown();
-                throw new InvalidOperationException("Default event queue already initialized!").StoreFileLine();
-            }
-        }
-
-        /// <summary>
-        /// Gets the default event queue.
-        /// </summary>
-        /// <value>The default event queue.</value>
-        public static EventQueue Default
-        {
-            get
-            {
-                var d = defaultQueue;
-                if( d.NullReference() )
-                    throw new InvalidOperationException("Default event queue not yet initialized!").StoreFileLine();
-                else
-                    return d;
-            }
-        }
-
         internal static Mapping[] GetMappings()
         {
             return new Mapping[]
             {
-                Map<IEventQueue>.To(() => Default).AsTransient(),
+                Map<IEventQueue>.To(() => AppCore.EventQueue).AsTransient(),
             };
         }
 
