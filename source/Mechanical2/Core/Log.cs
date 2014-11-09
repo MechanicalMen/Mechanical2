@@ -1,45 +1,15 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using Mechanical.Conditions;
 using Mechanical.Core;
 using Mechanical.MagicBag;
 
-namespace Mechanical.Logs
+namespace Mechanical.Core
 {
     /// <summary>
-    /// Logs messages using an <see cref="ILog"/> interface from the default <see cref="IMagicBag"/>.
+    /// Syntactic sugar for logging through the current application logger (see: <see cref="AppCore.Log"/>).
     /// </summary>
     public static class Log
     {
-        private static ILog logInstance;
-
-        /// <summary>
-        /// Sets the <see cref="ILog"/> interface to use.
-        /// </summary>
-        /// <param name="log">The <see cref="ILog"/> interface to use.</param>
-        public static void Set( ILog log )
-        {
-            Interlocked.Exchange(ref logInstance, log);
-        }
-
-        /// <summary>
-        /// Gets the logger currently in use, if there is one.
-        /// Otherwise an exception is thrown.
-        /// </summary>
-        /// <value>The logger currently in use.</value>
-        public static ILog Instance
-        {
-            get
-            {
-                var instance = logInstance;
-                if( instance.NullReference() )
-                    throw new InvalidOperationException("No logger set!").StoreFileLine();
-                else
-                    return instance;
-            }
-        }
-
         /// <summary>
         /// Logs a message.
         /// </summary>
@@ -55,7 +25,7 @@ namespace Mechanical.Logs
             [CallerMemberName] string memberName = "",
             [CallerLineNumber] int lineNumber = 0 )
         {
-            Instance.Debug(message, ex, filePath, memberName, lineNumber);
+            AppCore.Log.Debug(message, ex, filePath, memberName, lineNumber);
         }
 
         /// <summary>
@@ -73,7 +43,7 @@ namespace Mechanical.Logs
             [CallerMemberName] string memberName = "",
             [CallerLineNumber] int lineNumber = 0 )
         {
-            Instance.Info(message, ex, filePath, memberName, lineNumber);
+            AppCore.Log.Info(message, ex, filePath, memberName, lineNumber);
         }
 
         /// <summary>
@@ -91,7 +61,7 @@ namespace Mechanical.Logs
             [CallerMemberName] string memberName = "",
             [CallerLineNumber] int lineNumber = 0 )
         {
-            Instance.Warn(message, ex, filePath, memberName, lineNumber);
+            AppCore.Log.Warn(message, ex, filePath, memberName, lineNumber);
         }
 
         /// <summary>
@@ -109,7 +79,7 @@ namespace Mechanical.Logs
             [CallerMemberName] string memberName = "",
             [CallerLineNumber] int lineNumber = 0 )
         {
-            Instance.Error(message, ex, filePath, memberName, lineNumber);
+            AppCore.Log.Error(message, ex, filePath, memberName, lineNumber);
         }
 
         /// <summary>
@@ -127,7 +97,7 @@ namespace Mechanical.Logs
             [CallerMemberName] string memberName = "",
             [CallerLineNumber] int lineNumber = 0 )
         {
-            Instance.Fatal(message, ex, filePath, memberName, lineNumber);
+            AppCore.Log.Fatal(message, ex, filePath, memberName, lineNumber);
         }
     }
 }

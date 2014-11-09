@@ -203,6 +203,9 @@
     <Compile Include="..\Mechanical2\Core\Enum.cs">
       <Link>Core\Enum.cs</Link>
     </Compile>
+    <Compile Include="..\Mechanical2\Core\Log.cs">
+      <Link>Core\Log.cs</Link>
+    </Compile>
     <Compile Include="..\Mechanical2\Core\ObjectExtensions.cs">
       <Link>Core\ObjectExtensions.cs</Link>
     </Compile>
@@ -382,9 +385,6 @@
     </Compile>
     <Compile Include="..\Mechanical2\Logs\ILog.cs">
       <Link>Logs\ILog.cs</Link>
-    </Compile>
-    <Compile Include="..\Mechanical2\Logs\Log.cs">
-      <Link>Logs\Log.cs</Link>
     </Compile>
     <Compile Include="..\Mechanical2\Logs\LogBase.cs">
       <Link>Logs\LogBase.cs</Link>

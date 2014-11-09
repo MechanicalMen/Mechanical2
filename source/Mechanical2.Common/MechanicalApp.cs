@@ -142,9 +142,8 @@ namespace Mechanical.Common
         /// <summary>
         /// Initializes all parts of the core framework.
         /// </summary>
-        /// <param name="app">The <see cref="System.Windows.Application"/> raising the DispatcherUnhandledException event.</param>
         /// <returns><c>true</c> if this is the first time this method was called, and initialization was successful; otherwise, <c>false</c>.</returns>
-        public static bool InitializeService( Application app )
+        public static bool InitializeService()
         {
             if( fullyInitialized )
                 return false;
@@ -156,12 +155,6 @@ namespace Mechanical.Common
             {
                 if( !fullyInitialized )
                 {
-                    // exceptions sources
-                    AppCore.Register(new DispatcherExceptionSource(app));
-
-                    // exception sinks
-                    AppCore.Register(new MessageBoxExceptionSink(), isFallback: false);
-
                     // logging
                     AppCore.Log = CreateAdvancedLogEntrySerializer(directory: null);
 
