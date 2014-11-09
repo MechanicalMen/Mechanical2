@@ -8,7 +8,7 @@ using Mechanical.Conditions;
 #if !SILVERLIGHT
 using Mechanical.Events;
 #endif
-using Mechanical.Log;
+using Mechanical.Logs;
 using Mechanical.MagicBag;
 using Mechanical.MVVM;
 
@@ -336,7 +336,7 @@ namespace Mechanical.Core
             mappings.AddRange(Mechanical.DataStores.BasicSerialization.GetMappings());
             mappings.AddRange(Mechanical.DataStores.Node.DataStoreNode.GetMappings());
 #if !SILVERLIGHT
-            mappings.AddRange(Mechanical.Events.EventQueue.GetMappings());
+            mappings.Add(Map<IEventQueue>.To(() => AppCore.EventQueue).AsTransient());
 #endif
 
             MagicBag = new Mechanical.MagicBag.MagicBag.Basic(mappings.ToArray(), MappingGenerators.Defaults);

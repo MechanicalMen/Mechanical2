@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Mechanical.Collections;
 using Mechanical.Conditions;
 using Mechanical.Core;
-using Mechanical.MagicBag;
 
 namespace Mechanical.Events
 {
@@ -450,18 +449,6 @@ namespace Mechanical.Events
         public Task EventTask
         {
             get { return this.workerTask; }
-        }
-
-        #endregion
-
-        #region Mappings
-
-        internal static Mapping[] GetMappings()
-        {
-            return new Mapping[]
-            {
-                Map<IEventQueue>.To(() => AppCore.EventQueue).AsTransient(),
-            };
         }
 
         #endregion

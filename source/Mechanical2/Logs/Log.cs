@@ -5,7 +5,7 @@ using Mechanical.Conditions;
 using Mechanical.Core;
 using Mechanical.MagicBag;
 
-namespace Mechanical.Log
+namespace Mechanical.Logs
 {
     /// <summary>
     /// Logs messages using an <see cref="ILog"/> interface from the default <see cref="IMagicBag"/>.

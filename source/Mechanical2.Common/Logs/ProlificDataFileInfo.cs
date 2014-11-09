@@ -3,7 +3,7 @@ using Mechanical.Conditions;
 using Mechanical.Core;
 using Mechanical.DataStores;
 
-namespace Mechanical.Common.Log
+namespace Mechanical.Common.Logs
 {
     /// <summary>
     /// Represents general, immutable information about a data file (see <see cref="ProlificDataFileManager"/> for more information).

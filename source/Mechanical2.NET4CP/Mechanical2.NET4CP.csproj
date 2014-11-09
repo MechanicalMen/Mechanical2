@@ -416,26 +416,26 @@
     <Compile Include="..\Mechanical2\IO\StringWriter.cs">
       <Link>IO\StringWriter.cs</Link>
     </Compile>
-    <Compile Include="..\Mechanical2\Log\ILog.cs">
-      <Link>Log\ILog.cs</Link>
+    <Compile Include="..\Mechanical2\Logs\ILog.cs">
+      <Link>Logs\ILog.cs</Link>
     </Compile>
-    <Compile Include="..\Mechanical2\Log\Log.cs">
-      <Link>Log\Log.cs</Link>
+    <Compile Include="..\Mechanical2\Logs\Log.cs">
+      <Link>Logs\Log.cs</Link>
     </Compile>
-    <Compile Include="..\Mechanical2\Log\LogBase.cs">
-      <Link>Log\LogBase.cs</Link>
+    <Compile Include="..\Mechanical2\Logs\LogBase.cs">
+      <Link>Logs\LogBase.cs</Link>
     </Compile>
-    <Compile Include="..\Mechanical2\Log\LogEntry.cs">
-      <Link>Log\LogEntry.cs</Link>
+    <Compile Include="..\Mechanical2\Logs\LogEntry.cs">
+      <Link>Logs\LogEntry.cs</Link>
     </Compile>
-    <Compile Include="..\Mechanical2\Log\LogEntrySerializer.cs">
-      <Link>Log\LogEntrySerializer.cs</Link>
+    <Compile Include="..\Mechanical2\Logs\LogEntrySerializer.cs">
+      <Link>Logs\LogEntrySerializer.cs</Link>
     </Compile>
-    <Compile Include="..\Mechanical2\Log\LogLevel.cs">
-      <Link>Log\LogLevel.cs</Link>
+    <Compile Include="..\Mechanical2\Logs\LogLevel.cs">
+      <Link>Logs\LogLevel.cs</Link>
     </Compile>
-    <Compile Include="..\Mechanical2\Log\MemoryLog.cs">
-      <Link>Log\MemoryLog.cs</Link>
+    <Compile Include="..\Mechanical2\Logs\MemoryLog.cs">
+      <Link>Logs\MemoryLog.cs</Link>
     </Compile>
     <Compile Include="..\Mechanical2\MagicBag\Allocators\ConstructorAllocator.cs">
       <Link>MagicBag\Allocators\ConstructorAllocator.cs</Link>

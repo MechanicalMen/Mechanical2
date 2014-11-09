@@ -6,7 +6,7 @@ using System.Windows;
 using System.Windows.Threading;
 using Mechanical.Bootstrap;
 using Mechanical.Common.Bootstrap;
-using Mechanical.Common.Log;
+using Mechanical.Common.Logs;
 using Mechanical.Conditions;
 using Mechanical.Core;
 using Mechanical.Events;

@@ -8,7 +8,7 @@ using Mechanical.DataStores;
 using Mechanical.DataStores.Xml;
 using Mechanical.IO;
 
-namespace Mechanical.Log
+namespace Mechanical.Logs
 {
     /// <summary>
     /// Serializes log events. Thread-safe.

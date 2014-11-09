@@ -43,9 +43,9 @@
   <ItemGroup>
     <Compile Include="Bootstrap\DispatcherExceptionSource.cs" />
     <Compile Include="Bootstrap\MessageBoxExceptionSink.cs" />
-    <Compile Include="Log\AdvancedLogEntrySerializer.cs" />
-    <Compile Include="Log\ProlificDataFileManager.cs" />
-    <Compile Include="Log\ProlificDataFileInfo.cs" />
+    <Compile Include="Logs\AdvancedLogEntrySerializer.cs" />
+    <Compile Include="Logs\ProlificDataFileManager.cs" />
+    <Compile Include="Logs\ProlificDataFileInfo.cs" />
     <Compile Include="MechanicalApp.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

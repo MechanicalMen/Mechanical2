@@ -4,7 +4,7 @@ using Mechanical.Conditions;
 using Mechanical.Core;
 using Mechanical.DataStores;
 
-namespace Mechanical.Log
+namespace Mechanical.Logs
 {
     /// <summary>
     /// Represents a log message.

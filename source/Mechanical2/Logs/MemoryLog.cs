@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Mechanical.Conditions;
 using Mechanical.Core;
 
-namespace Mechanical.Log
+namespace Mechanical.Logs
 {
     /// <summary>
     /// Saves log entries in memory.

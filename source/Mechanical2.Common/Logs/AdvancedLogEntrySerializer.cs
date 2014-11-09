@@ -3,9 +3,9 @@ using Mechanical.Conditions;
 using Mechanical.Core;
 using Mechanical.IO;
 using Mechanical.IO.FileSystem;
-using Mechanical.Log;
+using Mechanical.Logs;
 
-namespace Mechanical.Common.Log
+namespace Mechanical.Common.Logs
 {
     /// <summary>
     /// Serializes log entries to files. Can handle multiple processes logging at the same time.

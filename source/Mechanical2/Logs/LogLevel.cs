@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Mechanical.Log
+namespace Mechanical.Logs
 {
     /// <summary>
     /// The severity of a <see cref="LogEntry"/>.

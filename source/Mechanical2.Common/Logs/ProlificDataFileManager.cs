@@ -12,7 +12,7 @@ using Mechanical.DataStores;
 using Mechanical.IO;
 using Mechanical.IO.FileSystem;
 
-namespace Mechanical.Common.Log
+namespace Mechanical.Common.Logs
 {
     /* NOTE: This class is used when:
      *         - you have lots of data that you need to store
