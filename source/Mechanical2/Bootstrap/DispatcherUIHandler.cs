@@ -109,10 +109,21 @@ namespace Mechanical.Bootstrap
                 throw new ArgumentNullException().StoreFileLine();
 
 #if MECHANICAL_NET4
-            var op = this.dispatcher.BeginInvoke(action, this.priority, Parameters);
             var tsc = new TaskCompletionSource<object>();
-            op.Aborted += ( s, e ) => tsc.SetCanceled();
-            op.Completed += ( s, e ) => tsc.SetResult(null);
+            action = () =>
+            {
+                try
+                {
+                    action();
+                    tsc.SetResult(null); // the Completed event would probably work just as well
+                }
+                catch( Exception ex )
+                {
+                    tsc.SetException(ex);
+                }
+            };
+            var op = this.dispatcher.BeginInvoke(action, this.priority, Parameters);
+            op.Aborted += ( s, e ) => tsc.SetCanceled(); // DispatcherOperations can be aborted, before code starts executing (since we don't keep a reference to it, this should only happen if the Dispatcher is shut down, before execution starts)
             return tsc.Task;
 #elif SILVERLIGHT
             var tsc = new TaskCompletionSource<object>();
