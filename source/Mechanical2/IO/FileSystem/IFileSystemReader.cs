@@ -242,5 +242,32 @@ namespace Mechanical.IO.FileSystem
         }
 
         #endregion
+
+        #region CopyAllTo
+
+        /// <summary>
+        /// Copies all files and directories to the specified file system.
+        /// </summary>
+        /// <param name="sourceFileSystem">The file system to query.</param>
+        /// <param name="destinationFileSystem">The file system to copy to.</param>
+        public static void CopyAllTo( this IFileSystemReader sourceFileSystem, IFileSystemWriter destinationFileSystem )
+        {
+            Ensure.Debug(sourceFileSystem, f => f.NotNull());
+            Ensure.That(destinationFileSystem).NotNull();
+
+            foreach( var dir in sourceFileSystem.GetDirectoryNamesRecursively() )
+                destinationFileSystem.CreateDirectory(dir);
+
+            foreach( var file in sourceFileSystem.GetFileNamesRecursively() )
+            {
+                var sourceStream = sourceFileSystem.ReadBinary(file);
+                var destinationStream = destinationFileSystem.CreateNewBinary(file, overwriteIfExists: true);
+                sourceStream.CopyTo(destinationStream);
+                sourceStream.Close();
+                destinationStream.Close();
+            }
+        }
+
+        #endregion
     }
 }

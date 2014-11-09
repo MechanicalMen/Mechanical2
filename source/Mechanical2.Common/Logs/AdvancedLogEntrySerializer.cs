@@ -89,6 +89,9 @@ namespace Mechanical.Common.Logs
         /// <param name="entry">The <see cref="LogEntry"/> to log.</param>
         public override void Log( LogEntry entry )
         {
+            if( this.IsDisposed )
+                throw new ObjectDisposedException(null).StoreFileLine();
+
             // logEntrySerializer handles thread-safety
             this.logEntrySerializer.Log(entry);
         }

@@ -163,8 +163,13 @@ namespace Mechanical.IO
              || index + count > buffer.Length )
                 throw new ArgumentOutOfRangeException().Store("index", index).Store("count", count).Store("buffer.Length", buffer.Length);
 
-            Buffer.BlockCopy(src: this.arraySegment.Array, srcOffset: this.arraySegment.Offset + this.offset, dst: buffer, dstOffset: index, count: count);
-            this.offset += count;
+            int bytesLeft = this.arraySegment.Count - this.offset;
+            count = Math.Min(bytesLeft, count);
+            if( count != 0 )
+            {
+                Buffer.BlockCopy(src: this.arraySegment.Array, srcOffset: this.arraySegment.Offset + this.offset, dst: buffer, dstOffset: index, count: count);
+                this.offset += count;
+            }
             return count;
         }
 

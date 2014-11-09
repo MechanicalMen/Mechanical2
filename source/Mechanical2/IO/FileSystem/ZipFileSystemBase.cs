@@ -235,7 +235,7 @@ namespace Mechanical.IO.FileSystem
                     throw new FileNotFoundException("File system entry already exists, but isn't a directory!").Store("filePath", dataStorePath);
 
                 // create directory
-                this.CreateDirectoryEntry(zipFilePath);
+                this.CreateDirectoryEntry(zipDirectoryPath);
             }
         }
 
