@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Express 2012 for Web
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mechanical2.NET45", "Mechanical2.NET45\Mechanical2.NET45.csproj", "{EE3AE5F1-D633-468A-A33E-8373CBFCBB2A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mechanical2.NET4CP", "Mechanical2.NET4CP\Mechanical2.NET4CP.csproj", "{E636BA91-D65A-4FB6-A94E-38A847C36179}"
