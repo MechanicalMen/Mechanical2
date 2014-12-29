@@ -4,7 +4,7 @@ using Mechanical.Collections;
 using Mechanical.Conditions;
 using Mechanical.Core;
 
-namespace Mechanical.DataStores.Node
+namespace Mechanical.DataStores.Nodes
 {
     /// <summary>
     /// A data store object.

@@ -5,7 +5,7 @@ using Mechanical.Conditions;
 using Mechanical.Core;
 using Mechanical.IO;
 
-namespace Mechanical.DataStores.Node
+namespace Mechanical.DataStores.Nodes
 {
     /// <summary>
     /// A data store reader which reads from an <see cref="IDataStoreNode"/>.

@@ -1,7 +1,7 @@
 ﻿using System;
 using Mechanical.DataStores;
 using Mechanical.DataStores.Json;
-using Mechanical.DataStores.Node;
+using Mechanical.DataStores.Nodes;
 using NUnit.Framework;
 
 namespace Mechanical.Tests.DataStores.Json

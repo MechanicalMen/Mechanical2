@@ -4,7 +4,7 @@ using Mechanical.Conditions;
 using Mechanical.Core;
 using Mechanical.IO;
 
-namespace Mechanical.DataStores.Node
+namespace Mechanical.DataStores.Nodes
 {
     /// <summary>
     /// A binary based data store value.

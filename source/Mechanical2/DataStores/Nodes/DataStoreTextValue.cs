@@ -2,7 +2,7 @@
 using Mechanical.Conditions;
 using Mechanical.Core;
 
-namespace Mechanical.DataStores.Node
+namespace Mechanical.DataStores.Nodes
 {
     /// <summary>
     /// A text based data store value.

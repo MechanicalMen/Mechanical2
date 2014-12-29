@@ -1,7 +1,7 @@
 ﻿using System;
 using Mechanical.Core;
 
-namespace Mechanical.DataStores.Node
+namespace Mechanical.DataStores.Nodes
 {
     /// <summary>
     /// The interface of data store values.

@@ -5,7 +5,7 @@ using System.Linq;
 using Mechanical.Conditions;
 using Mechanical.Core;
 using Mechanical.DataStores;
-using Mechanical.DataStores.Node;
+using Mechanical.DataStores.Nodes;
 
 namespace Mechanical.IO.FileSystem
 {

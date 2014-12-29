@@ -3,7 +3,7 @@ using Mechanical.Conditions;
 using Mechanical.Core;
 using Mechanical.IO;
 
-namespace Mechanical.DataStores.Node
+namespace Mechanical.DataStores.Nodes
 {
     /// <summary>
     /// Serializes and deserializes <see cref="IDataStoreValue"/>.

@@ -5,7 +5,7 @@ using Mechanical.Conditions;
 using Mechanical.Core;
 using Mechanical.IO;
 
-namespace Mechanical.DataStores.Node
+namespace Mechanical.DataStores.Nodes
 {
     /// <summary>
     /// A data store writer, which writes to an <see cref="IDataStoreNode"/>.

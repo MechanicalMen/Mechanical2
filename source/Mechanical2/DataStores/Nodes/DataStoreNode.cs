@@ -3,7 +3,7 @@ using Mechanical.Conditions;
 using Mechanical.Core;
 using Mechanical.MagicBag;
 
-namespace Mechanical.DataStores.Node
+namespace Mechanical.DataStores.Nodes
 {
     /// <summary>
     /// A base class implementing <see cref="IDataStoreNode"/>.

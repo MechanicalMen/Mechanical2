@@ -932,9 +932,9 @@ namespace Mechanical.DataStores
         /// <param name="name">The expected name of the current object, or <c>null</c> if it is not important.</param>
         /// <param name="magicBag">The <see cref="IMagicBag"/> to use for deserialization; or <c>null</c> for the default magic bag.</param>
         /// <returns>The deserialized data store value.</returns>
-        public static Node.IDataStoreValue ReadValueNode( this IDataStoreReader reader, string name = null, IMagicBag magicBag = null )
+        public static Nodes.IDataStoreValue ReadValueNode( this IDataStoreReader reader, string name = null, IMagicBag magicBag = null )
         {
-            return ReadAsValue<Node.IDataStoreValue>(reader, name, magicBag);
+            return ReadAsValue<Nodes.IDataStoreValue>(reader, name, magicBag);
         }
 
         /// <summary>
@@ -944,9 +944,9 @@ namespace Mechanical.DataStores
         /// <param name="name">The expected name of the current object.</param>
         /// <param name="magicBag">The <see cref="IMagicBag"/> to use for deserialization; or <c>null</c> for the default magic bag.</param>
         /// <returns>The deserialized data store object.</returns>
-        public static Node.IDataStoreObject ReadObjectNode( this IDataStoreReader reader, string name = null, IMagicBag magicBag = null )
+        public static Nodes.IDataStoreObject ReadObjectNode( this IDataStoreReader reader, string name = null, IMagicBag magicBag = null )
         {
-            return ReadAsObject<Node.IDataStoreObject>(reader, name, magicBag);
+            return ReadAsObject<Nodes.IDataStoreObject>(reader, name, magicBag);
         }
 
         /// <summary>
@@ -956,7 +956,7 @@ namespace Mechanical.DataStores
         /// <param name="name">The expected name of the current object, or <c>null</c> if it is not important.</param>
         /// <param name="magicBag">The <see cref="IMagicBag"/> to use for deserialization; or <c>null</c> for the default magic bag.</param>
         /// <returns>The deserialized data store value.</returns>
-        public static Node.IDataStoreNode ReadNode( this IDataStoreReader reader, string name = null, IMagicBag magicBag = null )
+        public static Nodes.IDataStoreNode ReadNode( this IDataStoreReader reader, string name = null, IMagicBag magicBag = null )
         {
             ThrowIfNull(reader);
 
@@ -971,10 +971,10 @@ namespace Mechanical.DataStores
 
             case DataStoreToken.BinaryValue:
             case DataStoreToken.TextValue:
-                return DeserializeAsValue<Node.IDataStoreValue>(reader, name, magicBag);
+                return DeserializeAsValue<Nodes.IDataStoreValue>(reader, name, magicBag);
 
             case DataStoreToken.ObjectStart:
-                return DeserializeAsObject<Node.IDataStoreObject>(reader, name, magicBag);
+                return DeserializeAsObject<Nodes.IDataStoreObject>(reader, name, magicBag);
 
             default:
                 throw new ArgumentException("Invalid token!").Store("Token", reader.Token);

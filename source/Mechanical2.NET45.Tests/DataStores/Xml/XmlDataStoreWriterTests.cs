@@ -2,7 +2,7 @@
 using System.Text;
 using Mechanical.Core;
 using Mechanical.DataStores;
-using Mechanical.DataStores.Node;
+using Mechanical.DataStores.Nodes;
 using Mechanical.DataStores.Xml;
 using NUnit.Framework;
 

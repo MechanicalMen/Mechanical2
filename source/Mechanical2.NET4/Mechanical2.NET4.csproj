@@ -262,44 +262,44 @@
     <Compile Include="..\Mechanical2\DataStores\Json\JsonDataStoreWriter.cs">
       <Link>DataStores\Json\JsonDataStoreWriter.cs</Link>
     </Compile>
-    <Compile Include="..\Mechanical2\DataStores\Node\DataStoreBinaryValue.cs">
-      <Link>DataStores\Node\DataStoreBinaryValue.cs</Link>
+    <Compile Include="..\Mechanical2\DataStores\Nodes\DataStoreBinaryValue.cs">
+      <Link>DataStores\Nodes\DataStoreBinaryValue.cs</Link>
     </Compile>
-    <Compile Include="..\Mechanical2\DataStores\Node\DataStoreNode.cs">
-      <Link>DataStores\Node\DataStoreNode.cs</Link>
+    <Compile Include="..\Mechanical2\DataStores\Nodes\DataStoreNode.cs">
+      <Link>DataStores\Nodes\DataStoreNode.cs</Link>
     </Compile>
-    <Compile Include="..\Mechanical2\DataStores\Node\DataStoreNodeReader.cs">
-      <Link>DataStores\Node\DataStoreNodeReader.cs</Link>
+    <Compile Include="..\Mechanical2\DataStores\Nodes\DataStoreNodeReader.cs">
+      <Link>DataStores\Nodes\DataStoreNodeReader.cs</Link>
     </Compile>
-    <Compile Include="..\Mechanical2\DataStores\Node\DataStoreNodeWriter.cs">
-      <Link>DataStores\Node\DataStoreNodeWriter.cs</Link>
+    <Compile Include="..\Mechanical2\DataStores\Nodes\DataStoreNodeWriter.cs">
+      <Link>DataStores\Nodes\DataStoreNodeWriter.cs</Link>
     </Compile>
-    <Compile Include="..\Mechanical2\DataStores\Node\DataStoreObject.cs">
-      <Link>DataStores\Node\DataStoreObject.cs</Link>
+    <Compile Include="..\Mechanical2\DataStores\Nodes\DataStoreObject.cs">
+      <Link>DataStores\Nodes\DataStoreObject.cs</Link>
     </Compile>
-    <Compile Include="..\Mechanical2\DataStores\Node\DataStoreObjectSerializer.cs">
-      <Link>DataStores\Node\DataStoreObjectSerializer.cs</Link>
+    <Compile Include="..\Mechanical2\DataStores\Nodes\DataStoreObjectSerializer.cs">
+      <Link>DataStores\Nodes\DataStoreObjectSerializer.cs</Link>
     </Compile>
-    <Compile Include="..\Mechanical2\DataStores\Node\DataStoreTextValue.cs">
-      <Link>DataStores\Node\DataStoreTextValue.cs</Link>
+    <Compile Include="..\Mechanical2\DataStores\Nodes\DataStoreTextValue.cs">
+      <Link>DataStores\Nodes\DataStoreTextValue.cs</Link>
     </Compile>
-    <Compile Include="..\Mechanical2\DataStores\Node\DataStoreValueSerializer.cs">
-      <Link>DataStores\Node\DataStoreValueSerializer.cs</Link>
+    <Compile Include="..\Mechanical2\DataStores\Nodes\DataStoreValueSerializer.cs">
+      <Link>DataStores\Nodes\DataStoreValueSerializer.cs</Link>
     </Compile>
-    <Compile Include="..\Mechanical2\DataStores\Node\IDataStoreBinaryValue.cs">
-      <Link>DataStores\Node\IDataStoreBinaryValue.cs</Link>
+    <Compile Include="..\Mechanical2\DataStores\Nodes\IDataStoreBinaryValue.cs">
+      <Link>DataStores\Nodes\IDataStoreBinaryValue.cs</Link>
     </Compile>
-    <Compile Include="..\Mechanical2\DataStores\Node\IDataStoreNode.cs">
-      <Link>DataStores\Node\IDataStoreNode.cs</Link>
+    <Compile Include="..\Mechanical2\DataStores\Nodes\IDataStoreNode.cs">
+      <Link>DataStores\Nodes\IDataStoreNode.cs</Link>
     </Compile>
-    <Compile Include="..\Mechanical2\DataStores\Node\IDataStoreObject.cs">
-      <Link>DataStores\Node\IDataStoreObject.cs</Link>
+    <Compile Include="..\Mechanical2\DataStores\Nodes\IDataStoreObject.cs">
+      <Link>DataStores\Nodes\IDataStoreObject.cs</Link>
     </Compile>
-    <Compile Include="..\Mechanical2\DataStores\Node\IDataStoreTextValue.cs">
-      <Link>DataStores\Node\IDataStoreTextValue.cs</Link>
+    <Compile Include="..\Mechanical2\DataStores\Nodes\IDataStoreTextValue.cs">
+      <Link>DataStores\Nodes\IDataStoreTextValue.cs</Link>
     </Compile>
-    <Compile Include="..\Mechanical2\DataStores\Node\IDataStoreValue.cs">
-      <Link>DataStores\Node\IDataStoreValue.cs</Link>
+    <Compile Include="..\Mechanical2\DataStores\Nodes\IDataStoreValue.cs">
+      <Link>DataStores\Nodes\IDataStoreValue.cs</Link>
     </Compile>
     <Compile Include="..\Mechanical2\DataStores\Xml\XmlDataStoreReader.cs">
       <Link>DataStores\Xml\XmlDataStoreReader.cs</Link>

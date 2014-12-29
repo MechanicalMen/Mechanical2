@@ -334,7 +334,7 @@ namespace Mechanical.Core
             var mappings = new List<Mapping>();
             mappings.Add(Map<DateTime>.To(() => DateTime.UtcNow).AsTransient());
             mappings.AddRange(Mechanical.DataStores.BasicSerialization.GetMappings());
-            mappings.AddRange(Mechanical.DataStores.Node.DataStoreNode.GetMappings());
+            mappings.AddRange(Mechanical.DataStores.Nodes.DataStoreNode.GetMappings());
 #if !SILVERLIGHT
             mappings.Add(Map<IEventQueue>.To(() => AppCore.EventQueue).AsTransient());
 #endif
