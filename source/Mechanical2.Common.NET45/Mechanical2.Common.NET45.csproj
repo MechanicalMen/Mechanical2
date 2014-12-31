@@ -41,12 +41,24 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Bootstrap\DispatcherExceptionSource.cs" />
-    <Compile Include="Bootstrap\MessageBoxExceptionSink.cs" />
-    <Compile Include="Logs\AdvancedLogEntrySerializer.cs" />
-    <Compile Include="Logs\ProlificDataFileManager.cs" />
-    <Compile Include="Logs\ProlificDataFileInfo.cs" />
-    <Compile Include="MechanicalApp.cs" />
+    <Compile Include="..\Mechanical2.Common\Bootstrap\DispatcherExceptionSource.cs">
+      <Link>Bootstrap\DispatcherExceptionSource.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2.Common\Bootstrap\MessageBoxExceptionSink.cs">
+      <Link>Bootstrap\MessageBoxExceptionSink.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2.Common\Logs\AdvancedLogEntrySerializer.cs">
+      <Link>Logs\AdvancedLogEntrySerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2.Common\Logs\ProlificDataFileInfo.cs">
+      <Link>Logs\ProlificDataFileInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2.Common\Logs\ProlificDataFileManager.cs">
+      <Link>Logs\ProlificDataFileManager.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2.Common\MechanicalApp.cs">
+      <Link>MechanicalApp.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -55,6 +67,7 @@
       <Name>Mechanical2.NET45</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\external\StyleCop\StyleCop.Targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

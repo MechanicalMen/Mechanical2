@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Mechanical2.Common")]
+[assembly: AssemblyTitle("Mechanical.Common.NET4")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Mechanical2.Common")]
+[assembly: AssemblyProduct("Mechanical.Common.NET4")]
 [assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("cf59d225-7542-4cc8-909f-fa3dad9647a4")]
+[assembly: Guid("613f5f7e-ffe9-4b2c-921f-6afcfa5cab72")]
 
 // Version information for an assembly consists of the following four values:
 //
