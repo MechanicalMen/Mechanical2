@@ -26,14 +26,15 @@ namespace Mechanical.Common.Logs
         /// </summary>
         /// <param name="fileSystem">The <see cref="IFileSystem"/> whose root directory the log files will be placed at.</param>
         /// <param name="maxLogFileCount">The maximum number of log files to keep.</param>
-        public AdvancedLogEntrySerializer( IFileSystem fileSystem, int maxLogFileCount )
+        /// <param name="logFilePrefix">The first part of log file names. You can use this to identify the application generating them.</param>
+        public AdvancedLogEntrySerializer( IFileSystem fileSystem, int maxLogFileCount, string logFilePrefix = "log" )
             : base()
         {
             if( maxLogFileCount < 1 )
                 throw new ArgumentOutOfRangeException().Store("maxLogFileCount", maxLogFileCount);
 
             // initialize file manager
-            this.fileManager = new ProlificDataFileManager(fileSystem, fileManagerID: "log", fileExtension: fileSystem.EscapesNames ? ".xml" : null);
+            this.fileManager = new ProlificDataFileManager(fileSystem, fileManagerID: logFilePrefix, fileExtension: fileSystem.EscapesNames ? ".xml" : null);
 
             // create new file
             ProlificDataFileInfo fileInfo;
