@@ -35,8 +35,9 @@ namespace Mechanical.Common
         /// Creates a new <see cref="AdvancedLogEntrySerializer"/> instance.
         /// </summary>
         /// <param name="directory">The directory to create the log files at, or <c>null</c> to use the application folder.</param>
+        /// <param name="logFilePrefix">The first part of log file names. You can use this to identify the application generating them.</param>
         /// <returns>The new <see cref="AdvancedLogEntrySerializer"/> instance.</returns>
-        private static AdvancedLogEntrySerializer CreateAdvancedLogEntrySerializer( string directory = null )
+        private static AdvancedLogEntrySerializer CreateAdvancedLogEntrySerializer( string directory = null, string logFilePrefix = "log" )
         {
             if( directory.NullOrEmpty() )
             {
@@ -45,7 +46,7 @@ namespace Mechanical.Common
             }
 
             var fileSystem = new DirectoryFileSystem(directory, escapeFileNames: true); // we escape file names to have file extensions
-            return new AdvancedLogEntrySerializer(fileSystem, maxLogFileCount: 3);
+            return new AdvancedLogEntrySerializer(fileSystem, maxLogFileCount: 3, logFilePrefix: logFilePrefix);
         }
 
         #endregion
@@ -176,8 +177,9 @@ namespace Mechanical.Common
         /// </summary>
         /// <param name="app">The <see cref="System.Windows.Application"/> raising the DispatcherUnhandledException event.</param>
         /// <param name="window">The <see cref="Window"/> to link to the lifespan of the main event queue.</param>
+        /// <param name="logFilePrefix">The first part of log file names. You can use this to identify the application generating them.</param>
         /// <returns><c>true</c> if this is the first time this method was called, and initialization was successful; otherwise, <c>false</c>.</returns>
-        public static bool InitializeWindow( Application app, Window window )
+        public static bool InitializeWindow( Application app, Window window, string logFilePrefix = "log" )
         {
             if( fullyInitialized )
                 return false;
@@ -196,7 +198,7 @@ namespace Mechanical.Common
                     AppCore.Register(new MessageBoxExceptionSink(), isFallback: false);
 
                     // logging
-                    AppCore.Log = CreateAdvancedLogEntrySerializer(directory: null);
+                    AppCore.Log = CreateAdvancedLogEntrySerializer(directory: null, logFilePrefix: logFilePrefix);
 
                     // UI
                     AppCore.Register(new DispatcherUIHandler(Dispatcher.CurrentDispatcher));

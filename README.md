@@ -1,21 +1,27 @@
 Mechanical v2
 =============
 
-Project Info
+General Info
 ------------
 
 ### Why another library?
-This library was developed to ease many everyday tasks, like checking preconditions, saving data in a structured manner, writing cross-platform code, and countless others.
+To ease many everyday tasks, like checking preconditions, saving data in a structured manner, writing cross-platform code, and countless others.
 
 ### Building
-You will need to build using at least a C#5/.NET4.5 compiler (even if your target is below .NET 4.5). The libraries are currently maintained using Visual Studio 2012 Express for Web (Desktop works just as fine, if you don't mind loosing the Silverlight library).
+You will need to build using at least a C#5/.NET4.5 compiler (even if your target is below .NET 4.5). The libraries are currently maintained using Visual Studio 2013 Community.
 
 ### License
 MIT (unless otherwise stated)
 
+Projects
+--------
+I do not currently use portable libraries, therefore each platform has it's own project. The two main groups of projects are:
+* Mechanical2: this is the main library. The idea is that the main library should provide basic, mostly self-contained tools. It is quite mature (see details below).
+* Mechanical2.Common: this is a small library built on top of Mechanical2. It is quite new and small compared to it's big brother. It will provide tools which are slightly more specific, but still often useful.
 
-Namespaces
-----------
+
+Main Mechanical2 namespaces
+---------------------------
 
 ### Core
 Utilities used by all other namespaces. Helps working with IDisposable, enums, string and substrings, ... etc.
@@ -56,7 +62,7 @@ Replaces the functionality of StreamReader/Writer and BinaryReader/Writer.
 * Text readers and writers support Substring, for optimum performance (though this does require the use of special overloads).
 
 ### IO.FileSystem
-Abstract interfaces provide the most common file system functionality.
+Abstract interfaces for the most common file system functionality.
 * Useful when writing cross-platform library code.
 * File (or directory) paths returned and used by such an interface, are converted into a valid, portable and platform independent data store path.
 * Only the most common operations are currently supported.
@@ -76,9 +82,17 @@ Event Queue pattern with a twist (also known as event aggregator, message queue,
 A basic logging implementation.
 * Simple but effective interface. A subset of NLog, but has no dependency on it.
 * Designed to be simple to replace with your own logger, should you choose to do so.
-* Log entries can be serialized using the data store.
+* Log entries of the default implementation can be serialized using the data store.
+* Exceptions can be serialized, and all major information can be restored, even on different platforms, which do not have the exception type.
 
 ### FileFormats
 Low level, performance oriented parsers and writers for common file formats. Currently supported formats are:
 * CSV
 * JSON
+
+### MVVM
+Few minor tools for UI development. Useful for quickly developing small apps.
+* INotifyPropertyChanged implementation using the new(ish) caller info attribute.
+* UI thread handling. (Helps writing platform independent view model libraries).
+* A simple delegate based ICommand implementation.
+* A simple base class for quickly implementing IValueConverter using templates.
