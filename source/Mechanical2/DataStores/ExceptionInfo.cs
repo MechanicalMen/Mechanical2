@@ -121,7 +121,7 @@ namespace Mechanical.DataStores
             if( partialStackTrace.Count != 0 )
             {
                 var sb = new StringBuilder();
-                partialStackTrace.Sort(( x, y ) => x.Item1.CompareTo(y.Item2));
+                partialStackTrace.Sort(( x, y ) => x.Item1.CompareTo(y.Item1));
                 for( int i = 0; ; ++i )
                 {
                     if( i != partialStackTrace.Count - 1 )
