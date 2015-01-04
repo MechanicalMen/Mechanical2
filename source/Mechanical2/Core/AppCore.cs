@@ -61,7 +61,7 @@ namespace Mechanical.Core
         /// Registers an <see cref="IExceptionSource"/> object.
         /// </summary>
         /// <param name="source">The <see cref="IExceptionSource"/> instance to register.</param>
-        protected static void Register( IExceptionSource source )
+        public static void Register( IExceptionSource source )
         {
             if( source.NullReference() )
                 return;
@@ -93,7 +93,7 @@ namespace Mechanical.Core
         /// </summary>
         /// <param name="sink">The <see cref="IExceptionSink"/> instance to register.</param>
         /// <param name="isFallback"><c>true</c> if this sink is only to be invoked, if one of the main sinks fails; <c>false</c> to always try to invoke it.</param>
-        protected static void Register( IExceptionSink sink, bool isFallback )
+        public static void Register( IExceptionSink sink, bool isFallback )
         {
             if( sink.NullReference() )
                 return;
