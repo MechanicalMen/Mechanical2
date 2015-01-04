@@ -71,6 +71,8 @@ namespace Mechanical.DataStores
         /// <returns><c>true</c> if the specified string is a valid data store name; otherwise, <c>false</c>.</returns>
         public static bool IsValidName( Substring name )
         {
+            //// NOTE: this method body needs to be independent of Mechanical.Conditions
+
             if( name.NullOrEmpty )
                 return false;
 

@@ -19,6 +19,12 @@ namespace Mechanical.Conditions
         T Object { get; }
 
         /// <summary>
+        /// Gets the name of the object to test.
+        /// </summary>
+        /// <value>The name of the object to test.</value>
+        string ObjectName { get; }
+
+        /// <summary>
         /// Gets the full path to the source file where the test originated.
         /// </summary>
         /// <value>The full path to the source file where the test originated.</value>
@@ -42,13 +48,15 @@ namespace Mechanical.Conditions
     internal class ConditionContext<T> : IConditionContext<T>
     {
         private readonly T obj;
+        private readonly string objName;
         private readonly string filePath;
         private readonly string memberName;
         private readonly int lineNumber;
 
-        internal ConditionContext( T obj, string filePath, string memberName, int lineNumber )
+        internal ConditionContext( T obj, string objName, string filePath, string memberName, int lineNumber )
         {
             this.obj = obj;
+            this.objName = objName;
             this.filePath = filePath;
             this.memberName = memberName;
             this.lineNumber = lineNumber;
@@ -57,6 +65,11 @@ namespace Mechanical.Conditions
         public T Object
         {
             get { return this.obj; }
+        }
+
+        public string ObjectName
+        {
+            get { return this.objName; }
         }
 
         public string FilePath

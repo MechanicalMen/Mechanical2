@@ -129,7 +129,7 @@ namespace Mechanical.Conditions
         /// </summary>
         /// <typeparam name="TException">The type of the exception.</typeparam>
         /// <param name="e">The exception to store data in.</param>
-        /// <param name="key">The data key.</param>
+        /// <param name="key">The data key. Must be DataStore compatible.</param>
         /// <param name="value">The data value.</param>
         /// <param name="filePath">The full path of the source file that contains the caller.</param>
         /// <param name="memberName">The method or property name of the caller to the method.</param>
@@ -232,7 +232,7 @@ namespace Mechanical.Conditions
             where TException : Exception
         {
             return e.StoreFileLine(context.FilePath, context.MemberName, context.LineNumber)
-                    .Add("Object", context.Object);
+                    .Add(context.ObjectName, context.Object);
         }
 
         #endregion
