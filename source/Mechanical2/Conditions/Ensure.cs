@@ -60,17 +60,6 @@ namespace Mechanical.Conditions
             [CallerMemberName] string memberName = "",
             [CallerLineNumberAttribute] int lineNumber = 0 )
         {
-            if( !Mechanical.DataStores.DataStore.IsValidName(objName) )
-            {
-#if DEBUG
-                // in Debug mode, we want to make the user aware of mistakes
-                throw new ArgumentException("Invalid object name!").Store("objName", objName);
-#else
-                // in Release mode, we let the program flow continue
-                objName = DefaultObjectName;
-#endif
-            }
-
             return new ConditionContext<T>(obj, objName, filePath, memberName, lineNumber);
         }
 
