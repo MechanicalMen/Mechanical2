@@ -16,8 +16,8 @@ MIT (unless otherwise stated)
 Projects
 --------
 I do not currently use portable libraries, therefore each platform has it's own project. The two main groups of projects are:
-* Mechanical2: this is the main library. The idea is that the main library should provide basic, mostly self-contained tools. It is quite mature (see details below).
-* Mechanical2.Common: this is a small library built on top of Mechanical2. It is quite new and small compared to it's big brother. It will provide tools which are slightly more specific, but still often useful.
+* **Mechanical2:** this is the main library. The idea is that the main library should provide basic, mostly self-contained tools. It is quite mature (see details below).
+* **Mechanical2.Common:** this is a small library built on top of Mechanical2. It is quite new and small compared to it's big brother. It will provide tools which are slightly more specific, but still often useful.
 
 
 Main Mechanical2 namespaces
