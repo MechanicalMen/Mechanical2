@@ -46,7 +46,13 @@ namespace Mechanical.Common
             }
 
             var fileSystem = new DirectoryFileSystem(directory, escapeFileNames: true); // we escape file names to have file extensions
-            return new AdvancedLogEntrySerializer(fileSystem, maxLogFileCount: 3, logFilePrefix: logFilePrefix);
+            return new AdvancedLogEntrySerializer(
+                fileSystem,
+                maxFileAge: null,
+                maxAppInstanceCount: 3,
+                maxTotalFileSize: null,
+                singleFileSizeThreshold: null,
+                logFilePrefix: logFilePrefix);
         }
 
         #endregion

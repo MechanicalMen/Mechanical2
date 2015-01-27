@@ -27,16 +27,21 @@ namespace Mechanical.Common.Logs
      * 
      *       Example 2: saving raw output from hardware or calculations taking a long time
      *         - you want to keep only the last 10MB of data
-     *         - there is more than one hardware or calculation running in parallel (and you don't want to mix such data)
+     *         - there is more than one hardware or calculation running in parallel
+     *           (and since you don't want to mix or merge such data, they are in different files)
      * 
      *       The trick to managing all this is through a common, case insensitive naming pattern:
      *         <file manager instance id>_<creation time>_<app instance id><optional file extension>
      *         - app instance id: short hash generated once per AppDomain. Allows multiple instances of a single
-     *           application, to dump data at the same time, to the same place.
+     *           application, to dump data at the same time, to the same place. Similar to a process ID.
      *         - file manager instance id: a humanly readable identifier of the data source. Necessary, when multiple file managers
      *           are used by the same app. Automatically generated, unless specified.
-     *         - creation time: the creation time of the file.
+     *           Different or even concurrent applications may have the same file manager id.
+     *         - creation time: the creation time of the file
      *         - optional file extension: obvious (though not strictly necessary)
+     * 
+     * NOTE: creation time can be quite useful, since file date information may get lost,
+     *       when files are moved across storage devices.
      * 
      * NOTE: creation time precedes application instance ID, so that in "actual" file managers,
      *       sorting by name would sort by time as well.
@@ -280,22 +285,29 @@ namespace Mechanical.Common.Logs
         #region Find files
 
         /// <summary>
-        /// Finds all data files in the root of the specified file system. The result is unsorted.
+        /// Finds all data files.
+        /// The result is unsorted, and application instance independent.
         /// </summary>
-        /// <param name="fileSystem">The abstract file system to search the root directory of.</param>
+        /// <param name="currentFileManagerOnly"><c>true</c> to only return files with the current file manager identifier; <c>false</c> to return files from all file managers.</param>
         /// <returns>All data files found.</returns>
-        public static ProlificDataFileInfo[] FindAllFiles( IFileSystem fileSystem )
+        public ProlificDataFileInfo[] FindAllFiles( bool currentFileManagerOnly )
         {
-            if( fileSystem.NullReference() )
-                throw new ArgumentNullException().StoreFileLine();
+            Ensure.That(this).NotDisposed();
 
-            var fileDataStoreNames = fileSystem.GetFileNames();
+            var fileDataStoreNames = this.fileSystem.GetFileNames();
             var results = new List<ProlificDataFileInfo>();
             ProlificDataFileInfo fileInfo;
             foreach( var name in fileDataStoreNames )
             {
-                if( TryParseDataStoreName(name, fileSystem.EscapesNames, out fileInfo) )
-                    results.Add(fileInfo);
+                if( TryParseDataStoreName(name, this.fileSystem.EscapesNames, out fileInfo) )
+                {
+                    // this is a data file name... filter?
+                    if( !currentFileManagerOnly
+                     || AppInstanceIDComparer.Equals(fileInfo.FileManagerID, this.fileManagerID) )
+                    {
+                        results.Add(fileInfo);
+                    }
+                }
             }
 
             return results.ToArray();
@@ -305,15 +317,14 @@ namespace Mechanical.Common.Logs
         /// Returns all files recently created by this app instance.
         /// The results are in descending order (according to creation time).
         /// </summary>
-        /// <param name="fileSystem">The abstract file system to search the root directory of.</param>
+        /// <param name="currentFileManagerOnly"><c>true</c> to only return files with the current file manager identifier; <c>false</c> to return files from all file managers.</param>
         /// <param name="maxFileAge">The maximum age of the files returned, or <c>null</c>.</param>
         /// <param name="maxAppInstanceCount">The maximum number of app instances to include, or <c>null</c>.</param>
         /// <param name="maxTotalFileSize">The maximum total file size, or <c>null</c>.</param>
         /// <returns>All files recently created by this app instance.</returns>
-        public static ProlificDataFileInfo[] FindLatestFiles( IFileSystem fileSystem, TimeSpan? maxFileAge, int? maxAppInstanceCount, long? maxTotalFileSize )
+        public ProlificDataFileInfo[] FindLatestFiles( bool currentFileManagerOnly, TimeSpan? maxFileAge, int? maxAppInstanceCount, long? maxTotalFileSize )
         {
-            if( fileSystem.NullReference() )
-                throw new ArgumentNullException().StoreFileLine();
+            Ensure.That(this).NotDisposed();
 
             if( maxFileAge.HasValue
              && maxFileAge.Value.Ticks < 0 )
@@ -328,13 +339,13 @@ namespace Mechanical.Common.Logs
                 if( maxTotalFileSize.Value < 0 )
                     throw new ArgumentOutOfRangeException().Store("maxTotalFileSize", maxTotalFileSize);
 
-                if( !fileSystem.SupportsGetFileSize )
+                if( !this.fileSystem.SupportsGetFileSize )
                     throw new NotSupportedException("The specified file system does not support GetFileSize!").StoreFileLine();
             }
 
 
-            // sort in descending order by CreationTime
-            var files = FindAllFiles(fileSystem).ToList();
+            // sort all files in descending order by CreationTime
+            var files = this.FindAllFiles(currentFileManagerOnly).ToList();
             files.Sort(( x, y ) => y.CreationTime.CompareTo(x.CreationTime));
 
             // determine the minimum CreationTime (if there is one)
@@ -383,7 +394,21 @@ namespace Mechanical.Common.Logs
                 // too many bytes?
                 if( maxTotalFileSize.HasValue )
                 {
-                    currentFileSize = fileSystem.GetFileSize(fileInfo.DataStoreName);
+                    try
+                    {
+                        currentFileSize = this.fileSystem.GetFileSize(fileInfo.DataStoreName);
+                    }
+                    catch( Exception ex )
+                    {
+                        // we don't require file size information to ba available for files currently open by this instance, or other ones (perhaps even other applications!)
+                        // we will continue silently, but we will log a warning
+                        ex.Store("fileDataStorePath", fileInfo.DataStoreName);
+                        Log.Warn("Failed to get file size!", ex);
+
+                        files.RemoveAt(i);
+                        continue;
+                    }
+
                     if( totalFileSize + currentFileSize > maxTotalFileSize.Value )
                     {
                         // adding this file would exceed the file size limit, so we'll skip it
@@ -465,11 +490,10 @@ namespace Mechanical.Common.Logs
                 catch( Exception ex )
                 {
                     //// the file already exists, or there was another problem
-
                     bool fileAlreadyExists;
                     try
                     {
-                        fileAlreadyExists = FindAllFiles(this.fileSystem)
+                        fileAlreadyExists = this.FindAllFiles(currentFileManagerOnly: true)
                             .Where(f => DataStore.Comparer.Equals(f.DataStoreName, file.DataStoreName))
                             .FirstOrNullable()
                             .HasValue;
@@ -486,7 +510,7 @@ namespace Mechanical.Common.Logs
                         ////       in the same app instance, are at least a minute apart.
 
                         // try again with a new app instance ID
-                        continue;
+                        continue; // NOTE: fileStream is 'null'
                     }
                     else
                     {
@@ -499,7 +523,7 @@ namespace Mechanical.Common.Logs
                 // the app instance ID was not already in use, sometime before that
                 if( isNewAppID )
                 {
-                    bool appIDAlreadyInUse = FindAllFiles(this.fileSystem)
+                    bool appIDAlreadyInUse = this.FindAllFiles(currentFileManagerOnly: true)
                         .Where(f => !DataStore.Comparer.Equals(f.DataStoreName, file.DataStoreName))
                         .Where(f => AppInstanceIDComparer.Equals(f.AppInstanceID, appID))
                         .FirstOrNullable()
@@ -508,6 +532,7 @@ namespace Mechanical.Common.Logs
                     if( appIDAlreadyInUse )
                     {
                         // remove this file to avoid confusion, and try again
+                        fileStream.Close();
                         this.fileSystem.DeleteFile(file.DataStoreName);
                         continue;
                     }
@@ -519,6 +544,7 @@ namespace Mechanical.Common.Logs
                         {
                             // however, this method was called concurrently, and another unique app ID was already established
                             // clean up, and try again with that ID
+                            fileStream.Close();
                             this.fileSystem.DeleteFile(file.DataStoreName);
                             continue;
                         }
@@ -539,21 +565,21 @@ namespace Mechanical.Common.Logs
         /// <summary>
         /// Deletes all but the most recent files.
         /// </summary>
-        /// <param name="fileSystem">The abstract file system to search the root directory of.</param>
+        /// <param name="currentFileManagerOnly"><c>true</c> to only return files with the current file manager identifier; <c>false</c> to return files from all file managers.</param>
         /// <param name="maxFileAge">The maximum age of the files to keep, or <c>null</c>.</param>
         /// <param name="maxAppInstanceCount">The maximum number of app instances to keep, or <c>null</c>.</param>
         /// <param name="maxTotalFileSize">The maximum total file size to keep, or <c>null</c>.</param>
-        public static void DeleteOldFiles( IFileSystem fileSystem, TimeSpan? maxFileAge, int? maxAppInstanceCount, long? maxTotalFileSize )
+        public void DeleteOldFiles( bool currentFileManagerOnly, TimeSpan? maxFileAge, int? maxAppInstanceCount, long? maxTotalFileSize )
         {
-            var allFiles = FindAllFiles(fileSystem);
-            var filesToKeep = FindLatestFiles(fileSystem, maxFileAge, maxAppInstanceCount, maxTotalFileSize);
+            var allFiles = this.FindAllFiles(currentFileManagerOnly);
+            var filesToKeep = this.FindLatestFiles(currentFileManagerOnly, maxFileAge, maxAppInstanceCount, maxTotalFileSize);
 
-            foreach( var file in allFiles )
+            foreach( var someFile in allFiles )
             {
                 bool keepFile = false;
-                foreach( var f in filesToKeep )
+                foreach( var recentFile in filesToKeep )
                 {
-                    if( DataStore.Comparer.Equals(file.DataStoreName, f.DataStoreName) )
+                    if( DataStore.Comparer.Equals(someFile.DataStoreName, recentFile.DataStoreName) )
                     {
                         keepFile = true;
                         break;
@@ -563,7 +589,19 @@ namespace Mechanical.Common.Logs
                 if( keepFile )
                     continue;
                 else
-                    fileSystem.DeleteFile(file.DataStoreName);
+                {
+                    try
+                    {
+                        this.fileSystem.DeleteFile(someFile.DataStoreName);
+                    }
+                    catch( Exception ex )
+                    {
+                        // is the file currently in use?
+                        // continue silently, but warn the user
+                        ex.Store("fileDataStorePath", someFile.DataStoreName);
+                        Log.Warn("Failed to delete file! Currently in use?", ex);
+                    }
+                }
             }
         }
 
@@ -575,7 +613,7 @@ namespace Mechanical.Common.Logs
         /// Gets the string identifying the current application instance.
         /// </summary>
         /// <value>The string identifying the current application instance.</value>
-        public static string AppInstanceID
+        public static string ApplicationID
         {
             get
             {
@@ -584,6 +622,21 @@ namespace Mechanical.Common.Logs
                     throw new InvalidOperationException("The application instance ID can not be determined, before the first file is created!").StoreFileLine();
 
                 return appID;
+            }
+        }
+
+        /// <summary>
+        /// Gets the string identifying this <see cref="ProlificDataFileManager"/> instance.
+        /// </summary>
+        /// <value>The string identifying this <see cref="ProlificDataFileManager"/> instance.</value>
+        public string FileManagerID
+        {
+            get
+            {
+                if( this.IsDisposed )
+                    throw new ObjectDisposedException(null).StoreFileLine();
+
+                return this.fileManagerID;
             }
         }
 
