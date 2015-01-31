@@ -364,9 +364,6 @@
     <Compile Include="..\Mechanical2\IO\FileSystem\SubdirectoryFileSystem.cs">
       <Link>IO\FileSystem\SubdirectoryFileSystem.cs</Link>
     </Compile>
-    <Compile Include="..\Mechanical2\IO\FileSystem\ZipFileSystem.cs">
-      <Link>IO\FileSystem\ZipFileSystem.cs</Link>
-    </Compile>
     <Compile Include="..\Mechanical2\IO\FileSystem\ZipFileSystemBase.cs">
       <Link>IO\FileSystem\ZipFileSystemBase.cs</Link>
     </Compile>
@@ -538,6 +535,7 @@
     <Compile Include="..\Mechanical2\MVVM\ViewModelBase.cs">
       <Link>MVVM\ViewModelBase.cs</Link>
     </Compile>
+    <Compile Include="IO\FileSystem\ZipFileSystem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />
