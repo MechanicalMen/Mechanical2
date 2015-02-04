@@ -11,6 +11,7 @@ using Mechanical.Conditions;
 using Mechanical.Core;
 using Mechanical.Events;
 using Mechanical.IO.FileSystem;
+using Mechanical.MagicBag;
 using Mechanical.MVVM;
 
 namespace Mechanical.Common
@@ -109,6 +110,13 @@ namespace Mechanical.Common
 
         #endregion
 
+        private static IMagicBag BuildMagicBag()
+        {
+            return new Mechanical.MagicBag.MagicBag.Inherit(
+                AppCore.MagicBag,
+                Map<IDateTimeProvider>.To(() => new DateTimeProvider()).AsSingleton());
+        }
+
         /// <summary>
         /// Initializes the core framework for safe mode.
         /// That means that no resources, not the internet,
@@ -149,8 +157,9 @@ namespace Mechanical.Common
         /// <summary>
         /// Initializes all parts of the core framework.
         /// </summary>
+        /// <param name="logFilePrefix">The first part of log file names. You can use this to identify the application generating them.</param>
         /// <returns><c>true</c> if this is the first time this method was called, and initialization was successful; otherwise, <c>false</c>.</returns>
-        public static bool InitializeService()
+        public static bool InitializeService( string logFilePrefix = "log" )
         {
             if( fullyInitialized )
                 return false;
@@ -162,8 +171,11 @@ namespace Mechanical.Common
             {
                 if( !fullyInitialized )
                 {
+                    // magic bag
+                    AppCore.MagicBag = BuildMagicBag();
+
                     // logging
-                    AppCore.Log = CreateAdvancedLogEntrySerializer(directory: null);
+                    AppCore.Log = CreateAdvancedLogEntrySerializer(directory: null, logFilePrefix: logFilePrefix);
 
                     // UI
                     AppCore.Register((IUIThreadHandler)null);
@@ -202,6 +214,9 @@ namespace Mechanical.Common
 
                     // exception sinks
                     AppCore.Register(new MessageBoxExceptionSink(), isFallback: false);
+
+                    // magic bag
+                    AppCore.MagicBag = BuildMagicBag();
 
                     // logging
                     AppCore.Log = CreateAdvancedLogEntrySerializer(directory: null, logFilePrefix: logFilePrefix);

@@ -332,7 +332,6 @@ namespace Mechanical.Core
         {
             // NOTE: specify default mappings here
             var mappings = new List<Mapping>();
-            mappings.Add(Map<DateTime>.To(() => DateTime.UtcNow).AsTransient());
             mappings.AddRange(Mechanical.DataStores.BasicSerialization.GetMappings());
             mappings.AddRange(Mechanical.DataStores.Nodes.DataStoreNode.GetMappings());
 #if !SILVERLIGHT

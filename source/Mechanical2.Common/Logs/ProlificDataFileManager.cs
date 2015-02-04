@@ -67,17 +67,18 @@ namespace Mechanical.Common.Logs
         private const string CreationTimeFormat = "yyyyMMddHHmm";
 
         /// <summary>
-        /// The <see cref="StringComparer"/> you can use for application instance IDs.
+        /// The <see cref="StringComparer"/> you can use for application instance and file manager IDs.
         /// </summary>
-        public static readonly StringComparer AppInstanceIDComparer = StringComparer.OrdinalIgnoreCase;
+        public static readonly StringComparer IDComparer = StringComparer.OrdinalIgnoreCase;
 
         // 32, case insensitive, unique characters
         private static readonly char[] HashCharacters = "0123456789ABCDEFGHIJKLMNOPQRSTUV".ToCharArray();
         private static string appInstanceID = null;
 
-        private readonly string fileManagerID;
         private readonly string fileExtension;
+        private readonly IDateTimeProvider dateTimeProvider;
         private IFileSystem fileSystem;
+        private string fileManagerID;
 
         #endregion
 
@@ -89,12 +90,15 @@ namespace Mechanical.Common.Logs
         /// <param name="fileSystem">The abstract file system to use the root directory of. The <see cref="IFileSystem"/> will be disposed along with this object, if possible.</param>
         /// <param name="fileManagerID">The string identifying this <see cref="ProlificDataFileManager"/> instance; or <c>null</c> to generate it randomly.</param>
         /// <param name="fileExtension">The optional file extension, or <c>null</c>.</param>
-        public ProlificDataFileManager( IFileSystem fileSystem, string fileManagerID = null, string fileExtension = null )
+        /// <param name="dateTimeProvider">The <see cref="IDateTimeProvider"/> to use; or <c>null</c> to get one through <see cref="AppCore.MagicBag"/>.</param>
+        public ProlificDataFileManager( IFileSystem fileSystem, string fileManagerID = null, string fileExtension = null, IDateTimeProvider dateTimeProvider = null )
         {
             try
             {
                 Ensure.That(fileSystem).NotNull();
                 this.fileSystem = fileSystem;
+
+                this.dateTimeProvider = dateTimeProvider.NullReference() ? AppCore.MagicBag.Pull<IDateTimeProvider>() : dateTimeProvider;
 
                 // NOTE: Technically we only need to be this strict, when the file system does not escape names.
                 //       We do this so that the calling code does not need to keep two identifiers.
@@ -107,12 +111,15 @@ namespace Mechanical.Common.Logs
                     this.fileManagerID = fileManagerID;
                 }
                 else
-                    this.fileManagerID = GenerateRandomHash(DefaultManagerIDLength);
+                    this.fileManagerID = null; // just like with AppID, generate it later
 
                 if( !fileExtension.NullOrEmpty() )
                 {
                     if( !fileSystem.EscapesNames )
                         throw new ArgumentException("File extensions are not supported by the specified file system!").StoreFileLine();
+
+                    if( fileExtension.IndexOf('_') != -1 )
+                        throw new ArgumentException("Invalid file extension: may not contain underscores!").StoreFileLine();
 
                     this.fileExtension = fileExtension;
                 }
@@ -191,6 +198,7 @@ namespace Mechanical.Common.Logs
             var sb = new StringBuilder();
             var bytes = new byte[4];
             int value;
+            bool firstCharIsLetter = false;
             using( var random = new RNGCryptoServiceProvider() )
             {
                 while( sb.Length < length )
@@ -204,6 +212,22 @@ namespace Mechanical.Common.Logs
                         value = int.MaxValue;
 
                     AppendAsBase32(sb, value);
+
+                    if( !firstCharIsLetter )
+                    {
+                        while( sb.Length != 0 )
+                        {
+                            if( char.IsLetter(sb[0]) )
+                            {
+                                firstCharIsLetter = true;
+                                break;
+                            }
+                            else
+                            {
+                                sb.Remove(startIndex: 0, length: 1);
+                            }
+                        }
+                    }
                 }
             }
 
@@ -214,16 +238,30 @@ namespace Mechanical.Common.Logs
 
         #region Data store name
 
-        private static ProlificDataFileInfo ToFileInfo( string fileManagerID, string appInstanceID, string fileExtension, bool escapesNames )
+        private static DateTime ToCreationTimePrecision( DateTime utcDateTime )
         {
-            var creationTime = DateTime.UtcNow;
+            string tmp;
+            return ToCreationTimePrecision(utcDateTime, out tmp);
+        }
+
+        private static DateTime ToCreationTimePrecision( DateTime utcDateTime, out string creationTimeString )
+        {
+            creationTimeString = utcDateTime.ToString(CreationTimeFormat, CultureInfo.InvariantCulture);
+            return DateTime.ParseExact(creationTimeString, CreationTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+        }
+
+        private static ProlificDataFileInfo ToFileInfo( string fileManagerID, string appInstanceID, string fileExtension, bool escapesNames, IDateTimeProvider dateTimeProvider )
+        {
+            string creationTimeString;
+            var creationTime = ToCreationTimePrecision(dateTimeProvider.UtcNow, out creationTimeString);
+
             string dataStoreName;
             if( escapesNames )
             {
                 string unescaped = SafeString.InvariantFormat(
                     "{0}_{1}_{2}{3}",
                     fileManagerID, // always non-empty
-                    creationTime.ToString(CreationTimeFormat, CultureInfo.InvariantCulture), // always non-empty
+                    creationTimeString, // always non-empty
                     appInstanceID, // always non-empty
                     fileExtension); // may be empty
 
@@ -234,7 +272,7 @@ namespace Mechanical.Common.Logs
                 dataStoreName = SafeString.InvariantFormat(
                     "{0}_{1}_{2}",
                     fileManagerID,
-                    creationTime.ToString(CreationTimeFormat, CultureInfo.InvariantCulture),
+                    creationTimeString,
                     appInstanceID);
             }
 
@@ -294,6 +332,10 @@ namespace Mechanical.Common.Logs
         {
             Ensure.That(this).NotDisposed();
 
+            if( currentFileManagerOnly
+             && this.fileManagerID.NullReference() )
+                throw new InvalidOperationException("A file manager ID needs to be specified in the ctor, or generated when a file is created, before this method can be called!").StoreFileLine();
+
             var fileDataStoreNames = this.fileSystem.GetFileNames();
             var results = new List<ProlificDataFileInfo>();
             ProlificDataFileInfo fileInfo;
@@ -303,7 +345,7 @@ namespace Mechanical.Common.Logs
                 {
                     // this is a data file name... filter?
                     if( !currentFileManagerOnly
-                     || AppInstanceIDComparer.Equals(fileInfo.FileManagerID, this.fileManagerID) )
+                     || IDComparer.Equals(fileInfo.FileManagerID, this.fileManagerID) )
                     {
                         results.Add(fileInfo);
                     }
@@ -351,11 +393,11 @@ namespace Mechanical.Common.Logs
             // determine the minimum CreationTime (if there is one)
             DateTime? minTime = null;
             if( maxFileAge.HasValue )
-                minTime = DateTime.UtcNow - maxFileAge.Value;
+                minTime = ToCreationTimePrecision(this.dateTimeProvider.UtcNow) - maxFileAge.Value;
 
             HashSet<string> appInstancesAllowed = null;
             if( maxAppInstanceCount.HasValue )
-                appInstancesAllowed = new HashSet<string>(AppInstanceIDComparer);
+                appInstancesAllowed = new HashSet<string>(IDComparer);
 
             long totalFileSize = 0;
             long currentFileSize;
@@ -434,7 +476,8 @@ namespace Mechanical.Common.Logs
                     currentFileSize = 0;
 
                 // no rule removed this file: update variables and continue
-                appInstancesAllowed.Add(fileInfo.AppInstanceID);
+                if( maxAppInstanceCount.HasValue )
+                    appInstancesAllowed.Add(fileInfo.AppInstanceID);
                 totalFileSize += currentFileSize;
                 ++i;
             }
@@ -477,8 +520,16 @@ namespace Mechanical.Common.Logs
                     isNewAppID = true;
                 }
 
+                string managerID = this.fileManagerID;
+                bool isNewManagerID = false;
+                if( managerID.NullOrEmpty() )
+                {
+                    managerID = GenerateRandomHash(DefaultManagerIDLength);
+                    isNewManagerID = true;
+                }
+
                 // try to create the file
-                var file = ToFileInfo(this.fileManagerID, appID, this.fileExtension, this.fileSystem.EscapesNames);
+                var file = ToFileInfo(managerID, appID, this.fileExtension, this.fileSystem.EscapesNames, this.dateTimeProvider);
                 IBinaryWriter fileStream;
                 try
                 {
@@ -493,7 +544,7 @@ namespace Mechanical.Common.Logs
                     bool fileAlreadyExists;
                     try
                     {
-                        fileAlreadyExists = this.FindAllFiles(currentFileManagerOnly: true)
+                        fileAlreadyExists = this.FindAllFiles(currentFileManagerOnly: false) // we may not yet have a file manager ID
                             .Where(f => DataStore.Comparer.Equals(f.DataStoreName, file.DataStoreName))
                             .FirstOrNullable()
                             .HasValue;
@@ -501,7 +552,7 @@ namespace Mechanical.Common.Logs
                     catch( Exception exx )
                     {
                         // there is definitely a problem with the file system: report both exceptions
-                        throw new AggregateException("Failed to create file!", ex, exx).StoreFileLine();
+                        throw new AggregateException("Failed to create new file, or to check existing files!", ex, exx).StoreFileLine();
                     }
 
                     if( fileAlreadyExists )
@@ -520,17 +571,28 @@ namespace Mechanical.Common.Logs
                 }
 
                 // alright, we successfully created the file, but that does not mean, that
-                // the app instance ID was not already in use, sometime before that
-                if( isNewAppID )
+                // an ID was not already in use
+                if( isNewAppID
+                 || isNewManagerID )
                 {
-                    bool appIDAlreadyInUse = this.FindAllFiles(currentFileManagerOnly: true)
+                    var allFiles = this.FindAllFiles(currentFileManagerOnly: false) // we may not yet have a file manager ID
                         .Where(f => !DataStore.Comparer.Equals(f.DataStoreName, file.DataStoreName))
-                        .Where(f => AppInstanceIDComparer.Equals(f.AppInstanceID, appID))
+                        .ToArray();
+
+                    bool appIDAlreadyInUse = allFiles
+                        .Where(f => IDComparer.Equals(f.AppInstanceID, appID))
                         .FirstOrNullable()
                         .HasValue;
 
-                    if( appIDAlreadyInUse )
+                    bool managerIDAlreadyInUse = allFiles
+                        .Where(f => IDComparer.Equals(f.FileManagerID, managerID))
+                        .FirstOrNullable()
+                        .HasValue;
+
+                    if( (isNewAppID && appIDAlreadyInUse)
+                     || (isNewManagerID && managerIDAlreadyInUse) )
                     {
+                        // if either of the required IDs is in use,
                         // remove this file to avoid confusion, and try again
                         fileStream.Close();
                         this.fileSystem.DeleteFile(file.DataStoreName);
@@ -538,9 +600,14 @@ namespace Mechanical.Common.Logs
                     }
                     else
                     {
-                        // a new and unique app ID was found
-                        var prevAppID = Interlocked.CompareExchange(ref appInstanceID, appID, comparand: null);
-                        if( !prevAppID.NullReference() )
+                        // none of the IDs was in use...
+                        bool idsReplaced = true;
+                        if( isNewAppID )
+                            idsReplaced = idsReplaced && Interlocked.CompareExchange(ref appInstanceID, appID, comparand: null).NullReference();
+                        if( isNewManagerID )
+                            idsReplaced = idsReplaced && Interlocked.CompareExchange(ref this.fileManagerID, managerID, comparand: null).NullReference();
+
+                        if( !idsReplaced )
                         {
                             // however, this method was called concurrently, and another unique app ID was already established
                             // clean up, and try again with that ID
@@ -635,6 +702,9 @@ namespace Mechanical.Common.Logs
             {
                 if( this.IsDisposed )
                     throw new ObjectDisposedException(null).StoreFileLine();
+
+                if( this.fileManagerID.NullReference() )
+                    throw new InvalidOperationException("A file manager ID needs to be specified in the ctor, or generated when a file is created, before this method can be called!").StoreFileLine();
 
                 return this.fileManagerID;
             }

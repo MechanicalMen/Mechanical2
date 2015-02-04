@@ -70,6 +70,12 @@
     <Compile Include="..\Mechanical2.Common\Bootstrap\MessageBoxExceptionSink.cs">
       <Link>Bootstrap\MessageBoxExceptionSink.cs</Link>
     </Compile>
+    <Compile Include="..\Mechanical2.Common\DateTimeProvider.cs">
+      <Link>DateTimeProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2.Common\IDateTimeProvider.cs">
+      <Link>IDateTimeProvider.cs</Link>
+    </Compile>
     <Compile Include="..\Mechanical2.Common\Logs\AdvancedLogEntrySerializer.cs">
       <Link>Logs\AdvancedLogEntrySerializer.cs</Link>
     </Compile>
