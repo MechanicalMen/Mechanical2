@@ -13,7 +13,7 @@ namespace Mechanical.Events
         CompletedOrException,
 
         /// <summary>
-        /// The task returns once all subscribers handled the event. The exceptions of subscribers are silently wrapped in <see cref="UnhandledExceptionEvent"/>.
+        /// The task returns once all subscribers handled the event. The exceptions of subscribers are silently wrapped in an <see cref="UnhandledExceptionEvent"/>.
         /// </summary>
         Completed,
 

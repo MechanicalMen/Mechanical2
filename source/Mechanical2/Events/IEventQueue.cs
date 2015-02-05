@@ -32,8 +32,16 @@ namespace Mechanical.Events
 
         /// <summary>
         /// Begins the shutdown sequence. Does nothing, if it already begun.
+        /// Can not be cancelled.
         /// </summary>
         void BeginShutdown();
+
+        /// <summary>
+        /// Adds an <see cref="EventQueueShutDownRequestEvent"/> to the queue.
+        /// The shutdown sequence is only started if the request was not cancelled.
+        /// Handling of the event is skipped, if the shutdown sequence already begun.
+        /// </summary>
+        void TryBeginShutdown();
 
         /// <summary>
         /// Gets the task handing out events to subscribers. Use ContinueWith on this, if you need to do something after the queue has shut down.

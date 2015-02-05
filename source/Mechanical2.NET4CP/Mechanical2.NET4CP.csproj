@@ -303,6 +303,9 @@
     <Compile Include="..\Mechanical2\Events\EventQueueShutDownEvent.cs">
       <Link>Events\EventQueueShutDownEvent.cs</Link>
     </Compile>
+    <Compile Include="..\Mechanical2\Events\EventQueueShutDownRequestEvent.cs">
+      <Link>Events\EventQueueShutDownRequestEvent.cs</Link>
+    </Compile>
     <Compile Include="..\Mechanical2\Events\EventQueueShuttingDownEvent.cs">
       <Link>Events\EventQueueShuttingDownEvent.cs</Link>
     </Compile>

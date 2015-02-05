@@ -77,7 +77,7 @@ namespace Mechanical.Common
                 if( !this.canWindowClose )
                 {
                     e.Cancel = true;
-                    EventQueue.BeginShutdown();
+                    EventQueue.TryBeginShutdown();
                 }
             }
 

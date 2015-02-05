@@ -170,6 +170,7 @@ namespace Mechanical.Events
         private const int TRUE = 1;
         private const int FALSE = 0;
 
+        private static readonly EventQueueShutDownRequestEvent ShutDownRequestEvent = new EventQueueShutDownRequestEvent();
         private static readonly EventQueueShuttingDownEvent ShuttingDownEvent = new EventQueueShuttingDownEvent();
         private static readonly EventQueueShutDownEvent ShutDownEvent = new EventQueueShutDownEvent();
         private static readonly ShutDownEventHandlerQueue ShutDownHandlerQueue = new ShutDownEventHandlerQueue();
@@ -262,54 +263,71 @@ namespace Mechanical.Events
 
         private async Task HandleEventAsync( EventWrapper eventWrapper )
         {
-            // get applicable event subscribers
-            List<IEventHandler<IEvent>> eventSubscribers;
-            lock( this.subscriberLock )
-                eventSubscribers = this.GatherSubscribers_NotLocked(eventWrapper.Event.GetType());
-
-            // handle event
-            IEventHandlerQueue childQueue;
-            if( !object.ReferenceEquals(eventWrapper.Event, ShutDownEvent) )
-                childQueue = new OneTimeEventHandlerQueue();
-            else
-                childQueue = ShutDownHandlerQueue;
-
-            var unhandledExceptions = new List<Exception>();
-            Task task;
-            for( int i = 0; i < eventSubscribers.Count; ++i )
+            // unless this is an unnecessary shutdown request event...
+            if( !object.ReferenceEquals(eventWrapper.Event, ShutDownRequestEvent)
+             || this.shutdownStarted == FALSE )
             {
-                try
+                // reset if shutdown request
+                if( object.ReferenceEquals(eventWrapper.Event, ShutDownRequestEvent) )
+                    ShutDownRequestEvent.Reset();
+
+                // get applicable event subscribers
+                List<IEventHandler<IEvent>> eventSubscribers;
+                lock( this.subscriberLock )
+                    eventSubscribers = this.GatherSubscribers_NotLocked(eventWrapper.Event.GetType());
+
+                // handle event
+                IEventHandlerQueue childQueue;
+                if( !object.ReferenceEquals(eventWrapper.Event, ShutDownEvent) )
+                    childQueue = new OneTimeEventHandlerQueue();
+                else
+                    childQueue = ShutDownHandlerQueue;
+
+                var unhandledExceptions = new List<Exception>();
+                Task task;
+                for( int i = 0; i < eventSubscribers.Count; ++i )
                 {
-                    task = eventSubscribers[i].Handle(eventWrapper.Event, childQueue);
-                    if( task.NotNullReference() )
-                        await task;
+                    try
+                    {
+                        task = eventSubscribers[i].Handle(eventWrapper.Event, childQueue);
+                        if( task.NotNullReference() )
+                            await task;
+                    }
+                    catch( Exception ex )
+                    {
+                        ex.Store("ExceptionSource", "EventQueue subscriber");
+                        unhandledExceptions.Add(ex);
+                    }
                 }
-                catch( Exception ex )
+
+                // handle accumulated child events
+                if( !object.ReferenceEquals(eventWrapper.Event, ShutDownEvent) )
                 {
-                    ex.Store("ExceptionSource", "EventQueue subscriber");
-                    unhandledExceptions.Add(ex);
+                    var q = (OneTimeEventHandlerQueue)childQueue;
+                    for( int i = 0; i < q.Count; ++i )
+                    {
+                        var childEventWrapper = q[i];
+                        await this.HandleEventAsync(childEventWrapper);
+                    }
+                }
+
+                // the event is handled, notify listeners
+                var unhandledExceptionEvent = eventWrapper.SetCompletedOrExceptionAsync(unhandledExceptions);
+                if( unhandledExceptionEvent.NotNullReference() )
+                    await this.HandleEventAsync(new EventWrapper(unhandledExceptionEvent, TaskResult.Null));
+
+                // shut down request event
+                if( object.ReferenceEquals(eventWrapper.Event, ShutDownRequestEvent) )
+                {
+                    // NOTE: shutdown may have been started already, but that doesn't bother us
+                    if( ShutDownRequestEvent.CanShutDown )
+                        this.BeginShutdown();
+                } // shutting down event?
+                else if( object.ReferenceEquals(eventWrapper.Event, ShuttingDownEvent) )
+                {
+                    this.queue.CompleteAdding();
                 }
             }
-
-            // handle accumulated child events
-            if( !object.ReferenceEquals(eventWrapper.Event, ShutDownEvent) )
-            {
-                var q = (OneTimeEventHandlerQueue)childQueue;
-                for( int i = 0; i < q.Count; ++i )
-                {
-                    var childEventWrapper = q[i];
-                    await this.HandleEventAsync(childEventWrapper);
-                }
-            }
-
-            // the event is handled, notify listeners
-            var unhandledExceptionEvent = eventWrapper.SetCompletedOrExceptionAsync(unhandledExceptions);
-            if( unhandledExceptionEvent.NotNullReference() )
-                await this.HandleEventAsync(new EventWrapper(unhandledExceptionEvent, TaskResult.Null));
-
-            // shutting down event?
-            if( object.ReferenceEquals(eventWrapper.Event, ShuttingDownEvent) )
-                this.queue.CompleteAdding();
         }
 
         private class OneTimeEventHandlerQueue : ReadOnlyList.Wrapper<EventWrapper>, IEventHandlerQueue
@@ -338,17 +356,17 @@ namespace Mechanical.Events
             try
             {
 #endif
-            Task t;
-            foreach( var eventWrapper in this.queue.GetConsumingEnumerable().Concat(new EventWrapper[] { new EventWrapper(ShutDownEvent, TaskResult.Null) }) )
-            {
-                t = this.HandleEventAsync(eventWrapper);
-                t.Wait();
-            }
+                Task t;
+                foreach( var eventWrapper in this.queue.GetConsumingEnumerable().Concat(new EventWrapper[] { new EventWrapper(ShutDownEvent, TaskResult.Null) }) )
+                {
+                    t = this.HandleEventAsync(eventWrapper);
+                    t.Wait();
+                }
 
-            this.queue.Dispose();
-            this.queue = null;
+                this.queue.Dispose();
+                this.queue = null;
 
-            this.subscribers.Clear();
+                this.subscribers.Clear();
 #if DEBUG
             }
             catch( Exception ex )
@@ -433,6 +451,7 @@ namespace Mechanical.Events
 
         /// <summary>
         /// Begins the shutdown sequence. Does nothing, if it already begun.
+        /// Can not be cancelled.
         /// </summary>
         public void BeginShutdown()
         {
@@ -440,6 +459,19 @@ namespace Mechanical.Events
             {
                 this.Enqueue(ShuttingDownEvent, TaskResult.Null);
             }
+        }
+
+        /// <summary>
+        /// Adds an <see cref="EventQueueShutDownRequestEvent"/> to the queue.
+        /// The shutdown sequence is only started if the request was not cancelled.
+        /// Handling of the event is skipped, if the shutdown sequence already begun.
+        /// </summary>
+        public void TryBeginShutdown()
+        {
+            // NOTE: This event may be enqueued more than once
+            //       and it may never be handled, if the shutdown
+            //       sequence is started manually, or by an earlier request.
+            this.Enqueue(ShutDownRequestEvent, TaskResult.Null);
         }
 
         /// <summary>
