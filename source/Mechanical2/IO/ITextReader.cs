@@ -6,14 +6,8 @@ namespace Mechanical.IO
     /// <summary>
     /// Reads from a(n abstract) character stream.
     /// </summary>
-    public interface ITextReader
+    public interface ITextReader : IStreamBase
     {
-        /// <summary>
-        /// Closes the abstract stream.
-        /// Calling it implies that this instances will not be used anymore.
-        /// </summary>
-        void Close();
-
         /// <summary>
         /// Returns the next available character, without actually reading it.
         /// </summary>

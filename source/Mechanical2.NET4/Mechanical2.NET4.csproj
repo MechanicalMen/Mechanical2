@@ -415,6 +415,9 @@
     <Compile Include="..\Mechanical2\IO\ISeekableBinaryReader.cs">
       <Link>IO\ISeekableBinaryReader.cs</Link>
     </Compile>
+    <Compile Include="..\Mechanical2\IO\IStreamBase.cs">
+      <Link>IO\IStreamBase.cs</Link>
+    </Compile>
     <Compile Include="..\Mechanical2\IO\ITextReader.cs">
       <Link>IO\ITextReader.cs</Link>
     </Compile>

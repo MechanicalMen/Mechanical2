@@ -77,12 +77,16 @@ namespace Mechanical.IO
 
             #endregion
 
-            #region IBinaryReader
+            #region IStreamBase
 
-            void IBinaryReader.Close()
+            public void Close()
             {
-                this.Close();
+                this.Dispose();
             }
+
+            #endregion
+
+            #region IBinaryReader
 
             public int Read( byte[] buffer, int index, int count )
             {
@@ -281,11 +285,6 @@ namespace Mechanical.IO
 
             #region IBinaryWriter
 
-            void IBinaryWriter.Close()
-            {
-                this.Close();
-            }
-
             public void Flush()
             {
                 this.writer.Flush();
@@ -422,11 +421,6 @@ namespace Mechanical.IO
             #endregion
 
             #region IBinaryStream
-
-            public void Close()
-            {
-                this.Dispose();
-            }
 
             public void SetLength( long value )
             {
@@ -680,12 +674,16 @@ namespace Mechanical.IO
 
             #endregion
 
-            #region IBinaryReader
+            #region IStreamBase
 
             public void Close()
             {
                 this.Dispose();
             }
+
+            #endregion
+
+            #region IBinaryReader
 
             public int Read( byte[] buffer, int index, int count )
             {
@@ -1059,12 +1057,16 @@ namespace Mechanical.IO
 
             #endregion
 
-            #region IBinaryWriter
+            #region IStreamBase
 
             public void Close()
             {
                 this.Dispose();
             }
+
+            #endregion
+
+            #region IBinaryWriter
 
             public void Flush()
             {
@@ -1415,12 +1417,16 @@ namespace Mechanical.IO
 
             #endregion
 
-            #region ITextReader
+            #region IStreamBase
 
             public void Close()
             {
                 this.Dispose();
             }
+
+            #endregion
+
+            #region ITextReader
 
             public int Peek()
             {
@@ -1622,12 +1628,16 @@ namespace Mechanical.IO
 
             #endregion
 
-            #region ITextWriter
+            #region IStreamBase
 
             public void Close()
             {
                 this.Dispose();
             }
+
+            #endregion
+
+            #region ITextWriter
 
             public void Flush()
             {

@@ -5,14 +5,8 @@ namespace Mechanical.IO
     /// <summary>
     /// Reads from a(n abstract) byte stream.
     /// </summary>
-    public interface IBinaryReader
+    public interface IBinaryReader : IStreamBase
     {
-        /// <summary>
-        /// Closes the abstract stream.
-        /// Calling it implies that this instances will not be used anymore.
-        /// </summary>
-        void Close();
-
         /// <summary>
         /// Reads the specified number of bytes, starting from a specified point in the byte array.
         /// </summary>

@@ -6,14 +6,8 @@ namespace Mechanical.IO
     /// <summary>
     /// Writes to a(n abstract) byte stream.
     /// </summary>
-    public interface IBinaryWriter
+    public interface IBinaryWriter : IStreamBase
     {
-        /// <summary>
-        /// Closes the abstract stream.
-        /// Calling it implies that this instances will not be used anymore.
-        /// </summary>
-        void Close();
-
         /// <summary>
         /// Clears all buffers for this stream and causes any buffered data to be written to the underlying device.
         /// </summary>
