@@ -64,7 +64,8 @@ namespace Mechanical.Common.Logs
 
         private const int DefaultAppIDLength = 6;
         private const int DefaultManagerIDLength = 6;
-        private const string CreationTimeFormat = "yyyyMMddHHmm";
+        private const string CreationTimeFormat = "yyyyMMddHHmmss";
+        private static readonly TimeSpan MinTimePrecision = TimeSpan.FromSeconds(1);
 
         /// <summary>
         /// The <see cref="StringComparer"/> you can use for application instance and file manager IDs.
@@ -504,8 +505,8 @@ namespace Mechanical.Common.Logs
                 writeThroughSupported = this.fileSystem.SupportsCreateWriteThroughBinary;
 
             // we may have to try multiple times, if we don't yet have an
-            // app instance ID, that's verified to be unique
-            while( true )
+            // app instance ID (or file manager ID), that's verified to be unique
+            for( int numTries = 1; numTries <= 5; ++numTries )
             {
                 string appID = appInstanceID;
                 bool isNewAppID = false;
@@ -557,8 +558,10 @@ namespace Mechanical.Common.Logs
 
                     if( fileAlreadyExists )
                     {
-                        //// NOTE: we are assuming here, that files created by the same source,
-                        ////       in the same app instance, are at least a minute apart.
+                        // make sure (once), that it's not a previous CreateFile of ours,
+                        // that has produced the - still opened - file
+                        if( numTries == 1 )
+                            this.dateTimeProvider.Sleep(MinTimePrecision);
 
                         // try again with a new app instance ID
                         continue; // NOTE: fileStream is 'null'
@@ -623,6 +626,8 @@ namespace Mechanical.Common.Logs
                 fileInfo = file;
                 return fileStream;
             }
+
+            throw new System.IO.IOException("Even after multiple tries, a file could not be created! Each time we did so, the file was alraedy in use. Is there another file manager?").StoreFileLine();
         }
 
         #endregion

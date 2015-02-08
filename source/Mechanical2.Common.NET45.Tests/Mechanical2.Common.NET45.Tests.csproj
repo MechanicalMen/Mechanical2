@@ -62,6 +62,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ErrorFileSystem.cs" />
+    <Compile Include="Logs\AdvancedLogEntrySerializerTests.cs" />
     <Compile Include="Logs\ProlificDataFileManagerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

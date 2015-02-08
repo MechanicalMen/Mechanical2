@@ -46,14 +46,21 @@ namespace Mechanical.Common.Logs
         public AdvancedLogEntrySerializer( IFileSystem fileSystem, TimeSpan? maxFileAge, int? maxAppInstanceCount, long? maxTotalFileSize, long? singleFileSizeThreshold, string logFilePrefix = "log" )
             : base()
         {
-            if( maxAppInstanceCount < 1 )
+            if( maxAppInstanceCount.HasValue
+             && maxAppInstanceCount.Value < 1 )
                 throw new ArgumentOutOfRangeException().Store("maxAppInstanceCount", maxAppInstanceCount);
 
-            if( singleFileSizeThreshold.HasValue )
-            {
-                if( singleFileSizeThreshold.Value <= 0 )
-                    throw new ArgumentOutOfRangeException().Store("singleFileSizeThreshold", singleFileSizeThreshold.Value);
+            if( maxTotalFileSize.HasValue
+             && maxTotalFileSize.Value < 1 )
+                throw new ArgumentOutOfRangeException().Store("maxTotalFileSize", maxTotalFileSize);
 
+            if( singleFileSizeThreshold.HasValue
+             && singleFileSizeThreshold.Value < 1 )
+                throw new ArgumentOutOfRangeException().Store("singleFileSizeThreshold", singleFileSizeThreshold);
+
+            if( maxTotalFileSize.HasValue
+             || singleFileSizeThreshold.HasValue )
+            {
                 if( fileSystem.NullReference() )
                     throw new ArgumentNullException("fileSystem").StoreFileLine();
 

@@ -69,13 +69,15 @@ namespace Mechanical.Common.Tests.Logs
             using( var manager = new ProlificDataFileManager(fs) )
             {
                 var dateTimeProvider = (TestDateTimeProvider)AppCore.MagicBag.Pull<IDateTimeProvider>();
-                dateTimeProvider.UtcNow = new DateTime(2014, 12, 31, 23, 59, 57, DateTimeKind.Utc); // precision in seconds
+                var secondsPrecision = new DateTime(2014, 12, 31, 23, 59, 57, DateTimeKind.Utc);
+                var subSecondsPrecision = secondsPrecision.AddSeconds(0.1);
+                dateTimeProvider.UtcNow = subSecondsPrecision;
 
                 ProlificDataFileInfo fileInfo;
                 var file = manager.CreateFile(out fileInfo);
                 file.Close();
 
-                Assert.AreEqual(fileInfo.CreationTime, new DateTime(2014, 12, 31, 23, 59, 0, DateTimeKind.Utc)); // precision in minutes
+                Assert.AreEqual(fileInfo.CreationTime, secondsPrecision);
             }
         }
 
@@ -266,18 +268,18 @@ namespace Mechanical.Common.Tests.Logs
                 file1.Close();
             }
 
-            var noWriteFS = new ErrorFileSystem(fs, throwOnRead: false, throwOnWrite: true, throwOnList: false);
+            var noWriteFS = new ErrorFileSystem(fs, ErrorFileSystem.ThrowOptions.Write);
             using( var manager2 = new ProlificDataFileManager(noWriteFS) )
             {
                 ProlificDataFileInfo fileInfo;
                 Assert.Throws<System.IO.IOException>(() => manager2.CreateFile(out fileInfo));
 
                 //// NOTE this may not seem like much, but we're actually testing
-                ////      whether we fall into an endless loop, while trying to
-                ////      generate the file manager ID
+                ////      whether we can distinguish between a file that's inaccessible
+                ////      because it's in use, vs. a file system error.
             }
 
-            var noReadFS = new ErrorFileSystem(fs, throwOnRead: true, throwOnWrite: false, throwOnList: false);
+            var noReadFS = new ErrorFileSystem(fs, ErrorFileSystem.ThrowOptions.Read);
             using( var manager3 = new ProlificDataFileManager(noReadFS) )
             {
                 // since we don't open the files themselves, this still works
@@ -286,11 +288,45 @@ namespace Mechanical.Common.Tests.Logs
                 Assert.True(DataStore.Comparer.Equals(files[0].DataStoreName, fileInfo1.DataStoreName));
             }
 
-            var noReadOrListFS = new ErrorFileSystem(fs, throwOnRead: true, throwOnWrite: false, throwOnList: true);
+            var noReadOrListFS = new ErrorFileSystem(fs, ErrorFileSystem.ThrowOptions.Read | ErrorFileSystem.ThrowOptions.List);
             using( var manager4 = new ProlificDataFileManager(noReadOrListFS) )
             {
                 Assert.Throws<System.IO.IOException>(() => manager4.FindAllFiles(currentFileManagerOnly: false));
                 Assert.Throws<System.IO.IOException>(() => manager4.FindLatestFiles(currentFileManagerOnly: false, maxFileAge: TimeSpan.FromTicks(1), maxAppInstanceCount: 1, maxTotalFileSize: 1));
+            }
+        }
+
+        [Test]
+        public void FileInUseTest()
+        {
+            var fs = new ErrorFileSystem(new DataStoreObjectFileSystem(escapeFileNames: false), ErrorFileSystem.ThrowOptions.FileShare);
+
+            // create file
+            ProlificDataFileInfo fileInfo1;
+            using( var manager1 = new ProlificDataFileManager(fs, fileManagerID: "test") )
+            {
+                var file1 = manager1.CreateFile(out fileInfo1);
+                file1.Close();
+            }
+
+            // open file again
+            var fileStream = fs.ReadBinary(fileInfo1.DataStoreName);
+
+            // create file again
+            try
+            {
+                ProlificDataFileInfo fileInfo2;
+                using( var manager2 = new ProlificDataFileManager(fs, fileManagerID: "test") )
+                {
+                    var file2 = manager2.CreateFile(out fileInfo2);
+                    file2.Close();
+
+                    Assert.False(DataStore.Comparer.Equals(fileInfo1.DataStoreName, fileInfo2.DataStoreName));
+                }
+            }
+            finally
+            {
+                fileStream.Close();
             }
         }
     }
