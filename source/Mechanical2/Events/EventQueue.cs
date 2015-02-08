@@ -352,10 +352,8 @@ namespace Mechanical.Events
 
         private void TaskBody()
         {
-#if DEBUG
             try
             {
-#endif
                 Task t;
                 foreach( var eventWrapper in this.queue.GetConsumingEnumerable().Concat(new EventWrapper[] { new EventWrapper(ShutDownEvent, TaskResult.Null) }) )
                 {
@@ -367,8 +365,13 @@ namespace Mechanical.Events
                 this.queue = null;
 
                 this.subscribers.Clear();
-#if DEBUG
             }
+            catch( ThreadAbortException ex )
+            {
+                // so far, this only happened to me during unit tests, when the test runner tries to finish
+                Log.Error("Event queue thread aborted!", ex);
+            }
+#if DEBUG
             catch( Exception ex )
             {
                 ex.NotNullReference(); // makes compiler happy
