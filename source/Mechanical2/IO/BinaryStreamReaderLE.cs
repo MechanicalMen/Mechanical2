@@ -165,19 +165,27 @@ namespace Mechanical.IO
             using( var ms = new MemoryStream() )
             {
                 var buffer = new byte[1024];
-                int numRead;
-                int numWritten = 0;
-                while( (numRead = this.Read(buffer, index: 0, count: buffer.Length)) != 0 )
+                int numLeft = count;
+                int numTryToRead;
+                int numActuallyRead;
+                while( true )
                 {
-                    if( count >= 0
-                     && numWritten + numRead > count )
-                        numRead = count - numWritten; // bytes left
+                    // calculate the number of bytes to (try to) read
+                    if( count == -1 )
+                        numTryToRead = buffer.Length; // read to end
+                    else
+                        numTryToRead = Math.Min(buffer.Length, numLeft);
 
-                    ms.Write(buffer, offset: 0, count: numRead);
-                    numWritten += numRead;
+                    // read what we can
+                    numActuallyRead = this.Read(buffer, index: 0, count: numTryToRead);
 
-                    if( numWritten == count )
+                    // stop if there is nothing more to read
+                    if( numActuallyRead == 0 )
                         break;
+
+                    // save what we read, and continue
+                    ms.Write(buffer, offset: 0, count: numActuallyRead);
+                    numLeft -= numActuallyRead; // this is negative when we read to end, but in that case we don't check it
                 }
 
                 return ms.ToArray();
