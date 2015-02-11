@@ -342,9 +342,11 @@ namespace Mechanical.DataStores
              *       There are two main reasons for this:
              *         - We want it to be possible, to log errors from
              *       setting up the magic bag itself.
-             *         - We want to format to be uniform across all applications,
-             *       platforms, cultures, ... etc.
+             *         - We want to format to be independet of it's origin (i.e. application,
+             *       platform, culture, ... etc.)
              */
+
+            private const int SerializerVersion = 2;
 
             /// <summary>
             /// The default instance of the class.
@@ -353,6 +355,7 @@ namespace Mechanical.DataStores
 
             private static class Keys
             {
+                internal const string FormatVersion = "FormatVersion";
                 internal const string Type = "Type";
                 internal const string Message = "Message";
                 internal const string Store = "Store";
@@ -360,23 +363,46 @@ namespace Mechanical.DataStores
                 internal const string InnerExceptions = "InnerExceptions";
             }
 
-            private static string EncodeStoredValue( string str )
+            private static class NullEncoding
             {
-                if( str.NullReference() )
-                    return string.Empty;
-                else
-                    return '_' + str;
-            }
+                /* NOTE: - We can represent all strings but the null string.
+                 *       - Clearly, since this is about reporting errors, we'll need that.
+                 *       - We can replace it with another string, but than "natural"
+                 *         occurances of that string need to be taken care of
+                 */
 
-            private static string DecodeStoredValue( string str )
-            {
-                if( str.NullReference() )
-                    throw new ArgumentNullException().StoreFileLine();
+                private const string NullString = "~"; // Bitwise not operator. The reasoning being that null, is "not" a reference to a string.
+                private const string EscapedNullString = NullString + NullString;
 
-                if( str.Length == 0 )
-                    return null;
-                else
-                    return str.Substring(startIndex: 1);
+                internal static string EncodeStoredValueV2( string str )
+                {
+                    if( str.NullReference() )
+                        return NullString;
+                    else
+                        return str.Replace(NullString, EscapedNullString);
+                }
+
+                internal static string DecodeStoredValueV2( string str )
+                {
+                    if( str.NullReference() )
+                        throw new ArgumentNullException().StoreFileLine();
+
+                    if( string.Equals(str, NullString, StringComparison.Ordinal) )
+                        return null;
+                    else
+                        return str.Replace(EscapedNullString, NullString);
+                }
+
+                internal static string DecodeStoredValueV1( string str )
+                {
+                    if( str.NullReference() )
+                        throw new ArgumentNullException().StoreFileLine();
+
+                    if( str.Length == 0 )
+                        return null;
+                    else
+                        return str.Substring(startIndex: 1);
+                }
             }
 
             /// <summary>
@@ -392,6 +418,7 @@ namespace Mechanical.DataStores
                 if( writer.NullReference() )
                     throw new ArgumentNullException("writer").StoreFileLine();
 
+                writer.Write(Keys.FormatVersion, SerializerVersion, BasicSerialization.Int32.Default);
                 writer.Write(Keys.Type, obj.Type, BasicSerialization.String.Default);
                 writer.Write(Keys.Message, obj.Message, BasicSerialization.String.Default);
                 writer.Write(Keys.StackTrace, obj.StackTrace, BasicSerialization.String.Default);
@@ -402,7 +429,7 @@ namespace Mechanical.DataStores
                     info =>
                     {
                         foreach( var pair in info.Store )
-                            writer.Write(pair.Key, EncodeStoredValue(pair.Value), BasicSerialization.String.Default);
+                            writer.Write(pair.Key, NullEncoding.EncodeStoredValueV2(pair.Value), BasicSerialization.String.Default);
                     });
 
                 writer.Write(
@@ -425,8 +452,24 @@ namespace Mechanical.DataStores
                 if( reader.NullReference() )
                     throw new ArgumentNullException("reader").StoreFileLine();
 
+                // read optional version number: legacy serializers did not have it
+                int formatVersion = 1;
+                string type;
+                reader.AssertCanRead();
+                if( DataStore.Comparer.Equals(reader.Name, Keys.FormatVersion) )
+                {
+                    formatVersion = reader.Deserialize(BasicSerialization.Int32.Default, Keys.FormatVersion);
+                    type = reader.Read(BasicSerialization.String.Default, Keys.Type);
+                }
+                else
+                {
+                    // we already read ahead
+                    type = reader.Deserialize(BasicSerialization.String.Default, Keys.Type);
+                }
+                if( formatVersion > SerializerVersion )
+                    throw new FormatException("Unknown ExceptionInfo format!").Store("formatVersion", formatVersion);
+
                 // NOTE: normally you'd use reader.ReadString(...)
-                var type = reader.Read(BasicSerialization.String.Default, Keys.Type);
                 var message = reader.Read(BasicSerialization.String.Default, Keys.Message);
                 var stackTrace = reader.Read(BasicSerialization.String.Default, Keys.StackTrace);
                 var info = new ExceptionInfo(type, message, stackTrace); // do not sanitize stack trace again
@@ -441,7 +484,7 @@ namespace Mechanical.DataStores
                         {
                             // NOTE: normally you'd use reader.DeserializeAsValue<string>(...)
                             value = reader.Deserialize(BasicSerialization.String.Default, out key);
-                            value = DecodeStoredValue(value);
+                            value = formatVersion == 1 ? NullEncoding.DecodeStoredValueV1(value) : NullEncoding.DecodeStoredValueV2(value);
                             info.store.Add(key, value);
                         }
                     });
