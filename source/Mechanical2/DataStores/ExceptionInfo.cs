@@ -338,7 +338,7 @@ namespace Mechanical.DataStores
         {
             /* NOTE: Normally you'd want to simply depend on the serializers
              *       provided through the default magic bag.
-             *       This time however we will explicitly pass each on ourselves.
+             *       This time however we will explicitly pass on each one ourselves.
              *       There are two main reasons for this:
              *         - We want it to be possible, to log errors from
              *       setting up the magic bag itself.
@@ -392,9 +392,9 @@ namespace Mechanical.DataStores
                 if( writer.NullReference() )
                     throw new ArgumentNullException("writer").StoreFileLine();
 
-                writer.Write(Keys.Type, obj.Type, BasicSerialization.Default);
-                writer.Write(Keys.Message, obj.Message, BasicSerialization.Default);
-                writer.Write(Keys.StackTrace, obj.StackTrace, BasicSerialization.Default);
+                writer.Write(Keys.Type, obj.Type, BasicSerialization.String.Default);
+                writer.Write(Keys.Message, obj.Message, BasicSerialization.String.Default);
+                writer.Write(Keys.StackTrace, obj.StackTrace, BasicSerialization.String.Default);
 
                 writer.Write(
                     Keys.Store,
@@ -402,7 +402,7 @@ namespace Mechanical.DataStores
                     info =>
                     {
                         foreach( var pair in info.Store )
-                            writer.Write(pair.Key, EncodeStoredValue(pair.Value), BasicSerialization.Default);
+                            writer.Write(pair.Key, EncodeStoredValue(pair.Value), BasicSerialization.String.Default);
                     });
 
                 writer.Write(
@@ -426,9 +426,9 @@ namespace Mechanical.DataStores
                     throw new ArgumentNullException("reader").StoreFileLine();
 
                 // NOTE: normally you'd use reader.ReadString(...)
-                var type = reader.Read((IDataStoreValueDeserializer<string>)BasicSerialization.Default, Keys.Type);
-                var message = reader.Read((IDataStoreValueDeserializer<string>)BasicSerialization.Default, Keys.Message);
-                var stackTrace = reader.Read((IDataStoreValueDeserializer<string>)BasicSerialization.Default, Keys.StackTrace);
+                var type = reader.Read(BasicSerialization.String.Default, Keys.Type);
+                var message = reader.Read(BasicSerialization.String.Default, Keys.Message);
+                var stackTrace = reader.Read(BasicSerialization.String.Default, Keys.StackTrace);
                 var info = new ExceptionInfo(type, message, stackTrace); // do not sanitize stack trace again
 
                 reader.Read(
@@ -440,7 +440,7 @@ namespace Mechanical.DataStores
                             && reader.IsValue() )
                         {
                             // NOTE: normally you'd use reader.DeserializeAsValue<string>(...)
-                            value = reader.Deserialize((IDataStoreValueDeserializer<string>)BasicSerialization.Default, out key);
+                            value = reader.Deserialize(BasicSerialization.String.Default, out key);
                             value = DecodeStoredValue(value);
                             info.store.Add(key, value);
                         }

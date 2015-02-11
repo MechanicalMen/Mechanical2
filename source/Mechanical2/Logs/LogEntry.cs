@@ -190,18 +190,18 @@ namespace Mechanical.Logs
                 if( writer.NullReference() )
                     throw new ArgumentNullException("writer").StoreFileLine();
 
-                writer.Write(Keys.Timestamp, obj.timestamp, BasicSerialization.Default);
-                writer.Write(Keys.Level, obj.Level.Wrap().ToString(), BasicSerialization.Default);
-                writer.Write(Keys.Message, obj.Message, BasicSerialization.Default);
+                writer.Write(Keys.Timestamp, obj.timestamp, BasicSerialization.DateTime.Default);
+                writer.Write(Keys.Level, obj.Level.Wrap().ToString(), BasicSerialization.String.Default);
+                writer.Write(Keys.Message, obj.Message, BasicSerialization.String.Default);
 
                 bool hasException = obj.Exception.NotNullReference();
-                writer.Write(Keys.HasException, hasException, BasicSerialization.Default);
+                writer.Write(Keys.HasException, hasException, BasicSerialization.Boolean.Default);
                 if( hasException )
                     writer.Write(Keys.Exception, obj.Exception, ExceptionInfo.Serializer.Default);
 
-                writer.Write(Keys.FileName, obj.FileName, BasicSerialization.Default);
-                writer.Write(Keys.MemberName, obj.MemberName, BasicSerialization.Default);
-                writer.Write(Keys.LineNumber, obj.LineNumber, BasicSerialization.Default);
+                writer.Write(Keys.FileName, obj.FileName, BasicSerialization.String.Default);
+                writer.Write(Keys.MemberName, obj.MemberName, BasicSerialization.String.Default);
+                writer.Write(Keys.LineNumber, obj.LineNumber, BasicSerialization.Int32.Default);
             }
 
             /// <summary>
@@ -214,20 +214,20 @@ namespace Mechanical.Logs
                 if( reader.NullReference() )
                     throw new ArgumentNullException("reader").StoreFileLine();
 
-                var timestamp = reader.Read((IDataStoreValueDeserializer<DateTime>)BasicSerialization.Default, Keys.Timestamp);
-                var level = Enum<LogLevel>.Parse(reader.Read((IDataStoreValueDeserializer<string>)BasicSerialization.Default, Keys.Level));
-                var message = reader.Read((IDataStoreValueDeserializer<string>)BasicSerialization.Default, Keys.Message);
+                var timestamp = reader.Read(BasicSerialization.DateTime.Default, Keys.Timestamp);
+                var level = Enum<LogLevel>.Parse(reader.Read(BasicSerialization.String.Default, Keys.Level));
+                var message = reader.Read(BasicSerialization.String.Default, Keys.Message);
 
-                var hasException = reader.Read((IDataStoreValueDeserializer<bool>)BasicSerialization.Default, Keys.HasException);
+                var hasException = reader.Read(BasicSerialization.Boolean.Default, Keys.HasException);
                 ExceptionInfo info;
                 if( hasException )
                     info = reader.Read(ExceptionInfo.Serializer.Default);
                 else
                     info = null;
 
-                var fileName = reader.Read((IDataStoreValueDeserializer<string>)BasicSerialization.Default, Keys.FileName);
-                var memberName = reader.Read((IDataStoreValueDeserializer<string>)BasicSerialization.Default, Keys.MemberName);
-                var lineNumber = reader.Read((IDataStoreValueDeserializer<int>)BasicSerialization.Default, Keys.LineNumber);
+                var fileName = reader.Read(BasicSerialization.String.Default, Keys.FileName);
+                var memberName = reader.Read(BasicSerialization.String.Default, Keys.MemberName);
+                var lineNumber = reader.Read(BasicSerialization.Int32.Default, Keys.LineNumber);
 
                 return new LogEntry(timestamp, level, message, info, fileName, memberName, lineNumber);
             }

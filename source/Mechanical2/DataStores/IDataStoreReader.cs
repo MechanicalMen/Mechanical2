@@ -176,6 +176,18 @@ namespace Mechanical.DataStores
         }
 
         /// <summary>
+        /// Reads the next ObjectStart token from the data store reader.
+        /// </summary>
+        /// <param name="reader">The <see cref="IDataStoreReader"/> to use.</param>
+        /// <param name="name">The name of the object whose start toke was read.</param>
+        public static void ReadObjectStart( this IDataStoreReader reader, out string name )
+        {
+            AssertCanRead(reader);
+            name = reader.Name;
+            AssertObjectStart(reader, name: null);
+        }
+
+        /// <summary>
         /// Tests whether the current position of the data store reader is at an ObjectEnd token.
         /// </summary>
         /// <param name="reader">The <see cref="IDataStoreReader"/> to use.</param>

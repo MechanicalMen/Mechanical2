@@ -39,7 +39,7 @@ namespace Mechanical.DataStores
         /// <param name="writer">The writer to use.</param>
         public void Serialize( DateTime obj, ITextWriter writer )
         {
-            obj = BasicSerialization.ConvertDateTime(obj);
+            obj = BasicSerialization.DateTime.ConvertDateTime(obj);
 
             if( writer.NullReference() )
                 throw new ArgumentNullException("writer").StoreFileLine();
@@ -54,7 +54,7 @@ namespace Mechanical.DataStores
         /// <param name="writer">The writer to use.</param>
         public void Serialize( DateTime obj, IBinaryWriter writer )
         {
-            ((IDataStoreValueSerializer<DateTime>)BasicSerialization.Default).Serialize(obj, writer);
+            BasicSerialization.DateTime.Default.Serialize(obj, writer);
         }
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace Mechanical.DataStores
         /// <returns>The deserialized object.</returns>
         DateTime IDataStoreValueDeserializer<DateTime>.Deserialize( string name, IBinaryReader reader )
         {
-            return ((IDataStoreValueDeserializer<DateTime>)BasicSerialization.Default).Deserialize(name, reader);
+            return BasicSerialization.DateTime.Default.Deserialize(name, reader);
         }
 
         #endregion
@@ -113,7 +113,7 @@ namespace Mechanical.DataStores
         /// <param name="writer">The writer to use.</param>
         public void Serialize( TimeSpan obj, IBinaryWriter writer )
         {
-            ((IDataStoreValueSerializer<TimeSpan>)BasicSerialization.Default).Serialize(obj, writer);
+            BasicSerialization.TimeSpan.Default.Serialize(obj, writer);
         }
 
         /// <summary>
@@ -138,7 +138,7 @@ namespace Mechanical.DataStores
         /// <returns>The deserialized object.</returns>
         TimeSpan IDataStoreValueDeserializer<TimeSpan>.Deserialize( string name, IBinaryReader reader )
         {
-            return ((IDataStoreValueDeserializer<TimeSpan>)BasicSerialization.Default).Deserialize(name, reader);
+            return BasicSerialization.TimeSpan.Default.Deserialize(name, reader);
         }
 
         #endregion
