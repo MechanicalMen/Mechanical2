@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Mechanical.Conditions;
 using Mechanical.Core;
+using Mechanical.DataStores.Nodes;
 using Mechanical.IO;
 using Mechanical.MagicBag;
 
@@ -941,36 +942,19 @@ namespace Mechanical.DataStores
         /// Deserializes the current value of the data store, and moves to the next token.
         /// </summary>
         /// <param name="reader">The <see cref="IDataStoreReader"/> to use.</param>
+        /// <param name="valueDeserializer">The object handling <see cref="IDataStoreValue"/> deserialization.</param>
+        /// <param name="objectDeserializer">The object handling <see cref="IDataStoreObject"/> deserialization.</param>
         /// <param name="name">The expected name of the current object, or <c>null</c> if it is not important.</param>
-        /// <param name="magicBag">The <see cref="IMagicBag"/> to use for deserialization; or <c>null</c> for the default magic bag.</param>
         /// <returns>The deserialized data store value.</returns>
-        public static Nodes.IDataStoreValue ReadValueNode( this IDataStoreReader reader, string name = null, IMagicBag magicBag = null )
-        {
-            return ReadAsValue<Nodes.IDataStoreValue>(reader, name, magicBag);
-        }
-
-        /// <summary>
-        /// Deserializes the current object of the data store, and moves to the next token.
-        /// </summary>
-        /// <param name="reader">The <see cref="IDataStoreReader"/> to use.</param>
-        /// <param name="name">The expected name of the current object.</param>
-        /// <param name="magicBag">The <see cref="IMagicBag"/> to use for deserialization; or <c>null</c> for the default magic bag.</param>
-        /// <returns>The deserialized data store object.</returns>
-        public static Nodes.IDataStoreObject ReadObjectNode( this IDataStoreReader reader, string name = null, IMagicBag magicBag = null )
-        {
-            return ReadAsObject<Nodes.IDataStoreObject>(reader, name, magicBag);
-        }
-
-        /// <summary>
-        /// Deserializes the current value of the data store, and moves to the next token.
-        /// </summary>
-        /// <param name="reader">The <see cref="IDataStoreReader"/> to use.</param>
-        /// <param name="name">The expected name of the current object, or <c>null</c> if it is not important.</param>
-        /// <param name="magicBag">The <see cref="IMagicBag"/> to use for deserialization; or <c>null</c> for the default magic bag.</param>
-        /// <returns>The deserialized data store value.</returns>
-        public static Nodes.IDataStoreNode ReadNode( this IDataStoreReader reader, string name = null, IMagicBag magicBag = null )
+        public static IDataStoreNode ReadNode( this IDataStoreReader reader, IDataStoreValueDeserializer<IDataStoreValue> valueDeserializer, IDataStoreObjectDeserializer<IDataStoreObject> objectDeserializer, string name = null )
         {
             ThrowIfNull(reader);
+
+            if( valueDeserializer.NullReference() )
+                throw new ArgumentNullException("valueDeserializer").StoreFileLine();
+
+            if( objectDeserializer.NullReference() )
+                throw new ArgumentNullException("objectDeserializer").StoreFileLine();
 
             if( !reader.Read() )
                 return null;
@@ -983,14 +967,31 @@ namespace Mechanical.DataStores
 
             case DataStoreToken.BinaryValue:
             case DataStoreToken.TextValue:
-                return DeserializeAsValue<Nodes.IDataStoreValue>(reader, name, magicBag);
+                return Deserialize<IDataStoreValue>(reader, valueDeserializer, name);
 
             case DataStoreToken.ObjectStart:
-                return DeserializeAsObject<Nodes.IDataStoreObject>(reader, name, magicBag);
+                return Deserialize<IDataStoreObject>(reader, objectDeserializer, name);
 
             default:
                 throw new ArgumentException("Invalid token!").Store("Token", reader.Token);
             }
+        }
+
+        /// <summary>
+        /// Deserializes the current value of the data store, and moves to the next token.
+        /// </summary>
+        /// <param name="reader">The <see cref="IDataStoreReader"/> to use.</param>
+        /// <param name="name">The expected name of the current object, or <c>null</c> if it is not important.</param>
+        /// <param name="magicBag">The <see cref="IMagicBag"/> to use for deserialization; or <c>null</c> for the default magic bag.</param>
+        /// <returns>The deserialized data store value.</returns>
+        public static IDataStoreNode ReadNode( this IDataStoreReader reader, string name = null, IMagicBag magicBag = null )
+        {
+            if( magicBag.NullReference() )
+                magicBag = AppCore.MagicBag;
+
+            var valueDeserializer = magicBag.Pull<IDataStoreValueDeserializer<IDataStoreValue>>();
+            var objectDeserializer = magicBag.Pull<IDataStoreObjectDeserializer<IDataStoreObject>>();
+            return ReadNode(reader, valueDeserializer, objectDeserializer, name);
         }
 
         #endregion

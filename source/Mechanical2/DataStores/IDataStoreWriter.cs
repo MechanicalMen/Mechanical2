@@ -365,27 +365,32 @@ namespace Mechanical.DataStores
         /// </summary>
         /// <param name="writer">The <see cref="IDataStoreWriter"/> to use.</param>
         /// <param name="node">The object to serialize.</param>
-        /// <param name="magicBag">The <see cref="IMagicBag"/> to use for serialization; or <c>null</c> for the default magic bag.</param>
-        public static void Write( this IDataStoreWriter writer, IDataStoreValue node, IMagicBag magicBag = null )
+        /// <param name="valueSerializer">The object handling <see cref="IDataStoreValue"/> serialization.</param>
+        /// <param name="objectSerializer">The object handling <see cref="IDataStoreObject"/> serialization.</param>
+        public static void Write( this IDataStoreWriter writer, IDataStoreNode node, IDataStoreValueSerializer<IDataStoreValue> valueSerializer, IDataStoreObjectSerializer<IDataStoreObject> objectSerializer )
         {
             if( node.NullReference() )
                 throw new ArgumentNullException().Store("node", node);
 
-            WriteAsValue<IDataStoreValue>(writer, node.Name, node, magicBag);
-        }
+            if( valueSerializer.NullReference() )
+                throw new ArgumentNullException("valueSerializer").StoreFileLine();
 
-        /// <summary>
-        /// Writes an object to the data store.
-        /// </summary>
-        /// <param name="writer">The <see cref="IDataStoreWriter"/> to use.</param>
-        /// <param name="node">The object to serialize.</param>
-        /// <param name="magicBag">The <see cref="IMagicBag"/> to use for serialization; or <c>null</c> for the default magic bag.</param>
-        public static void Write( this IDataStoreWriter writer, IDataStoreObject node, IMagicBag magicBag = null )
-        {
-            if( node.NullReference() )
-                throw new ArgumentNullException().Store("node", node);
+            if( objectSerializer.NullReference() )
+                throw new ArgumentNullException("objectSerializer").StoreFileLine();
 
-            WriteAsObject<IDataStoreObject>(writer, node.Name, node, magicBag);
+            var value = node as IDataStoreValue;
+            if( value.NotNullReference() )
+            {
+                Write(writer, value.Name, value, valueSerializer);
+            }
+            else
+            {
+                var obj = node as IDataStoreObject;
+                if( obj.NotNullReference() )
+                    Write(writer, obj.Name, obj, objectSerializer);
+                else
+                    throw new ArgumentException("Invalid data store node type!").Store("nodeType", node.GetType());
+            }
         }
 
         /// <summary>
@@ -396,22 +401,12 @@ namespace Mechanical.DataStores
         /// <param name="magicBag">The <see cref="IMagicBag"/> to use for serialization; or <c>null</c> for the default magic bag.</param>
         public static void Write( this IDataStoreWriter writer, IDataStoreNode node, IMagicBag magicBag = null )
         {
-            if( node.NullReference() )
-                throw new ArgumentNullException().Store("node", node);
+            if( magicBag.NullReference() )
+                magicBag = AppCore.MagicBag;
 
-            var value = node as IDataStoreValue;
-            if( value.NotNullReference() )
-            {
-                Write(writer, value, magicBag);
-            }
-            else
-            {
-                var obj = node as IDataStoreObject;
-                if( obj.NotNullReference() )
-                    Write(writer, obj, magicBag);
-                else
-                    throw new ArgumentException("Invalid data store node type!").Store("nodeType", node.GetType());
-            }
+            var valueSerializer = magicBag.Pull<IDataStoreValueSerializer<IDataStoreValue>>();
+            var objectSerializer = magicBag.Pull<IDataStoreObjectSerializer<IDataStoreObject>>();
+            Write(writer, node, valueSerializer, objectSerializer);
         }
 
         #endregion
