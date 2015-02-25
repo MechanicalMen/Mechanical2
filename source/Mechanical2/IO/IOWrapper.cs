@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using Mechanical.Conditions;
@@ -12,6 +13,23 @@ namespace Mechanical.IO
     /// </summary>
     public static class IOWrapper
     {
+        #region Private Static Methods
+
+#if !MECHANICAL_NET4
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        private static void ThrowDisposedIfNull(
+            object obj,
+            [CallerFilePath] string filePath = "",
+            [CallerMemberName] string memberName = "",
+            [CallerLineNumber] int lineNumber = 0 )
+        {
+            if( object.ReferenceEquals(obj, null) )
+                throw new ObjectDisposedException(null).StoreFileLine(filePath, memberName, lineNumber);
+        }
+
+        #endregion
+
         #region Stream -> IBinaryStream
 
         internal class StreamAsIBinaryStream : DisposableObject, IBinaryStream
@@ -81,6 +99,8 @@ namespace Mechanical.IO
 
             public void Close()
             {
+                //// NOTE: callable even after Dispose
+
                 this.Dispose();
             }
 
@@ -287,6 +307,9 @@ namespace Mechanical.IO
 
             public void Flush()
             {
+                if( this.IsDisposed )
+                    throw new ObjectDisposedException(null).StoreFileLine();
+
                 this.writer.Flush();
             }
 
@@ -490,57 +513,99 @@ namespace Mechanical.IO
 
             public override bool CanRead
             {
-                get { return true; }
+                get
+                {
+                    IOWrapper.ThrowDisposedIfNull(this.binaryStream);
+
+                    return true;
+                }
             }
 
             public override bool CanSeek
             {
-                get { return true; }
+                get
+                {
+                    IOWrapper.ThrowDisposedIfNull(this.binaryStream);
+
+                    return true;
+                }
             }
 
             public override bool CanWrite
             {
-                get { return true; }
+                get
+                {
+                    IOWrapper.ThrowDisposedIfNull(this.binaryStream);
+
+                    return true;
+                }
             }
 
             public override void Flush()
             {
+                IOWrapper.ThrowDisposedIfNull(this.binaryStream);
+
                 this.binaryStream.Flush();
             }
 
             public override long Length
             {
-                get { return this.binaryStream.Length; }
+                get
+                {
+                    IOWrapper.ThrowDisposedIfNull(this.binaryStream);
+
+                    return this.binaryStream.Length;
+                }
             }
 
             public override long Position
             {
-                get { return this.binaryStream.Position; }
-                set { this.binaryStream.Position = value; }
+                get
+                {
+                    IOWrapper.ThrowDisposedIfNull(this.binaryStream);
+
+                    return this.binaryStream.Position;
+                }
+                set
+                {
+                    IOWrapper.ThrowDisposedIfNull(this.binaryStream);
+
+                    this.binaryStream.Position = value;
+                }
             }
 
             public override int Read( byte[] buffer, int offset, int count )
             {
+                IOWrapper.ThrowDisposedIfNull(this.binaryStream);
+
                 return this.binaryStream.Read(buffer, offset, count);
             }
 
             public override long Seek( long offset, SeekOrigin origin )
             {
+                IOWrapper.ThrowDisposedIfNull(this.binaryStream);
+
                 return this.binaryStream.Seek(offset, origin);
             }
 
             public override void SetLength( long value )
             {
+                IOWrapper.ThrowDisposedIfNull(this.binaryStream);
+
                 this.binaryStream.SetLength(value);
             }
 
             public override void Write( byte[] buffer, int offset, int count )
             {
+                IOWrapper.ThrowDisposedIfNull(this.binaryStream);
+
                 this.binaryStream.Write(buffer, offset, count);
             }
 
             public override void WriteByte( byte value )
             {
+                IOWrapper.ThrowDisposedIfNull(this.binaryStream);
+
                 this.binaryStream.Write(value);
             }
 
@@ -678,6 +743,8 @@ namespace Mechanical.IO
 
             public void Close()
             {
+                //// NOTE: callable even after Dispose
+
                 this.Dispose();
             }
 
@@ -906,28 +973,46 @@ namespace Mechanical.IO
 
             public override bool CanRead
             {
-                get { return true; }
+                get
+                {
+                    IOWrapper.ThrowDisposedIfNull(this.binaryReader);
+
+                    return true;
+                }
             }
 
             public override bool CanSeek
             {
-                get { return this.binarySeekable.NotNullReference(); } // technically never true, since we don't support SetLength!
+                get
+                {
+                    IOWrapper.ThrowDisposedIfNull(this.binaryReader);
+
+                    return this.binarySeekable.NotNullReference(); // technically never true, since we don't support SetLength!
+                }
             }
 
             public override bool CanWrite
             {
-                get { return false; }
+                get
+                {
+                    IOWrapper.ThrowDisposedIfNull(this.binaryReader);
+
+                    return false;
+                }
             }
 
             public override void Flush()
             {
+                IOWrapper.ThrowDisposedIfNull(this.binaryReader);
+
+                throw new NotSupportedException().StoreFileLine();
             }
 
             public override long Length
             {
                 get
                 {
-                    if( !this.CanSeek )
+                    if( !this.CanSeek ) // checks for being disposed as well
                         throw new NotSupportedException().StoreFileLine();
 
                     return this.binarySeekable.Length;
@@ -938,14 +1023,14 @@ namespace Mechanical.IO
             {
                 get
                 {
-                    if( !this.CanSeek )
+                    if( !this.CanSeek ) // checks for being disposed as well
                         throw new NotSupportedException().StoreFileLine();
 
                     return this.binarySeekable.Position;
                 }
                 set
                 {
-                    if( !this.CanSeek )
+                    if( !this.CanSeek ) // checks for being disposed as well
                         throw new NotSupportedException().StoreFileLine();
 
                     this.binarySeekable.Position = value;
@@ -954,12 +1039,14 @@ namespace Mechanical.IO
 
             public override int Read( byte[] buffer, int offset, int count )
             {
+                IOWrapper.ThrowDisposedIfNull(this.binaryReader);
+
                 return this.binaryReader.Read(buffer, offset, count);
             }
 
             public override long Seek( long offset, SeekOrigin origin )
             {
-                if( !this.CanSeek )
+                if( !this.CanSeek ) // checks for being disposed as well
                     throw new NotSupportedException().StoreFileLine();
 
                 return this.binarySeekable.Seek(offset, origin);
@@ -967,11 +1054,15 @@ namespace Mechanical.IO
 
             public override void SetLength( long value )
             {
+                IOWrapper.ThrowDisposedIfNull(this.binaryReader);
+
                 throw new NotSupportedException().StoreFileLine();
             }
 
             public override void Write( byte[] buffer, int offset, int count )
             {
+                IOWrapper.ThrowDisposedIfNull(this.binaryReader);
+
                 throw new NotSupportedException().StoreFileLine();
             }
 
@@ -1061,6 +1152,8 @@ namespace Mechanical.IO
 
             public void Close()
             {
+                //// NOTE: callable even after Dispose
+
                 this.Dispose();
             }
 
@@ -1070,6 +1163,9 @@ namespace Mechanical.IO
 
             public void Flush()
             {
+                if( this.IsDisposed )
+                    throw new ObjectDisposedException(null).StoreFileLine();
+
                 this.writer.Flush();
             }
 
@@ -1261,63 +1357,99 @@ namespace Mechanical.IO
 
             public override bool CanRead
             {
-                get { return false; }
+                get
+                {
+                    IOWrapper.ThrowDisposedIfNull(this.binaryWriter);
+
+                    return false;
+                }
             }
 
             public override bool CanSeek
             {
-                get { return false; }
+                get
+                {
+                    IOWrapper.ThrowDisposedIfNull(this.binaryWriter);
+
+                    return false;
+                }
             }
 
             public override bool CanWrite
             {
-                get { return true; }
+                get
+                {
+                    IOWrapper.ThrowDisposedIfNull(this.binaryWriter);
+
+                    return true;
+                }
             }
 
             public override void Flush()
             {
+                IOWrapper.ThrowDisposedIfNull(this.binaryWriter);
+
                 this.binaryWriter.Flush();
             }
 
             public override long Length
             {
-                get { throw new NotSupportedException().StoreFileLine(); }
+                get
+                {
+                    IOWrapper.ThrowDisposedIfNull(this.binaryWriter);
+
+                    throw new NotSupportedException().StoreFileLine();
+                }
             }
 
             public override long Position
             {
                 get
                 {
+                    IOWrapper.ThrowDisposedIfNull(this.binaryWriter);
+
                     throw new NotSupportedException().StoreFileLine();
                 }
                 set
                 {
+                    IOWrapper.ThrowDisposedIfNull(this.binaryWriter);
+
                     throw new NotSupportedException().StoreFileLine();
                 }
             }
 
             public override int Read( byte[] buffer, int offset, int count )
             {
+                IOWrapper.ThrowDisposedIfNull(this.binaryWriter);
+
                 throw new NotSupportedException().StoreFileLine();
             }
 
             public override long Seek( long offset, SeekOrigin origin )
             {
+                IOWrapper.ThrowDisposedIfNull(this.binaryWriter);
+
                 throw new NotSupportedException().StoreFileLine();
             }
 
             public override void SetLength( long value )
             {
+                IOWrapper.ThrowDisposedIfNull(this.binaryWriter);
+
                 throw new NotSupportedException().StoreFileLine();
             }
 
             public override void Write( byte[] buffer, int offset, int count )
             {
+                IOWrapper.ThrowDisposedIfNull(this.binaryWriter);
+
                 this.binaryWriter.Write(buffer, offset, count);
             }
 
             public override void WriteByte( byte value )
             {
+                IOWrapper.ThrowDisposedIfNull(this.binaryWriter);
+
                 this.binaryWriter.Write(value);
             }
 
@@ -1421,6 +1553,8 @@ namespace Mechanical.IO
 
             public void Close()
             {
+                //// NOTE: callable even after Dispose
+
                 this.Dispose();
             }
 
@@ -1540,26 +1674,36 @@ namespace Mechanical.IO
 
             public override int Peek()
             {
+                IOWrapper.ThrowDisposedIfNull(this.textReader);
+
                 return this.textReader.Peek();
             }
 
             public override int Read()
             {
+                IOWrapper.ThrowDisposedIfNull(this.textReader);
+
                 return this.textReader.Read();
             }
 
             public override int Read( char[] buffer, int index, int count )
             {
+                IOWrapper.ThrowDisposedIfNull(this.textReader);
+
                 return this.textReader.Read(buffer, index, count);
             }
 
             public override string ReadLine()
             {
+                IOWrapper.ThrowDisposedIfNull(this.textReader);
+
                 return this.textReader.ReadLine();
             }
 
             public override string ReadToEnd()
             {
+                IOWrapper.ThrowDisposedIfNull(this.textReader);
+
                 return this.textReader.ReadToEnd();
             }
 
@@ -1632,6 +1776,8 @@ namespace Mechanical.IO
 
             public void Close()
             {
+                //// NOTE: callable even after Dispose
+
                 this.Dispose();
             }
 
@@ -1641,6 +1787,9 @@ namespace Mechanical.IO
 
             public void Flush()
             {
+                if( this.IsDisposed )
+                    throw new ObjectDisposedException(null).StoreFileLine();
+
                 this.textWriter.Flush();
             }
 
@@ -1744,32 +1893,47 @@ namespace Mechanical.IO
 
             public override void Flush()
             {
+                IOWrapper.ThrowDisposedIfNull(this.textWriter);
+
                 base.Flush();
                 this.textWriter.Flush();
             }
 
             public override Encoding Encoding
             {
-                get { return this.encoding; }
+                get
+                {
+                    IOWrapper.ThrowDisposedIfNull(this.textWriter);
+
+                    return this.encoding;
+                }
             }
 
             public override void Write( char value )
             {
+                IOWrapper.ThrowDisposedIfNull(this.textWriter);
+
                 this.textWriter.Write(value);
             }
 
             public override void Write( char[] buffer, int index, int count )
             {
+                IOWrapper.ThrowDisposedIfNull(this.textWriter);
+
                 this.textWriter.Write(buffer, index, count);
             }
 
             public override void Write( string value )
             {
+                IOWrapper.ThrowDisposedIfNull(this.textWriter);
+
                 this.textWriter.Write(value);
             }
 
             public override void WriteLine()
             {
+                IOWrapper.ThrowDisposedIfNull(this.textWriter);
+
                 this.textWriter.WriteLine();
             }
 
