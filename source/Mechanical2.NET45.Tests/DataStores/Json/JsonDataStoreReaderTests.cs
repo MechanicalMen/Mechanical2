@@ -38,7 +38,7 @@ namespace Mechanical.Tests.DataStores.Json
         private IDataStoreNode ReadNode( string json, bool isDataStoreJson )
         {
             using( var reader = JsonDataStoreReader.FromJson(json, isDataStoreJson) )
-                return reader.ReadNode();
+                return reader.ReadAsNode();
         }
 
         [Test]

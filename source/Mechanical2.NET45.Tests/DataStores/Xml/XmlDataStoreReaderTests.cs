@@ -44,7 +44,7 @@ namespace Mechanical.Tests.DataStores.Xml
         private IDataStoreNode ReadNode( string xml )
         {
             using( var reader = XmlDataStoreReader.FromXml(xml) )
-                return reader.ReadNode();
+                return reader.ReadAsNode();
         }
 
         [Test]
