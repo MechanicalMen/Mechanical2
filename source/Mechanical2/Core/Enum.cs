@@ -174,7 +174,8 @@ namespace Mechanical.Core
         /// <returns><c>true</c> if the bit field or bit fields that are set in <paramref name="flag"/> are also set in the current instance; otherwise, <c>false</c>.</returns>
         public bool HasFlag( TEnum flag )
         {
-            Ensure.Debug(DefinesFlags, df => df.IsTrue(() => new InvalidOperationException("The specified enumeration does not have a Flags attribute!").Store("enumType", typeof(TEnum))));
+            if( !DefinesFlags )
+                throw new InvalidOperationException("The specified enumeration does not have a FlagsAttribute!").Store("enumType", typeof(TEnum));
 
             return CompiledOp.HasFlag(this, flag);
         }
@@ -215,7 +216,8 @@ namespace Mechanical.Core
         /// <returns>A new enumeration value that has the specified flags set.</returns>
         public Enum<TEnum> SetFlag( TEnum flag )
         {
-            Ensure.Debug(DefinesFlags, df => df.IsTrue(() => new InvalidOperationException("The specified enumeration does not have a Flags attribute!").Store("enumType", typeof(TEnum))));
+            if( !DefinesFlags )
+                throw new InvalidOperationException("The specified enumeration does not have a FlagsAttribute!").Store("enumType", typeof(TEnum));
 
             return new Enum<TEnum>(CompiledOp.SetFlag(this, flag));
         }
@@ -256,7 +258,8 @@ namespace Mechanical.Core
         /// <returns>A new enumeration value that has the specified flags unset.</returns>
         public Enum<TEnum> RemoveFlag( TEnum flag )
         {
-            Ensure.Debug(DefinesFlags, df => df.IsTrue(() => new InvalidOperationException("The specified enumeration does not have a Flags attribute!").Store("enumType", typeof(TEnum))));
+            if( !DefinesFlags )
+                throw new InvalidOperationException("The specified enumeration does not have a FlagsAttribute!").Store("enumType", typeof(TEnum));
 
             return new Enum<TEnum>(CompiledOp.RemoveFlag(this, flag));
         }
@@ -274,7 +277,8 @@ namespace Mechanical.Core
         {
             get
             {
-                Ensure.Debug(DefinesFlags, df => df.IsTrue(() => new InvalidOperationException("The specified enumeration does not have a Flags attribute!").Store("enumType", typeof(TEnum))));
+                if( !DefinesFlags )
+                    throw new InvalidOperationException("The specified enumeration does not have a FlagsAttribute!").Store("enumType", typeof(TEnum));
 
                 if( this.IsDefined )
                     return true;
@@ -316,7 +320,8 @@ namespace Mechanical.Core
         {
             get
             {
-                Ensure.Debug(DefinesFlags, df => df.IsTrue(() => new InvalidOperationException("The specified enumeration does not have a Flags attribute!").Store("enumType", typeof(TEnum))));
+                if( !DefinesFlags )
+                    throw new InvalidOperationException("The specified enumeration does not have a FlagsAttribute!").Store("enumType", typeof(TEnum));
 
                 var equals = CompiledOp.EnumEquals;
                 foreach( var f in SimpleFlags )
@@ -337,7 +342,8 @@ namespace Mechanical.Core
         {
             get
             {
-                Ensure.Debug(DefinesFlags, df => df.IsTrue(() => new InvalidOperationException("The specified enumeration does not have a Flags attribute!").Store("enumType", typeof(TEnum))));
+                if( !DefinesFlags )
+                    throw new InvalidOperationException("The specified enumeration does not have a FlagsAttribute!").Store("enumType", typeof(TEnum));
 
                 var list = new List<Enum<TEnum>>();
                 foreach( var potentialFlag in GetNonZeroFlags(this) )
@@ -689,7 +695,8 @@ namespace Mechanical.Core
         {
             get
             {
-                Ensure.Debug(DefinesFlags, df => df.IsTrue(() => new InvalidOperationException("The specified enumeration does not have a Flags attribute!").Store("enumType", typeof(TEnum))));
+                if( !DefinesFlags )
+                    throw new InvalidOperationException("The specified enumeration does not have a FlagsAttribute!").Store("enumType", typeof(TEnum));
 
                 if( simpleFlags.NullReference() )
                     Interlocked.CompareExchange(ref simpleFlags, new ReadOnlyList.Wrapper<Enum<TEnum>>(GetSimpleFlags()), null);

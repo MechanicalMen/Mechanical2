@@ -728,6 +728,11 @@ namespace Mechanical.Core
         /// <returns>A 32-bit signed integer hash code.</returns>
         public override int GetHashCode()
         {
+            //// NOTE: This will have a quite bad performance (in performance critical scenarios).
+            ////       Unfortunately, the only alternative I could find was CultureInfo.CompareInfo.GetHashCode( string, CompareOptions )
+            ////       which is still not good enough for us.
+            ////       When dictionaries are in play, it is either recommended to use strings, or a special IEqualityComparer<Substring>
+
             if( this.Origin.NullReference() )
                 return 0;
             else
@@ -780,6 +785,4 @@ namespace Mechanical.Core
 
         #endregion
     }
-
-    //// TODO: implement GetHashCode without string.Substring
 }

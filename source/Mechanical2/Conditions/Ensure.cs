@@ -46,7 +46,7 @@ namespace Mechanical.Conditions
         /// Only use in not performance critical scenarios.
         /// </summary>
         /// <typeparam name="T">The type of the object.</typeparam>
-        /// <param name="objName">The name of the object to test. Must be DataStore compatible.</param>
+        /// <param name="name">The name of the object to test. Must be DataStore compatible.</param>
         /// <param name="obj">The object to test.</param>
         /// <param name="filePath">The full path of the source file that contains the caller.</param>
         /// <param name="memberName">The method or property name of the caller to the method.</param>
@@ -54,13 +54,13 @@ namespace Mechanical.Conditions
         /// <returns>Information about the object being tested.</returns>
         [DebuggerHidden]
         public static IConditionContext<T> That<T>(
-            string objName,
+            string name,
             T obj,
             [CallerFilePath] string filePath = "",
             [CallerMemberName] string memberName = "",
             [CallerLineNumberAttribute] int lineNumber = 0 )
         {
-            return new ConditionContext<T>(obj, objName, filePath, memberName, lineNumber);
+            return new ConditionContext<T>(obj, name, filePath, memberName, lineNumber);
         }
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace Mechanical.Conditions
         /// Only use in not performance critical scenarios.
         /// </summary>
         /// <typeparam name="T">The type of the object.</typeparam>
-        /// <param name="objName">The name of the object to test. Must be DataStore compatible.</param>
+        /// <param name="name">The name of the object to test. Must be DataStore compatible.</param>
         /// <param name="obj">The object to test.</param>
         /// <param name="tests">The validations to perform.</param>
         /// <param name="filePath">The full path of the source file that contains the caller.</param>
@@ -104,7 +104,7 @@ namespace Mechanical.Conditions
         [Conditional("DEBUG")]
         [DebuggerHidden]
         public static void Debug<T>(
-            string objName,
+            string name,
             T obj,
             Action<IConditionContext<T>> tests,
             [CallerFilePath] string filePath = "",
@@ -114,7 +114,7 @@ namespace Mechanical.Conditions
             if( object.ReferenceEquals(tests, null) )
                 throw new ArgumentNullException("tests");
 
-            tests(That(objName, obj, filePath, memberName, lineNumber));
+            tests(That(name, obj, filePath, memberName, lineNumber));
         }
 
         #endregion
