@@ -63,6 +63,8 @@ namespace Mechanical.DataStores
                 Map<IDataStoreValueDeserializer<Mechanical.Core.Substring>>.To(() => Substring.Default).AsTransient(),
                 Map<IDataStoreValueSerializer<System.DateTime>>.To(() => DateTime.Default).AsTransient(),
                 Map<IDataStoreValueDeserializer<System.DateTime>>.To(() => DateTime.Default).AsTransient(),
+                Map<IDataStoreValueSerializer<System.DateTimeOffset>>.To(() => DateTimeOffset.Default).AsTransient(),
+                Map<IDataStoreValueDeserializer<System.DateTimeOffset>>.To(() => DateTimeOffset.Default).AsTransient(),
                 Map<IDataStoreValueSerializer<System.TimeSpan>>.To(() => TimeSpan.Default).AsTransient(),
                 Map<IDataStoreValueDeserializer<System.TimeSpan>>.To(() => TimeSpan.Default).AsTransient()
             };
@@ -1280,10 +1282,10 @@ namespace Mechanical.DataStores
             /// </summary>
             public static readonly DateTime Default = new DateTime();
 
-            internal static System.DateTime ConvertDateTime( System.DateTime obj )
+            private static System.DateTime ConvertDateTime( System.DateTime obj )
             {
                 if( obj.Kind == DateTimeKind.Unspecified )
-                    throw new NotSupportedException("DateTimeKind.Unspecified is not supported! Utc is, and Local is converted to Utc.").Store("DateTime", obj);
+                    throw new ArgumentException("DateTimeKind.Unspecified is not supported! Utc is, and Local is converted to Utc.").Store("DateTime", obj);
 
                 return obj.ToUniversalTime();
             }
@@ -1355,6 +1357,89 @@ namespace Mechanical.DataStores
 
                 var ticks = reader.ReadInt64();
                 return new System.DateTime(ticks, DateTimeKind.Utc);
+            }
+        }
+
+        #endregion
+
+        #region DateTimeOffset
+
+        /// <summary>
+        /// Serialization and deserialization for <see cref="System.DateTimeOffset"/>.
+        /// </summary>
+        public sealed class DateTimeOffset : IDataStoreValueSerializer<System.DateTimeOffset>,
+                                             IDataStoreValueDeserializer<System.DateTimeOffset>
+        {
+            /// <summary>
+            /// The default instance of the type.
+            /// </summary>
+            public static readonly DateTimeOffset Default = new DateTimeOffset();
+
+            /// <summary>
+            /// Serializes to a text-based data store value.
+            /// </summary>
+            /// <param name="obj">The object to serialize.</param>
+            /// <param name="writer">The writer to use.</param>
+            public void Serialize( System.DateTimeOffset obj, ITextWriter writer )
+            {
+                if( writer.NullReference() )
+                    throw new ArgumentNullException("writer").StoreFileLine();
+
+                writer.Write(obj.ToString("o"));
+            }
+
+            /// <summary>
+            /// Serializes to a binary-based data store value.
+            /// </summary>
+            /// <param name="obj">The object to serialize.</param>
+            /// <param name="writer">The writer to use.</param>
+            public void Serialize( System.DateTimeOffset obj, IBinaryWriter writer )
+            {
+                if( writer.NullReference() )
+                    throw new ArgumentNullException("writer").StoreFileLine();
+
+                writer.Write(obj.Ticks);
+                writer.Write(obj.Offset.Ticks);
+            }
+
+            /// <summary>
+            /// Deserializes a text-based data store value.
+            /// </summary>
+            /// <param name="name">The name of the serialized object.</param>
+            /// <param name="reader">The reader to use.</param>
+            /// <returns>The deserialized object.</returns>
+            public System.DateTimeOffset Deserialize( string name, ITextReader reader )
+            {
+                if( reader.NullReference() )
+                    throw new ArgumentNullException("reader").StoreFileLine();
+
+                string str = reader.ReadToEnd();
+                try
+                {
+                    // not using the Culture field on purpose!
+                    return System.DateTimeOffset.ParseExact(str, "o", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind | DateTimeStyles.AllowLeadingWhite | DateTimeStyles.AllowTrailingWhite);
+                }
+                catch( Exception ex )
+                {
+                    ex.Store("str", str);
+                    throw;
+                }
+            }
+
+            /// <summary>
+            /// Deserializes a binary data store value.
+            /// </summary>
+            /// <param name="name">The name of the serialized object.</param>
+            /// <param name="reader">The reader to use.</param>
+            /// <returns>The deserialized object.</returns>
+            public System.DateTimeOffset Deserialize( string name, IBinaryReader reader )
+            {
+                if( reader.NullReference() )
+                    throw new ArgumentNullException("reader").StoreFileLine();
+
+                var ticks = reader.ReadInt64();
+                var offset = reader.ReadInt64();
+                return new System.DateTimeOffset(ticks, new System.TimeSpan(offset));
             }
         }
 

@@ -69,6 +69,7 @@
     <Compile Include="Core\SubstringTests.cs" />
     <Compile Include="DataStores\DataStoreTests.cs" />
     <Compile Include="DataStores\ExceptionInfoTests.cs" />
+    <Compile Include="DataStores\ISO8601Tests.cs" />
     <Compile Include="DataStores\Json\JsonDataStoreReaderTests.cs" />
     <Compile Include="DataStores\Json\JsonDataStoreWriterTests.cs" />
     <Compile Include="DataStores\Xml\XmlDataStoreWriterTests.cs" />
