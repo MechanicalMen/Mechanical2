@@ -195,6 +195,100 @@ namespace Mechanical.FileFormats
             }
         }
 
+        private bool IsNumber( Substring substr )
+        {
+            if( substr.NullOrEmpty )
+                return false;
+
+            // check for optional leading sign
+            char ch = substr[0];
+            if( ch == '-' ) // there is no leading plus sign for json numbers
+                substr = substr.Substr(startIndex: 1);
+
+            // check for leading zeroes
+            // NOTE: leading zeroes are not allowed at the start of the number, but they are okay at the end of the fractional digits, or the start of the exponential digits
+            if( substr.Length > 1 // at least two characters: since if there is only one, it may be any digit, and will be consumed below
+             && substr[0] == '0'
+             && char.IsDigit(substr[1]) )
+            {
+                // if there is a leading zero, then there better not be another digit next to it
+                return false;
+            }
+
+            // consume digits
+            if( !this.TryConsumeStartingDigits(ref substr) )
+                return false;
+
+            // is there an optional fractional part?
+            if( substr.Length != 0
+             && substr[0] == '.' )
+            {
+                // consume decimal point
+                substr = substr.Substr(startIndex: 1);
+
+                // consume fractional digits
+                if( !this.TryConsumeStartingDigits(ref substr) )
+                    return false;
+            }
+
+            // is there an optional exponential part?
+            if( substr.Length != 0 )
+            {
+                ch = substr[0];
+                if( ch == 'e'
+                 || ch == 'E' )
+                {
+                    if( substr.Length == 1 )
+                        return false; // just an 'e' or 'E' is not enough
+
+                    // consume 'e' character and optional sign
+                    ch = substr[1];
+                    if( ch == '+'
+                     || ch == '-' )
+                        substr = substr.Substr(startIndex: 2);
+                    else
+                        substr = substr.Substr(startIndex: 1);
+
+                    // consume exponential digits
+                    if( !this.TryConsumeStartingDigits(ref substr) )
+                        return false;
+                }
+            }
+
+            // if there is anything left, this is not a number!
+            return substr.Length == 0;
+        }
+
+#if !MECHANICAL_NET4
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        private bool TryConsumeStartingDigits( ref Substring substr )
+        {
+            // count number of digits
+            int digitCount = substr.Length;
+            for( int i = 0; i < substr.Length; ++i )
+            {
+                if( !char.IsDigit(substr.Origin, substr.StartIndex + i) )
+                {
+                    digitCount = i;
+                    break;
+                }
+            }
+
+            // is there anything to consume
+            if( digitCount == 0 )
+            {
+                // the very first character was not a digit, or the substring was empty
+                return false;
+            }
+            else
+            {
+                // at least some characters were digits
+                substr = substr.Substr(startIndex: digitCount);
+                return true;
+            }
+        }
+
         #endregion
 
         #region Public Methods
@@ -400,38 +494,17 @@ namespace Mechanical.FileFormats
             if( this.parents.Peek() == JsonToken.ArrayStart )
                 this.WriteCommaIfRequired();
 
-            var trimmed = str.Trim();
-            if( trimmed.Equals("true", CompareOptions.Ordinal)
-             || trimmed.Equals("false", CompareOptions.Ordinal) )
+            if( str.Equals("true", CompareOptions.Ordinal)
+             || str.Equals("false", CompareOptions.Ordinal) )
             {
-                this.textWriter.Write(trimmed);
+                this.textWriter.Write(str);
                 this.prevToken = JsonToken.BooleanValue;
             }
             else
             {
-                // NOTE: double.Parse would be shorter and less error prone, but this is faster
-                //       for now, we allow for false positives, and perhaps implement a stricter version at a later time
-                bool onlyNumberChars = true;
-                char ch;
-                for( int i = 0; i < trimmed.Length; ++i )
+                if( this.IsNumber(str) )
                 {
-                    ch = trimmed[i];
-                    if( !(('0' <= ch && ch <= '9')
-                       || ch == '.'
-                       || ch == 'e'
-                       || ch == 'E'
-                       || ch == '+'
-                       || ch == '-') )
-                    {
-                        onlyNumberChars = false;
-                        break;
-                    }
-                }
-
-                if( onlyNumberChars
-                 && trimmed.Length != 0 )
-                {
-                    this.textWriter.Write(trimmed);
+                    this.textWriter.Write(str);
                     this.prevToken = JsonToken.NumberValue;
                 }
                 else

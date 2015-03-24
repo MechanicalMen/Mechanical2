@@ -206,5 +206,73 @@ namespace Mechanical.Tests.FileFormats
                 });
             Test.OrdinalEquals(ComplexJson1, output);
         }
+
+        [Test]
+        public void WriteUnknownValueTests()
+        {
+            // boolean values, and whitespaces
+            this.WriteUnknownValueEquals(expectedOutput: @"true", valueToPrint: "true");
+            this.WriteUnknownValueEquals(expectedOutput: @""" true""", valueToPrint: " true");
+            this.WriteUnknownValueEquals(expectedOutput: @"false", valueToPrint: "false");
+            this.WriteUnknownValueEquals(expectedOutput: @"""false  """, valueToPrint: "false  ");
+
+            // numbers, whitespaces, and optional leading signs
+            this.WriteUnknownValueEquals(expectedOutput: @""" 5""", valueToPrint: " 5");
+            this.WriteUnknownValueEquals(expectedOutput: @"5", valueToPrint: "5");
+            this.WriteUnknownValueEquals(expectedOutput: @"-5", valueToPrint: "-5");
+            this.WriteUnknownValueEquals(expectedOutput: @"""+5""", valueToPrint: "+5");
+
+            // numbers and leading zeroes
+            this.WriteUnknownValueEquals(expectedOutput: @"1", valueToPrint: "1");
+            this.WriteUnknownValueEquals(expectedOutput: @"0", valueToPrint: "0");
+            this.WriteUnknownValueEquals(expectedOutput: @"10", valueToPrint: "10");
+            this.WriteUnknownValueEquals(expectedOutput: @"""01""", valueToPrint: "01");
+            this.WriteUnknownValueEquals(expectedOutput: @"""100 000""", valueToPrint: "100 000");
+            this.WriteUnknownValueEquals(expectedOutput: @"""100,000""", valueToPrint: "100,000");
+
+            // numbers with fractional parts only
+            this.WriteUnknownValueEquals(expectedOutput: @"0.1", valueToPrint: "0.1");
+            this.WriteUnknownValueEquals(expectedOutput: @"0.01", valueToPrint: "0.01");
+            this.WriteUnknownValueEquals(expectedOutput: @"0.1000", valueToPrint: "0.1000");
+            this.WriteUnknownValueEquals(expectedOutput: @"123.456", valueToPrint: "123.456");
+            this.WriteUnknownValueEquals(expectedOutput: @"""123.""", valueToPrint: "123.");
+            this.WriteUnknownValueEquals(expectedOutput: @"""123.a""", valueToPrint: "123.a");
+
+            // numbers with exponential parts only
+            this.WriteUnknownValueEquals(expectedOutput: @"0e1", valueToPrint: "0e1");
+            this.WriteUnknownValueEquals(expectedOutput: @"0e+1", valueToPrint: "0e+1");
+            this.WriteUnknownValueEquals(expectedOutput: @"0e-1", valueToPrint: "0e-1");
+            this.WriteUnknownValueEquals(expectedOutput: @"0E1", valueToPrint: "0E1");
+            this.WriteUnknownValueEquals(expectedOutput: @"0E+1", valueToPrint: "0E+1");
+            this.WriteUnknownValueEquals(expectedOutput: @"0E-1", valueToPrint: "0E-1");
+            this.WriteUnknownValueEquals(expectedOutput: @"0e001", valueToPrint: "0e001");
+            this.WriteUnknownValueEquals(expectedOutput: @"0E123", valueToPrint: "0E123");
+            this.WriteUnknownValueEquals(expectedOutput: @"""0e""", valueToPrint: "0e");
+            this.WriteUnknownValueEquals(expectedOutput: @"""0e+""", valueToPrint: "0e+");
+
+            // numbers with both fractional and exponential parts
+            this.WriteUnknownValueEquals(expectedOutput: @"0.1e+2", valueToPrint: "0.1e+2");
+
+            // strings
+            this.WriteUnknownValueEquals(expectedOutput: @"""a""", valueToPrint: "a");
+        }
+
+        private void WriteUnknownValueEquals( string expectedOutput, Substring valueToPrint )
+        {
+            string output = Write(
+                indent: false,
+                produceAscii: false,
+                action: w =>
+                {
+                    w.WriteArrayStart();
+                    w.WriteUnknownValue(valueToPrint);
+                    w.WriteArrayEnd();
+                });
+
+            // remove array characters
+            output = output.Substring(startIndex: 1, length: output.Length - 2);
+
+            Test.OrdinalEquals(expectedOutput, output);
+        }
     }
 }
