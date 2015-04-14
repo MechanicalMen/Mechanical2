@@ -174,8 +174,9 @@ namespace Mechanical.Common
                     // magic bag
                     AppCore.MagicBag = BuildMagicBag();
 
-                    // logging
-                    AppCore.Log = CreateAdvancedLogEntrySerializer(directory: null, logFilePrefix: logFilePrefix);
+                    // logging (set up default logging, if we are still using a MemoryLog)
+                    if( (AppCore.Log as Mechanical.Logs.MemoryLog).NotNullReference() )
+                        AppCore.Log = CreateAdvancedLogEntrySerializer(directory: null, logFilePrefix: logFilePrefix);
 
                     // UI
                     AppCore.Register((IUIThreadHandler)null);
@@ -218,8 +219,9 @@ namespace Mechanical.Common
                     // magic bag
                     AppCore.MagicBag = BuildMagicBag();
 
-                    // logging
-                    AppCore.Log = CreateAdvancedLogEntrySerializer(directory: null, logFilePrefix: logFilePrefix);
+                    // logging (set up default logging, if we are still using a MemoryLog)
+                    if( (AppCore.Log as Mechanical.Logs.MemoryLog).NotNullReference() )
+                        AppCore.Log = CreateAdvancedLogEntrySerializer(directory: null, logFilePrefix: logFilePrefix);
 
                     // UI
                     AppCore.Register(new DispatcherUIHandler(Dispatcher.CurrentDispatcher));
