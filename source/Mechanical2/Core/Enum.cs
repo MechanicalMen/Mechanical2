@@ -549,7 +549,7 @@ namespace Mechanical.Core
         #region Descriptions
 
         //// NOTE: if there is an enum with constants A1 and A2=A1
-        ////       then Enum.Parse("A2") returns A1, and we would loose the description,
+        ////       then Enum.Parse("A2") returns A1, and we would lose the description,
         ////       if it was applied to A2 (we avoid this by directly accessing the enum fields)
 
         private static IReadOnlyDictionary<TEnum, string> descriptions;

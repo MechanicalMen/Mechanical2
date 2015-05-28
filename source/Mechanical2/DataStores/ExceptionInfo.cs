@@ -72,7 +72,7 @@ namespace Mechanical.DataStores
             catch
             {
                 // something went wrong: keep everything
-                // (we don't want to accidentally loose data)
+                // (we don't want to accidentally lose data)
                 return match.ToString();
             }
         }
