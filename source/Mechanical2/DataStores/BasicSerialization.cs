@@ -885,7 +885,7 @@ namespace Mechanical.DataStores
                 if( writer.NullReference() )
                     throw new ArgumentNullException("writer").StoreFileLine();
 
-                writer.Write(obj.ToString("F", Culture));
+                writer.Write(obj.ToString("G", Culture));
             }
 
             /// <summary>

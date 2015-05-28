@@ -124,75 +124,71 @@ namespace Mechanical.FileFormats
         private void WriteStringLiteral( Substring str )
         {
             if( str.Origin.NullReference() )
-            {
-                this.textWriter.Write("null");
-            }
-            else
-            {
-                this.textWriter.Write('"');
+                throw new ArgumentNullException().StoreFileLine();
 
-                char ch;
-                for( int i = 0; i < str.Length; ++i )
+            this.textWriter.Write('"');
+
+            char ch;
+            for( int i = 0; i < str.Length; ++i )
+            {
+                ch = str[i];
+                switch( ch )
                 {
-                    ch = str[i];
-                    switch( ch )
+                case '"':
+                    this.textWriter.Write("\\\"");
+                    break;
+
+                case '\\':
+                    this.textWriter.Write("\\\\");
+                    break;
+
+                case '/':
+                    this.textWriter.Write("\\/");
+                    break;
+
+                case '\b':
+                    this.textWriter.Write("\\b");
+                    break;
+
+                case '\f':
+                    this.textWriter.Write("\\f");
+                    break;
+
+                case '\n':
+                    this.textWriter.Write("\\n");
+                    break;
+
+                case '\r':
+                    this.textWriter.Write("\\r");
+                    break;
+
+                case '\t':
+                    this.textWriter.Write("\\t");
+                    break;
+
+                default:
+                    if( !this.produceAscii )
                     {
-                    case '"':
-                        this.textWriter.Write("\\\"");
-                        break;
-
-                    case '\\':
-                        this.textWriter.Write("\\\\");
-                        break;
-
-                    case '/':
-                        this.textWriter.Write("\\/");
-                        break;
-
-                    case '\b':
-                        this.textWriter.Write("\\b");
-                        break;
-
-                    case '\f':
-                        this.textWriter.Write("\\f");
-                        break;
-
-                    case '\n':
-                        this.textWriter.Write("\\n");
-                        break;
-
-                    case '\r':
-                        this.textWriter.Write("\\r");
-                        break;
-
-                    case '\t':
-                        this.textWriter.Write("\\t");
-                        break;
-
-                    default:
-                        if( !this.produceAscii )
-                        {
-                            // it's OK to output unicode characters
-                            if( (0 <= (int)ch && (int)ch <= 31)
-                             || ch == 127 )
-                                this.PrintCharacterEscaped(ch); // non-printable ASCII character we didn't handle above
-                            else
-                                this.textWriter.Write(ch); // printable ASCII, or a non-ASCII character (that we assume can be displayed to the user).
-                        }
+                        // it's OK to output unicode characters
+                        if( (0 <= (int)ch && (int)ch <= 31)
+                            || ch == 127 )
+                            this.PrintCharacterEscaped(ch); // non-printable ASCII character we didn't handle above
                         else
-                        {
-                            // escape unicode characters
-                            if( 32 <= (int)ch && (int)ch <= 126 )
-                                this.textWriter.Write(ch); // a printable ASCII character we didn't handle above
-                            else
-                                this.PrintCharacterEscaped(ch); // (unhandled) non-printable ASCII, or non-ASCII character
-                        }
-                        break;
+                            this.textWriter.Write(ch); // printable ASCII, or a non-ASCII character (that we assume can be displayed to the user).
                     }
+                    else
+                    {
+                        // escape unicode characters
+                        if( 32 <= (int)ch && (int)ch <= 126 )
+                            this.textWriter.Write(ch); // a printable ASCII character we didn't handle above
+                        else
+                            this.PrintCharacterEscaped(ch); // (unhandled) non-printable ASCII, or non-ASCII character
+                    }
+                    break;
                 }
-
-                this.textWriter.Write('"');
             }
+
+            this.textWriter.Write('"');
         }
 
         private bool IsNumber( Substring substr )
@@ -289,9 +285,24 @@ namespace Mechanical.FileFormats
             }
         }
 
+#if !MECHANICAL_NET4
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        private void WriteRawValue( JsonToken valueToken, string valueString )
+        {
+            if( this.IsDisposed )
+                throw new ObjectDisposedException(string.Empty).StoreFileLine();
+
+            if( this.parents.Peek() == JsonToken.ArrayStart )
+                this.WriteCommaIfRequired();
+
+            this.textWriter.Write(valueString);
+            this.prevToken = valueToken;
+        }
+
         #endregion
 
-        #region Public Methods
+        #region Basic Interface
 
         /// <summary>
         /// Writes the opening curly bracket of a JSON object.
@@ -389,14 +400,7 @@ namespace Mechanical.FileFormats
         /// </summary>
         public void WriteNullValue()
         {
-            if( this.IsDisposed )
-                throw new ObjectDisposedException(string.Empty).StoreFileLine();
-
-            if( this.parents.Peek() == JsonToken.ArrayStart )
-                this.WriteCommaIfRequired();
-
-            this.textWriter.Write("null");
-            this.prevToken = JsonToken.NullValue;
+            this.WriteRawValue(JsonToken.NullValue, "null");
         }
 
         /// <summary>
@@ -405,17 +409,16 @@ namespace Mechanical.FileFormats
         /// <param name="value">The value to write.</param>
         public void WriteValue( bool value )
         {
-            if( this.IsDisposed )
-                throw new ObjectDisposedException(string.Empty).StoreFileLine();
+            this.WriteRawValue(JsonToken.BooleanValue, value ? "true" : "false");
+        }
 
-            if( this.parents.Peek() == JsonToken.ArrayStart )
-                this.WriteCommaIfRequired();
-
-            if( value )
-                this.textWriter.Write("true");
-            else
-                this.textWriter.Write("false");
-            this.prevToken = JsonToken.BooleanValue;
+        /// <summary>
+        /// Writes an <see cref="Int32"/> value.
+        /// </summary>
+        /// <param name="value">The value to write.</param>
+        public void WriteValue( int value )
+        {
+            this.WriteRawValue(JsonToken.NumberValue, value.ToString("D", CultureInfo.InvariantCulture));
         }
 
         /// <summary>
@@ -424,14 +427,16 @@ namespace Mechanical.FileFormats
         /// <param name="value">The value to write.</param>
         public void WriteValue( long value )
         {
-            if( this.IsDisposed )
-                throw new ObjectDisposedException(string.Empty).StoreFileLine();
+            this.WriteRawValue(JsonToken.NumberValue, value.ToString("D", CultureInfo.InvariantCulture));
+        }
 
-            if( this.parents.Peek() == JsonToken.ArrayStart )
-                this.WriteCommaIfRequired();
-
-            this.textWriter.Write(value.ToString("D", CultureInfo.InvariantCulture));
-            this.prevToken = JsonToken.NumberValue;
+        /// <summary>
+        /// Writes a <see cref="Single"/> value.
+        /// </summary>
+        /// <param name="value">The value to write.</param>
+        public void WriteValue( float value )
+        {
+            this.WriteRawValue(JsonToken.NumberValue, value.ToString("R", CultureInfo.InvariantCulture));
         }
 
         /// <summary>
@@ -440,14 +445,7 @@ namespace Mechanical.FileFormats
         /// <param name="value">The value to write.</param>
         public void WriteValue( double value )
         {
-            if( this.IsDisposed )
-                throw new ObjectDisposedException(string.Empty).StoreFileLine();
-
-            if( this.parents.Peek() == JsonToken.ArrayStart )
-                this.WriteCommaIfRequired();
-
-            this.textWriter.Write(value.ToString("R", CultureInfo.InvariantCulture));
-            this.prevToken = JsonToken.NumberValue;
+            this.WriteRawValue(JsonToken.NumberValue, value.ToString("R", CultureInfo.InvariantCulture));
         }
 
         /// <summary>
@@ -456,14 +454,7 @@ namespace Mechanical.FileFormats
         /// <param name="value">The value to write.</param>
         public void WriteValue( decimal value )
         {
-            if( this.IsDisposed )
-                throw new ObjectDisposedException(string.Empty).StoreFileLine();
-
-            if( this.parents.Peek() == JsonToken.ArrayStart )
-                this.WriteCommaIfRequired();
-
-            this.textWriter.Write(value.ToString(CultureInfo.InvariantCulture));
-            this.prevToken = JsonToken.NumberValue;
+            this.WriteRawValue(JsonToken.NumberValue, value.ToString("G", CultureInfo.InvariantCulture));
         }
 
         /// <summary>
@@ -478,8 +469,16 @@ namespace Mechanical.FileFormats
             if( this.parents.Peek() == JsonToken.ArrayStart )
                 this.WriteCommaIfRequired();
 
-            this.WriteStringLiteral(str);
-            this.prevToken = JsonToken.StringValue;
+            if( str.Origin.NullReference() )
+            {
+                this.textWriter.Write("null");
+                this.prevToken = JsonToken.NullValue;
+            }
+            else
+            {
+                this.WriteStringLiteral(str);
+                this.prevToken = JsonToken.StringValue;
+            }
         }
 
         /// <summary>
@@ -494,8 +493,13 @@ namespace Mechanical.FileFormats
             if( this.parents.Peek() == JsonToken.ArrayStart )
                 this.WriteCommaIfRequired();
 
-            if( str.Equals("true", CompareOptions.Ordinal)
-             || str.Equals("false", CompareOptions.Ordinal) )
+            if( str.Origin.NullReference() )
+            {
+                this.textWriter.Write("null");
+                this.prevToken = JsonToken.NullValue;
+            }
+            else if( str.Equals("true", CompareOptions.Ordinal)
+                  || str.Equals("false", CompareOptions.Ordinal) )
             {
                 this.textWriter.Write(str);
                 this.prevToken = JsonToken.BooleanValue;
@@ -524,6 +528,87 @@ namespace Mechanical.FileFormats
                 throw new ObjectDisposedException(string.Empty).StoreFileLine();
 
             this.textWriter.Flush();
+        }
+
+        #endregion
+
+        #region Extended Interface
+
+        /// <summary>
+        /// Writes a name-value pair of a JSON object.
+        /// </summary>
+        /// <param name="name">The name of the <paramref name="value"/>.</param>
+        /// <param name="value">The value to write.</param>
+        public void Write( Substring name, bool value )
+        {
+            this.WriteName(name);
+            this.WriteValue(value);
+        }
+
+        /// <summary>
+        /// Writes a name-value pair of a JSON object.
+        /// </summary>
+        /// <param name="name">The name of the <paramref name="value"/>.</param>
+        /// <param name="value">The value to write.</param>
+        public void Write( Substring name, int value )
+        {
+            this.WriteName(name);
+            this.WriteValue(value);
+        }
+
+        /// <summary>
+        /// Writes a name-value pair of a JSON object.
+        /// </summary>
+        /// <param name="name">The name of the <paramref name="value"/>.</param>
+        /// <param name="value">The value to write.</param>
+        public void Write( Substring name, long value )
+        {
+            this.WriteName(name);
+            this.WriteValue(value);
+        }
+
+        /// <summary>
+        /// Writes a name-value pair of a JSON object.
+        /// </summary>
+        /// <param name="name">The name of the <paramref name="value"/>.</param>
+        /// <param name="value">The value to write.</param>
+        public void Write( Substring name, float value )
+        {
+            this.WriteName(name);
+            this.WriteValue(value);
+        }
+
+        /// <summary>
+        /// Writes a name-value pair of a JSON object.
+        /// </summary>
+        /// <param name="name">The name of the <paramref name="value"/>.</param>
+        /// <param name="value">The value to write.</param>
+        public void Write( Substring name, double value )
+        {
+            this.WriteName(name);
+            this.WriteValue(value);
+        }
+
+        /// <summary>
+        /// Writes a name-value pair of a JSON object.
+        /// </summary>
+        /// <param name="name">The name of the <paramref name="value"/>.</param>
+        /// <param name="value">The value to write.</param>
+        public void Write( Substring name, decimal value )
+        {
+            this.WriteName(name);
+            this.WriteValue(value);
+        }
+
+        /// <summary>
+        /// Writes a name-value pair of a JSON object.
+        /// </summary>
+        /// <param name="name">The name of the <paramref name="value"/>.</param>
+        /// <param name="value">The value to write.</param>
+        public void Write( Substring name, Substring value )
+        {
+            this.WriteName(name);
+            this.WriteValue(value);
         }
 
         #endregion

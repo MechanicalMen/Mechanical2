@@ -319,7 +319,7 @@ namespace Mechanical.FileFormats
 
         #endregion
 
-        #region Public Members
+        #region Basic Interface
 
         /// <summary>
         /// Gets the last <see cref="JsonToken"/> read.
@@ -501,6 +501,174 @@ namespace Mechanical.FileFormats
                 ex.Store("JsonToken", this.Token);
                 ex.Store("JsonRawValue", this.currentRawValue);
                 throw;
+            }
+        }
+
+        #endregion
+
+        #region Extended Interface
+
+        /// <summary>
+        /// Throws an exception, unless a Read() operation succeeds.
+        /// </summary>
+        public void AssertCanRead()
+        {
+            if( !this.Read() )
+                throw new FormatException("Unexpected end of stream reached!").Store("line", this.LineNumber).Store("column", this.ColumnNumber);
+        }
+
+        /// <summary>
+        /// Throws an exception, unless the specified token is the same as the current one.
+        /// </summary>
+        /// <param name="expectedToken">The <see cref="JsonToken"/> we expect to find.</param>
+        public void AssertToken( JsonToken expectedToken )
+        {
+            if( this.Token != expectedToken )
+                throw new FormatException("Unexpected token found!").Store("expectedToken", expectedToken).Store("actualToken", this.Token).Store("line", this.LineNumber).Store("column", this.ColumnNumber);
+        }
+
+        /// <summary>
+        /// Throws an exception, unless a Read() operation succeeds, and the new token is the same as the one specified.
+        /// </summary>
+        /// <param name="expectedToken">The <see cref="JsonToken"/> we expect to find, after a successfully reading.</param>
+        public void ReadToken( JsonToken expectedToken )
+        {
+            this.AssertCanRead();
+            this.AssertToken(expectedToken);
+        }
+
+        /// <summary>
+        /// Throws an exception, unless a Read() operation succeeds, and the new token is <see cref="JsonToken.ArrayStart"/>.
+        /// </summary>
+        public void ReadArrayStart()
+        {
+            this.ReadToken(JsonToken.ArrayStart);
+        }
+
+        /// <summary>
+        /// Throws an exception, unless a Read() operation succeeds, and the new token is <see cref="JsonToken.ArrayEnd"/>.
+        /// </summary>
+        public void ReadArrayEnd()
+        {
+            this.ReadToken(JsonToken.ArrayEnd);
+        }
+
+        /// <summary>
+        /// Throws an exception, unless a Read() operation succeeds, and the new token is <see cref="JsonToken.ObjectStart"/>.
+        /// </summary>
+        public void ReadObjectStart()
+        {
+            this.ReadToken(JsonToken.ObjectStart);
+        }
+
+        /// <summary>
+        /// Throws an exception, unless a Read() operation succeeds, and the new token is <see cref="JsonToken.ObjectEnd"/>.
+        /// </summary>
+        public void ReadObjectEnd()
+        {
+            this.ReadToken(JsonToken.ObjectEnd);
+        }
+
+        /// <summary>
+        /// Throws an exception, unless a Read() operation succeeds, and the new token is <see cref="JsonToken.Name"/>.
+        /// </summary>
+        /// <returns>The name of an item of a JSON object.</returns>
+        public string ReadName()
+        {
+            this.ReadToken(JsonToken.Name);
+            return this.RawValue;
+        }
+
+        /// <summary>
+        /// Throws an exception, unless a Read() operation succeeds, the new token is <see cref="JsonToken.Name" /> and the name is the same as the one specified.
+        /// </summary>
+        /// <param name="expectedName">The name of an item of a JSON object, that we expect to find, after a successfully reading.</param>
+        /// <param name="comparisonType">The <see cref="StringComparison"/> to use.</param>
+        public void ReadName( string expectedName, StringComparison comparisonType )
+        {
+            var name = this.ReadName();
+            if( !string.Equals(name, expectedName, comparisonType) )
+                throw new FormatException("Unexpected name found!").Store("expectedName", expectedName).Store("actualName", name).Store("line", this.LineNumber).Store("column", this.ColumnNumber);
+        }
+
+        /// <summary>
+        /// Throws an exception, unless a Read() operation succeeds, and a value is found that can be parsed as a(n) <see cref="Boolean"/>.
+        /// </summary>
+        /// <returns>The <see cref="Boolean"/> value found.</returns>
+        public bool ReadBoolean()
+        {
+            this.ReadToken(JsonToken.BooleanValue);
+            return this.RawValue[0] == 't';
+        }
+
+        /// <summary>
+        /// Throws an exception, unless a Read() operation succeeds, and a value is found that can be parsed as a(n) <see cref="Int32"/>.
+        /// </summary>
+        /// <returns>The <see cref="Int32"/> value found.</returns>
+        public int ReadInt32()
+        {
+            this.ReadToken(JsonToken.NumberValue);
+            return int.Parse(this.RawValue, NumberStyles.Integer, CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Throws an exception, unless a Read() operation succeeds, and a value is found that can be parsed as a(n) <see cref="Int64"/>.
+        /// </summary>
+        /// <returns>The <see cref="Int64"/> value found.</returns>
+        public long ReadInt64()
+        {
+            this.ReadToken(JsonToken.NumberValue);
+            return long.Parse(this.RawValue, NumberStyles.Integer, CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Throws an exception, unless a Read() operation succeeds, and a value is found that can be parsed as a(n) <see cref="Single"/>.
+        /// </summary>
+        /// <returns>The <see cref="Single"/> value found.</returns>
+        public float ReadSingle()
+        {
+            this.ReadToken(JsonToken.NumberValue);
+            return float.Parse(this.RawValue, NumberStyles.Float, CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Throws an exception, unless a Read() operation succeeds, and a value is found that can be parsed as a(n) <see cref="Double"/>.
+        /// </summary>
+        /// <returns>The <see cref="Double"/> value found.</returns>
+        public double ReadDouble()
+        {
+            this.ReadToken(JsonToken.NumberValue);
+            return double.Parse(this.RawValue, NumberStyles.Float, CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Throws an exception, unless a Read() operation succeeds, and a value is found that can be parsed as a(n) <see cref="Decimal"/>.
+        /// </summary>
+        /// <returns>The <see cref="Decimal"/> value found.</returns>
+        public decimal ReadDecimal()
+        {
+            this.ReadToken(JsonToken.NumberValue);
+            return decimal.Parse(this.RawValue, NumberStyles.Float, CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Throws an exception, unless a Read() operation succeeds, and a value is found that can be parsed as a(n) <see cref="String"/>.
+        /// </summary>
+        /// <returns>The <see cref="String"/> value found.</returns>
+        public string ReadString()
+        {
+            this.AssertCanRead();
+
+            switch( this.Token )
+            {
+            case JsonToken.NullValue:
+                return null;
+
+            case JsonToken.StringValue:
+                return this.RawValue;
+
+            default:
+                throw new FormatException("Unexpected token found!").Store("token", this.Token).Store("line", this.LineNumber).Store("column", this.ColumnNumber);
             }
         }
 
