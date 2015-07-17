@@ -65,5 +65,16 @@ namespace Mechanical.Tests.DataStores.Xml
             node = this.ReadNode(SimpleRoot);
             Assert.True(DataStoreTests.SimpleRoot.Equals(node));
         }
+
+        [Test]
+        public void MultipleDeserializationsTest()
+        {
+            using( var reader = XmlDataStoreReader.FromXml(TextValueRoot) )
+            {
+                reader.AssertCanRead();
+                Assert.AreEqual("abc", reader.DeserializeAsValue<string>("textRoot"));
+                Assert.AreEqual("abc", reader.DeserializeAsValue<Substring>("textRoot").ToString());
+            }
+        }
     }
 }

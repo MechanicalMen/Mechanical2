@@ -224,6 +224,7 @@ namespace Mechanical.DataStores.Json
                 throw new FormatException("Unexpected end of json file reached!").StoreFileLine();
 
             // determine data store token
+            this.currentValue = null;
             switch( this.jsonReader.Token )
             {
             case JsonToken.ObjectStart:
@@ -303,7 +304,6 @@ namespace Mechanical.DataStores.Json
         /// <param name="reader">The reader of the value.</param>
         protected override void CloseReader( ITextReader reader )
         {
-            this.currentValue = null;
             this.textReader.Set(Substring.Empty); // only necessary if reader was opened, but never used. Unlikely, but we don't know for sure.
         }
 

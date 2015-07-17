@@ -1,4 +1,5 @@
 ﻿using System;
+using Mechanical.Core;
 using Mechanical.DataStores;
 using Mechanical.DataStores.Json;
 using Mechanical.DataStores.Nodes;
@@ -75,6 +76,17 @@ namespace Mechanical.Tests.DataStores.Json
                 "root",
                 new DataStoreObject("objectRoot"));
             Assert.True(expectedNode.Equals(node));
+        }
+
+        [Test]
+        public void MultipleDeserializationsTest()
+        {
+            using( var reader = JsonDataStoreReader.FromJson(TextValueRoot, isDataStoreJson: true) )
+            {
+                reader.AssertCanRead();
+                Assert.AreEqual("abc", reader.DeserializeAsValue<string>("textRoot"));
+                Assert.AreEqual("abc", reader.DeserializeAsValue<Substring>("textRoot").ToString());
+            }
         }
     }
 }

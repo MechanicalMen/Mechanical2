@@ -198,6 +198,7 @@ namespace Mechanical.DataStores.Xml
             }
 
             name = this.xmlReader.Name;
+            this.currentValue = null;
 
             DataStoreToken result;
             switch( this.xmlReader.NodeType )
@@ -288,7 +289,6 @@ namespace Mechanical.DataStores.Xml
         /// <param name="reader">The reader of the value.</param>
         protected override void CloseReader( ITextReader reader )
         {
-            this.currentValue = null;
             this.textReader.Set(Substring.Empty); // only necessary if reader was opened, but never used. Unlikely, but we don't know for sure.
         }
 
