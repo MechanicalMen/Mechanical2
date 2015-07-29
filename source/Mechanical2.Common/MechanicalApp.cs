@@ -35,15 +35,22 @@ namespace Mechanical.Common
         /// <summary>
         /// Creates a new <see cref="AdvancedLogEntrySerializer"/> instance.
         /// </summary>
-        /// <param name="directory">The directory to create the log files at, or <c>null</c> to use the application folder.</param>
+        /// <param name="directory">The directory to create the log files at (relative to the application folder).</param>
         /// <param name="logFilePrefix">The first part of log file names. You can use this to identify the application generating them.</param>
         /// <returns>The new <see cref="AdvancedLogEntrySerializer"/> instance.</returns>
         private static AdvancedLogEntrySerializer CreateAdvancedLogEntrySerializer( string directory = null, string logFilePrefix = "log" )
         {
-            if( directory.NullOrEmpty() )
+            // if either the directory was not specified, or it is a relative path...
+            if( directory.NullOrEmpty()
+             || !Path.IsPathRooted(directory) )
             {
-                directory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                directory = Path.GetFullPath(directory);
+                var appdir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                appdir = Path.GetFullPath(appdir);
+
+                if( directory.NullOrEmpty() )
+                    directory = appdir;
+                else
+                    directory = Path.Combine(appdir, directory);
             }
 
             var fileSystem = new DirectoryFileSystem(directory, escapeFileNames: true); // we escape file names to have file extensions
@@ -157,9 +164,10 @@ namespace Mechanical.Common
         /// <summary>
         /// Initializes all parts of the core framework.
         /// </summary>
+        /// <param name="logDirectoryPath">The directory to create the log files at (relative to the application folder).</param>
         /// <param name="logFilePrefix">The first part of log file names. You can use this to identify the application generating them.</param>
         /// <returns><c>true</c> if this is the first time this method was called, and initialization was successful; otherwise, <c>false</c>.</returns>
-        public static bool InitializeService( string logFilePrefix = "log" )
+        public static bool InitializeService( string logDirectoryPath = null, string logFilePrefix = "log" )
         {
             if( fullyInitialized )
                 return false;
@@ -176,7 +184,7 @@ namespace Mechanical.Common
 
                     // logging (set up default logging, if we are still using a MemoryLog)
                     if( (AppCore.Log as Mechanical.Logs.MemoryLog).NotNullReference() )
-                        AppCore.Log = CreateAdvancedLogEntrySerializer(directory: null, logFilePrefix: logFilePrefix);
+                        AppCore.Log = CreateAdvancedLogEntrySerializer(logDirectoryPath, logFilePrefix);
 
                     // UI
                     AppCore.Register((IUIThreadHandler)null);
@@ -196,9 +204,10 @@ namespace Mechanical.Common
         /// </summary>
         /// <param name="app">The <see cref="System.Windows.Application"/> raising the DispatcherUnhandledException event.</param>
         /// <param name="window">The <see cref="Window"/> to link to the lifespan of the main event queue.</param>
+        /// <param name="logDirectoryPath">The directory to create the log files at (relative to the application folder).</param>
         /// <param name="logFilePrefix">The first part of log file names. You can use this to identify the application generating them.</param>
         /// <returns><c>true</c> if this is the first time this method was called, and initialization was successful; otherwise, <c>false</c>.</returns>
-        public static bool InitializeWindow( Application app, Window window, string logFilePrefix = "log" )
+        public static bool InitializeWindow( Application app, Window window, string logDirectoryPath = null, string logFilePrefix = "log" )
         {
             if( fullyInitialized )
                 return false;
@@ -221,7 +230,7 @@ namespace Mechanical.Common
 
                     // logging (set up default logging, if we are still using a MemoryLog)
                     if( (AppCore.Log as Mechanical.Logs.MemoryLog).NotNullReference() )
-                        AppCore.Log = CreateAdvancedLogEntrySerializer(directory: null, logFilePrefix: logFilePrefix);
+                        AppCore.Log = CreateAdvancedLogEntrySerializer(logDirectoryPath, logFilePrefix);
 
                     // UI
                     AppCore.Register(new DispatcherUIHandler(Dispatcher.CurrentDispatcher));
