@@ -36,7 +36,11 @@ namespace Mechanical.IO.FileSystem
                 if( !Directory.Exists(directoryPath) )
                     Directory.CreateDirectory(directoryPath);
 
-                this.rootDirectoryFullPath = Path.GetFullPath(directoryPath);
+                this.rootDirectoryFullPath = Path.GetFullPath(directoryPath); // throws if null or empty
+                if( this.rootDirectoryFullPath[this.rootDirectoryFullPath.Length - 1] == Path.DirectorySeparatorChar
+                 || this.rootDirectoryFullPath[this.rootDirectoryFullPath.Length - 1] == Path.AltDirectorySeparatorChar )
+                    this.rootDirectoryFullPath = this.rootDirectoryFullPath.Substring(startIndex: 0, length: this.rootDirectoryFullPath.Length - 1);
+
                 this.escapeFileNames = escapeFileNames;
             }
             catch( Exception ex )
