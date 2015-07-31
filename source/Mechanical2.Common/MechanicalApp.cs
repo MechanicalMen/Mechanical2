@@ -204,10 +204,11 @@ namespace Mechanical.Common
         /// </summary>
         /// <param name="app">The <see cref="System.Windows.Application"/> raising the DispatcherUnhandledException event.</param>
         /// <param name="window">The <see cref="Window"/> to link to the lifespan of the main event queue.</param>
+        /// <param name="exceptionGuiSink">The exception handler used to inform the user; or <c>null</c> to use no(!) such handler (at this time).</param>
         /// <param name="logDirectoryPath">The directory to create the log files at (relative to the application folder).</param>
         /// <param name="logFilePrefix">The first part of log file names. You can use this to identify the application generating them.</param>
         /// <returns><c>true</c> if this is the first time this method was called, and initialization was successful; otherwise, <c>false</c>.</returns>
-        public static bool InitializeWindow( Application app, Window window, string logDirectoryPath = null, string logFilePrefix = "log" )
+        public static bool InitializeWindow( Application app, Window window, IExceptionSink exceptionGuiSink, string logDirectoryPath = null, string logFilePrefix = "log" )
         {
             if( fullyInitialized )
                 return false;
@@ -223,7 +224,8 @@ namespace Mechanical.Common
                     AppCore.Register(new DispatcherExceptionSource(app));
 
                     // exception sinks
-                    AppCore.Register(new MessageBoxExceptionSink(), isFallback: false);
+                    if( exceptionGuiSink.NotNullReference() )
+                        AppCore.Register(exceptionGuiSink, isFallback: false);
 
                     // magic bag
                     AppCore.MagicBag = BuildMagicBag();
