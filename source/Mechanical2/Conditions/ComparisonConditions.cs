@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Mechanical.Conditions
 {
@@ -3272,9 +3273,14 @@ namespace Mechanical.Conditions
 
         #region InRange
 
-        private static Exception CreateInRangeException<T>( T inclusiveLow, T exclusiveHigh )
+        private static Exception CreateInRangeException<T>(
+            T inclusiveLow,
+            T exclusiveHigh,
+            [CallerFilePath] string file = "",
+            [CallerMemberName] string member = "",
+            [CallerLineNumber] int line = 0 )
         {
-            return new ArgumentOutOfRangeException("The value is not in the specified range!", innerException: null).Store("inclusiveLow", inclusiveLow, filePath: null).Store("exclusiveHigh", exclusiveHigh, filePath: null);
+            return new ArgumentOutOfRangeException("The value is not in the specified range!", innerException: null).Store("inclusiveLow", inclusiveLow, file, member, line).Store("exclusiveHigh", exclusiveHigh);
         }
 
         #region InRange (sbyte)

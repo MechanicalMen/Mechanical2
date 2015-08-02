@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Mechanical.Core;
 
 namespace Mechanical.Conditions
 {
@@ -26,18 +27,18 @@ namespace Mechanical.Conditions
         /// </summary>
         /// <typeparam name="T">The type of the object.</typeparam>
         /// <param name="obj">The object to test.</param>
-        /// <param name="filePath">The full path of the source file that contains the caller.</param>
-        /// <param name="memberName">The method or property name of the caller to the method.</param>
-        /// <param name="lineNumber">The line number in the source file at which the method is called.</param>
+        /// <param name="file">The source file that contains the caller.</param>
+        /// <param name="member">The method or property name of the caller to this method.</param>
+        /// <param name="line">The line number in the source file at which this method is called.</param>
         /// <returns>Information about the object being tested.</returns>
         [DebuggerHidden]
         public static IConditionContext<T> That<T>(
             T obj,
-            [CallerFilePath] string filePath = "",
-            [CallerMemberName] string memberName = "",
-            [CallerLineNumberAttribute] int lineNumber = 0 )
+            [CallerFilePath] string file = "",
+            [CallerMemberName] string member = "",
+            [CallerLineNumber] int line = 0 )
         {
-            return new ConditionContext<T>(obj, DefaultObjectName, filePath, memberName, lineNumber);
+            return new ConditionContext<T>(obj, DefaultObjectName, new FileLine(file, member, line));
         }
 
         /// <summary>
@@ -48,19 +49,19 @@ namespace Mechanical.Conditions
         /// <typeparam name="T">The type of the object.</typeparam>
         /// <param name="name">The name of the object to test. Must be DataStore compatible.</param>
         /// <param name="obj">The object to test.</param>
-        /// <param name="filePath">The full path of the source file that contains the caller.</param>
-        /// <param name="memberName">The method or property name of the caller to the method.</param>
-        /// <param name="lineNumber">The line number in the source file at which the method is called.</param>
+        /// <param name="file">The source file that contains the caller.</param>
+        /// <param name="member">The method or property name of the caller to this method.</param>
+        /// <param name="line">The line number in the source file at which this method is called.</param>
         /// <returns>Information about the object being tested.</returns>
         [DebuggerHidden]
         public static IConditionContext<T> That<T>(
             string name,
             T obj,
-            [CallerFilePath] string filePath = "",
-            [CallerMemberName] string memberName = "",
-            [CallerLineNumberAttribute] int lineNumber = 0 )
+            [CallerFilePath] string file = "",
+            [CallerMemberName] string member = "",
+            [CallerLineNumber] int line = 0 )
         {
-            return new ConditionContext<T>(obj, name, filePath, memberName, lineNumber);
+            return new ConditionContext<T>(obj, name, new FileLine(file, member, line));
         }
 
         /// <summary>
@@ -71,22 +72,22 @@ namespace Mechanical.Conditions
         /// <typeparam name="T">The type of the object.</typeparam>
         /// <param name="obj">The object to test.</param>
         /// <param name="tests">The validations to perform.</param>
-        /// <param name="filePath">The full path of the source file that contains the caller.</param>
-        /// <param name="memberName">The method or property name of the caller to the method.</param>
-        /// <param name="lineNumber">The line number in the source file at which the method is called.</param>
+        /// <param name="file">The source file that contains the caller.</param>
+        /// <param name="member">The method or property name of the caller to this method.</param>
+        /// <param name="line">The line number in the source file at which this method is called.</param>
         [Conditional("DEBUG")]
         [DebuggerHidden]
         public static void Debug<T>(
             T obj,
             Action<IConditionContext<T>> tests,
-            [CallerFilePath] string filePath = "",
-            [CallerMemberName] string memberName = "",
-            [CallerLineNumberAttribute] int lineNumber = 0 )
+            [CallerFilePath] string file = "",
+            [CallerMemberName] string member = "",
+            [CallerLineNumber] int line = 0 )
         {
             if( object.ReferenceEquals(tests, null) )
                 throw new ArgumentNullException("tests");
 
-            tests(That(obj, filePath, memberName, lineNumber));
+            tests(That(obj, file, member, line));
         }
 
         /// <summary>
@@ -98,23 +99,23 @@ namespace Mechanical.Conditions
         /// <param name="name">The name of the object to test. Must be DataStore compatible.</param>
         /// <param name="obj">The object to test.</param>
         /// <param name="tests">The validations to perform.</param>
-        /// <param name="filePath">The full path of the source file that contains the caller.</param>
-        /// <param name="memberName">The method or property name of the caller to the method.</param>
-        /// <param name="lineNumber">The line number in the source file at which the method is called.</param>
+        /// <param name="file">The source file that contains the caller.</param>
+        /// <param name="member">The method or property name of the caller to this method.</param>
+        /// <param name="line">The line number in the source file at which this method is called.</param>
         [Conditional("DEBUG")]
         [DebuggerHidden]
         public static void Debug<T>(
             string name,
             T obj,
             Action<IConditionContext<T>> tests,
-            [CallerFilePath] string filePath = "",
-            [CallerMemberName] string memberName = "",
-            [CallerLineNumberAttribute] int lineNumber = 0 )
+            [CallerFilePath] string file = "",
+            [CallerMemberName] string member = "",
+            [CallerLineNumber] int line = 0 )
         {
             if( object.ReferenceEquals(tests, null) )
                 throw new ArgumentNullException("tests");
 
-            tests(That(name, obj, filePath, memberName, lineNumber));
+            tests(That(name, obj, file, member, line));
         }
 
         #endregion

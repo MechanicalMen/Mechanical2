@@ -20,12 +20,12 @@ namespace Mechanical.IO
 #endif
         private static void ThrowDisposedIfNull(
             object obj,
-            [CallerFilePath] string filePath = "",
-            [CallerMemberName] string memberName = "",
-            [CallerLineNumber] int lineNumber = 0 )
+            [CallerFilePath] string file = "",
+            [CallerMemberName] string member = "",
+            [CallerLineNumber] int line = 0 )
         {
             if( object.ReferenceEquals(obj, null) )
-                throw new ObjectDisposedException(null).StoreFileLine(filePath, memberName, lineNumber);
+                throw new ObjectDisposedException(null).StoreFileLine(file, member, line);
         }
 
         #endregion

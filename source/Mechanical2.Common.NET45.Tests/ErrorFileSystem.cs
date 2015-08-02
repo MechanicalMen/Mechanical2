@@ -670,11 +670,11 @@ namespace Mechanical.Common.Tests
         #region Private Methods
 
         private void Throw(
-            [CallerFilePath] string filePath = "",
-            [CallerMemberName] string memberName = "",
-            [CallerLineNumberAttribute] int lineNumber = 0 )
+            [CallerFilePath] string file = "",
+            [CallerMemberName] string member = "",
+            [CallerLineNumber] int line = 0 )
         {
-            throw new System.IO.IOException("Operation not supported").StoreFileLine(filePath, memberName, lineNumber);
+            throw new System.IO.IOException("Operation not supported").StoreFileLine(file, member, line);
         }
 
         private void MarkFileOpen( string dataStorePath )

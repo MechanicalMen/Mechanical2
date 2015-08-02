@@ -180,7 +180,7 @@ namespace Mechanical.Core
         {
             public override void Log( LogEntry entry )
             {
-                throw new InvalidOperationException("The application has already shut down. No more logging is possible!").StoreFileLine(entry.FileName, entry.MemberName, entry.LineNumber);
+                throw new InvalidOperationException("The application has already shut down. No more logging is possible!").StoreFileLine(entry.SourcePos);
             }
         }
 

@@ -80,12 +80,12 @@ namespace Mechanical.DataStores
         [Conditional("DEBUG")]
         private static void ThrowIfNull(
             IDataStoreReader reader,
-            [CallerFilePath] string filePath = "",
-            [CallerMemberName] string memberName = "",
-            [CallerLineNumber] int lineNumber = 0 )
+            [CallerFilePath] string file = "",
+            [CallerMemberName] string member = "",
+            [CallerLineNumber] int line = 0 )
         {
             if( reader.NullReference() )
-                throw new ArgumentNullException("reader").StoreFileLine(filePath, memberName, lineNumber);
+                throw new ArgumentNullException("reader").StoreFileLine(file, member, line);
         }
 
 #if !MECHANICAL_NET4
@@ -93,12 +93,12 @@ namespace Mechanical.DataStores
 #endif
         private static void ThrowIfReadFails(
             IDataStoreReader reader,
-            [CallerFilePath] string filePath = "",
-            [CallerMemberName] string memberName = "",
-            [CallerLineNumber] int lineNumber = 0 )
+            [CallerFilePath] string file = "",
+            [CallerMemberName] string member = "",
+            [CallerLineNumber] int line = 0 )
         {
             if( !reader.Read() )
-                throw new InvalidOperationException("There is nothing more to read!").StoreFileLine(filePath, memberName, lineNumber);
+                throw new InvalidOperationException("There is nothing more to read!").StoreFileLine(file, member, line);
         }
 
         #endregion

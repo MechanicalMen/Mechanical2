@@ -1,4 +1,5 @@
 ﻿using System;
+using Mechanical.Core;
 
 namespace Mechanical.Conditions
 {
@@ -25,22 +26,10 @@ namespace Mechanical.Conditions
         string ObjectName { get; }
 
         /// <summary>
-        /// Gets the full path to the source file where the test originated.
+        /// Gets the source file position where the test originated.
         /// </summary>
-        /// <value>The full path to the source file where the test originated.</value>
-        string FilePath { get; }
-
-        /// <summary>
-        /// Gets the method or property name of the caller to the method.
-        /// </summary>
-        /// <value>The method or property name of the caller to the method.</value>
-        string MemberName { get; }
-
-        /// <summary>
-        /// Gets the line in the source file where the test originated.
-        /// </summary>
-        /// <value>The line in the source file where the test originated.</value>
-        int LineNumber { get; }
+        /// <value>The source file position where the test originated.</value>
+        FileLine SourcePos { get; }
     }
 
     #region ConditionContext
@@ -49,17 +38,13 @@ namespace Mechanical.Conditions
     {
         private readonly T obj;
         private readonly string objName;
-        private readonly string filePath;
-        private readonly string memberName;
-        private readonly int lineNumber;
+        private readonly FileLine srcPos;
 
-        internal ConditionContext( T obj, string objName, string filePath, string memberName, int lineNumber )
+        internal ConditionContext( T obj, string objName, FileLine srcPos )
         {
             this.obj = obj;
             this.objName = objName;
-            this.filePath = filePath;
-            this.memberName = memberName;
-            this.lineNumber = lineNumber;
+            this.srcPos = srcPos;
         }
 
         public T Object
@@ -72,19 +57,9 @@ namespace Mechanical.Conditions
             get { return this.objName; }
         }
 
-        public string FilePath
+        public FileLine SourcePos
         {
-            get { return this.filePath; }
-        }
-
-        public string MemberName
-        {
-            get { return this.memberName; }
-        }
-
-        public int LineNumber
-        {
-            get { return this.lineNumber; }
+            get { return this.srcPos; }
         }
     }
 

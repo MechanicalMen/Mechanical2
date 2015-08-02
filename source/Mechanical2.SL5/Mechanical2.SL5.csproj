@@ -187,6 +187,9 @@
     <Compile Include="..\Mechanical2\Core\BitConverterLE.cs">
       <Link>Core\BitConverterLE.cs</Link>
     </Compile>
+    <Compile Include="..\Mechanical2\Core\CallStackBuilder.cs">
+      <Link>Core\CallStackBuilder.cs</Link>
+    </Compile>
     <Compile Include="..\Mechanical2\Core\CoreExtensions.cs">
       <Link>Core\CoreExtensions.cs</Link>
     </Compile>
@@ -198,6 +201,9 @@
     </Compile>
     <Compile Include="..\Mechanical2\Core\Enum.cs">
       <Link>Core\Enum.cs</Link>
+    </Compile>
+    <Compile Include="..\Mechanical2\Core\FileLine.cs">
+      <Link>Core\FileLine.cs</Link>
     </Compile>
     <Compile Include="..\Mechanical2\Core\Log.cs">
       <Link>Core\Log.cs</Link>

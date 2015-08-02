@@ -79,13 +79,16 @@ namespace Mechanical.FileFormats
 #if !MECHANICAL_NET4
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-        private void ThrowIfDisposedOrStartOrEnd( [CallerFilePath] string filePath = "", [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0 )
+        private void ThrowIfDisposedOrStartOrEnd(
+            [CallerFilePath] string file = "",
+            [CallerMemberName] string member = "",
+            [CallerLineNumber] int line = 0 )
         {
             if( this.IsDisposed )
-                throw new ObjectDisposedException(string.Empty).StoreFileLine(filePath, memberName, lineNumber);
+                throw new ObjectDisposedException(string.Empty).StoreFileLine(file, member, line);
 
             if( !this.isReading )
-                throw new InvalidOperationException("No call was made to Read() yet, or the underlying stream ended!").StoreFileLine(filePath, memberName, lineNumber);
+                throw new InvalidOperationException("No call was made to Read() yet, or the underlying stream ended!").StoreFileLine(file, member, line);
         }
 
 #if !MECHANICAL_NET4

@@ -48,12 +48,12 @@ namespace Mechanical.DataStores
         [Conditional("DEBUG")]
         private static void ThrowIfNull(
             IDataStoreWriter writer,
-            [CallerFilePath] string filePath = "",
-            [CallerMemberName] string memberName = "",
-            [CallerLineNumber] int lineNumber = 0 )
+            [CallerFilePath] string file = "",
+            [CallerMemberName] string member = "",
+            [CallerLineNumber] int line = 0 )
         {
             if( writer.NullReference() )
-                throw new ArgumentNullException("writer").StoreFileLine(filePath, memberName, lineNumber);
+                throw new ArgumentNullException("writer").StoreFileLine(file, member, line);
         }
 
         #endregion

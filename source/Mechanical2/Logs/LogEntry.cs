@@ -17,9 +17,7 @@ namespace Mechanical.Logs
         private readonly LogLevel level;
         private readonly string message;
         private readonly ExceptionInfo exception;
-        private readonly string fileName;
-        private readonly string memberName;
-        private readonly int lineNumber;
+        private readonly FileLine sourcePos;
 
         #endregion
 
@@ -30,9 +28,7 @@ namespace Mechanical.Logs
             Enum<LogLevel> level,
             string message,
             ExceptionInfo exceptionInfo,
-            string fileName,
-            string memberName,
-            int lineNumber )
+            FileLine sourcePos )
         {
             if( timestamp.Kind != DateTimeKind.Utc )
                 throw new ArgumentException("Only UTC timestamps allowed!").Store("Kind", timestamp.Kind).Store("timestamp", timestamp);
@@ -43,19 +39,11 @@ namespace Mechanical.Logs
             if( message.NullReference() )
                 message = string.Empty;
 
-            if( fileName.NullReference() )
-                throw new ArgumentNullException("filePath").StoreFileLine();
-
-            if( memberName.NullReference() )
-                throw new ArgumentNullException("memberName").StoreFileLine();
-
             this.timestamp = timestamp;
             this.level = level;
             this.message = message;
             this.exception = exceptionInfo;
-            this.fileName = fileName;
-            this.memberName = memberName;
-            this.lineNumber = lineNumber;
+            this.sourcePos = sourcePos;
         }
 
         /// <summary>
@@ -64,17 +52,17 @@ namespace Mechanical.Logs
         /// <param name="level">The severity of a <see cref="LogEntry"/>.</param>
         /// <param name="message">The log message.</param>
         /// <param name="exceptionInfo">The <see cref="ExceptionInfo"/> associated with the <see cref="LogEntry"/>; or <c>null</c>.</param>
-        /// <param name="filePath">The full path of the source file that contains the caller.</param>
-        /// <param name="memberName">The method or property name of the caller to the method.</param>
-        /// <param name="lineNumber">The line number in the source file at which the method is called.</param>
+        /// <param name="file">The source file that contains the caller.</param>
+        /// <param name="member">The method or property name of the caller to this method.</param>
+        /// <param name="line">The line number in the source file at which this method is called.</param>
         public LogEntry(
             LogLevel level,
             string message,
             ExceptionInfo exceptionInfo = null,
-            [CallerFilePath] string filePath = "",
-            [CallerMemberName] string memberName = "",
-            [CallerLineNumber] int lineNumber = 0 )
-            : this(DateTime.UtcNow, level, message, exceptionInfo, ConditionsExtensions.SanitizeFilePath(filePath), memberName, lineNumber)
+            [CallerFilePath] string file = "",
+            [CallerMemberName] string member = "",
+            [CallerLineNumber] int line = 0 )
+            : this(DateTime.UtcNow, level, message, exceptionInfo, new FileLine(file, member, line))
         {
         }
 
@@ -119,30 +107,12 @@ namespace Mechanical.Logs
         }
 
         /// <summary>
-        /// Gets the source file that contains the caller.
+        /// Gets the source file position of the caller.
         /// </summary>
-        /// <value>The source file that contains the caller.</value>
-        public string FileName
+        /// <value>The source file position of the caller.</value>
+        public FileLine SourcePos
         {
-            get { return this.fileName; }
-        }
-
-        /// <summary>
-        /// Gets the method or property name of the caller to the method.
-        /// </summary>
-        /// <value>The method or property name of the caller to the method.</value>
-        public string MemberName
-        {
-            get { return this.memberName; }
-        }
-
-        /// <summary>
-        /// Gets the line number in the source file at which the method is called.
-        /// </summary>
-        /// <value>The line number in the source file at which the method is called.</value>
-        public int LineNumber
-        {
-            get { return this.lineNumber; }
+            get { return this.sourcePos; }
         }
 
         #endregion
@@ -199,9 +169,9 @@ namespace Mechanical.Logs
                 if( hasException )
                     writer.Write(Keys.Exception, obj.Exception, ExceptionInfo.Serializer.Default);
 
-                writer.Write(Keys.FileName, obj.FileName, BasicSerialization.String.Default);
-                writer.Write(Keys.MemberName, obj.MemberName, BasicSerialization.String.Default);
-                writer.Write(Keys.LineNumber, obj.LineNumber, BasicSerialization.Int32.Default);
+                writer.Write(Keys.FileName, obj.SourcePos.File, BasicSerialization.String.Default);
+                writer.Write(Keys.MemberName, obj.SourcePos.Member, BasicSerialization.String.Default);
+                writer.Write(Keys.LineNumber, obj.SourcePos.Line, BasicSerialization.Int32.Default);
             }
 
             /// <summary>
@@ -225,11 +195,11 @@ namespace Mechanical.Logs
                 else
                     info = null;
 
-                var fileName = reader.Read(BasicSerialization.String.Default, Keys.FileName);
-                var memberName = reader.Read(BasicSerialization.String.Default, Keys.MemberName);
-                var lineNumber = reader.Read(BasicSerialization.Int32.Default, Keys.LineNumber);
+                var file = reader.Read(BasicSerialization.String.Default, Keys.FileName);
+                var member = reader.Read(BasicSerialization.String.Default, Keys.MemberName);
+                var line = reader.Read(BasicSerialization.Int32.Default, Keys.LineNumber);
 
-                return new LogEntry(timestamp, level, message, info, fileName, memberName, lineNumber);
+                return new LogEntry(timestamp, level, message, info, new FileLine(file, member, line));
             }
         }
 

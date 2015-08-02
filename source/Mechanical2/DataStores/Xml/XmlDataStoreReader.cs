@@ -107,14 +107,20 @@ namespace Mechanical.DataStores.Xml
 
         #region Private Methods
 
-        private FormatException CreateUnexpectedEndException( [CallerFilePath] string filePath = "", [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0 )
+        private FormatException CreateUnexpectedEndException(
+            [CallerFilePath] string file = "",
+            [CallerMemberName] string member = "",
+            [CallerLineNumber] int line = 0 )
         {
-            return new FormatException("Unexpected end of xml file reached!").StoreFileLine(filePath, memberName, lineNumber);
+            return new FormatException("Unexpected end of xml file reached!").StoreFileLine(file, member, line);
         }
 
-        private FormatException CreateInvalidRootException( [CallerFilePath] string filePath = "", [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0 )
+        private FormatException CreateInvalidRootException(
+            [CallerFilePath] string file = "",
+            [CallerMemberName] string member = "",
+            [CallerLineNumber] int line = 0 )
         {
-            return new FormatException("Invalid root node!").StoreFileLine(filePath, memberName, lineNumber);
+            return new FormatException("Invalid root node!").StoreFileLine(file, member, line);
         }
 
 #if !MECHANICAL_NET4

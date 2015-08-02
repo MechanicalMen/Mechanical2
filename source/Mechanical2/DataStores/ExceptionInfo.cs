@@ -67,7 +67,7 @@ namespace Mechanical.DataStores
         {
             try
             {
-                return match.Groups[1].Value + ConditionsExtensions.SanitizeFilePath(match.Groups[2].Value) + match.Groups[3].Value;
+                return match.Groups[1].Value + FileLine.ToFileName(match.Groups[2].Value) + match.Groups[3].Value;
             }
             catch
             {
