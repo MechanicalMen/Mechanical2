@@ -63,7 +63,7 @@ namespace Mechanical.Collections
             /// Returns an enumerator that iterates through the collection.
             /// </summary>
             /// <returns>An <see cref="IEnumerator{T}"/> that can be used to iterate through the collection.</returns>
-            public override IEnumerator<T> GetEnumerator()
+            public sealed override IEnumerator<T> GetEnumerator()
             {
                 return this.Items.GetEnumerator();
             }
@@ -72,7 +72,7 @@ namespace Mechanical.Collections
             /// Gets the number of elements in the collection.
             /// </summary>
             /// <value>The number of elements in the collection.</value>
-            public override int Count
+            public sealed override int Count
             {
                 get { return this.Items.Count; }
             }
@@ -82,19 +82,38 @@ namespace Mechanical.Collections
             /// </summary>
             /// <param name="item">The object to locate in the <see cref="ICollection{T}"/>.</param>
             /// <returns><c>true</c> if <paramref name="item"/> is found in the <see cref="ICollection{T}"/>; otherwise, <c>false</c>.</returns>
-            public override bool Contains( T item )
+            public sealed override bool Contains( T item )
             {
                 return this.Items.Contains(item);
             }
 
-            //// NOTE: not overriding Add, so that inheritors only need to override Insert, to affect both methods.
-            ////       Same thing with Remove. Clear however is way more efficient this way.
+            /// <summary>
+            /// Adds an item to the <see cref="ICollection{T}"/>.
+            /// </summary>
+            /// <param name="item">The object to add to the <see cref="ICollection{T}"/>.</param>
+            public sealed override void Add( T item )
+            {
+                base.Add(item); // List.Base implementation is fine, we just don't want to allow overriding it
+            }
+
+            /// <summary>
+            /// Removes the first occurrence of a specific object from the <see cref="ICollection{T}"/>.
+            /// </summary>
+            /// <param name="item">The object to remove from the <see cref="ICollection{T}"/>.</param>
+            /// <returns><c>true</c> if <paramref name="item"/> was successfully removed from the <see cref="ICollection{T}"/>; otherwise, <c>false</c>. This method also returns <c>false</c> if <paramref name="item"/> is not found in the original <see cref="ICollection{T}"/>.</returns>
+            public sealed override bool Remove( T item )
+            {
+                return base.Remove(item); // List.Base implementation is fine, we just don't want to allow overriding it
+            }
 
             /// <summary>
             /// Removes all items from the <see cref="ICollection{T}"/>.
             /// </summary>
-            public override void Clear()
+            public sealed override void Clear()
             {
+                for( int i = 0; i < this.Items.Count; ++i )
+                    this.OnRemoving(i, this.Items[i]);
+
                 this.Items.Clear();
             }
 
@@ -107,7 +126,7 @@ namespace Mechanical.Collections
             /// </summary>
             /// <param name="item">The object to locate in the <see cref="IList{T}"/>.</param>
             /// <returns>The index of <paramref name="item"/> if found in the list; otherwise, <c>-1</c>.</returns>
-            public override int IndexOf( T item )
+            public sealed override int IndexOf( T item )
             {
                 return this.Items.IndexOf(item);
             }
@@ -117,8 +136,9 @@ namespace Mechanical.Collections
             /// </summary>
             /// <param name="index">The zero-based index at which <paramref name="item"/> should be inserted.</param>
             /// <param name="item">The object to insert into the <see cref="IList{T}"/>.</param>
-            public override void Insert( int index, T item )
+            public sealed override void Insert( int index, T item )
             {
+                this.OnAdding(index, item);
                 this.Items.Insert(index, item);
             }
 
@@ -126,8 +146,13 @@ namespace Mechanical.Collections
             /// Removes the <see cref="IList{T}"/> item at the specified index.
             /// </summary>
             /// <param name="index">The zero-based index of the item to remove.</param>
-            public override void RemoveAt( int index )
+            public sealed override void RemoveAt( int index )
             {
+                if( index < 0
+                 || index >= this.Items.Count )
+                    throw new ArgumentOutOfRangeException().Store("index", index).Store("Count", this.Items.Count);
+
+                this.OnRemoving(index, this.Items[index]);
                 this.Items.RemoveAt(index);
             }
 
@@ -136,10 +161,46 @@ namespace Mechanical.Collections
             /// </summary>
             /// <param name="index">The zero-based index of the element to get or set.</param>
             /// <returns>The element at the specified index.</returns>
-            public override T this[int index]
+            public sealed override T this[int index]
             {
-                get { return this.Items[index]; }
-                set { this.Items[index] = value; }
+                get
+                {
+                    return this.Items[index];
+                }
+                set
+                {
+                    // report item being overwritten as removed
+                    if( index != this.Items.Count )
+                        this.OnRemoving(index, this.Items[index]);
+
+                    // report new value as added
+                    this.OnAdding(index, value);
+
+                    // actually overwrite
+                    this.Items[index] = value;
+                }
+            }
+
+            #endregion
+
+            #region Protected Virtual Members
+
+            /// <summary>
+            /// Called before an item is added to the wrapped list.
+            /// </summary>
+            /// <param name="index">The zero-based index at which <paramref name="item"/> should be inserted.</param>
+            /// <param name="item">The item to add.</param>
+            protected virtual void OnAdding( int index, T item )
+            {
+            }
+
+            /// <summary>
+            /// Called before an item is removed from the wrapped list.
+            /// </summary>
+            /// <param name="index">The zero-based index of the item to remove.</param>
+            /// <param name="item">The item to remove.</param>
+            protected virtual void OnRemoving( int index, T item )
+            {
             }
 
             #endregion

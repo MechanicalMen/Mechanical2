@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using Mechanical.Conditions;
 
 namespace Mechanical.Collections
@@ -65,7 +63,7 @@ namespace Mechanical.Collections
             /// Returns an enumerator that iterates through the collection.
             /// </summary>
             /// <returns>An <see cref="IEnumerator{T}"/> that can be used to iterate through the collection.</returns>
-            public override IEnumerator<T> GetEnumerator()
+            public sealed override IEnumerator<T> GetEnumerator()
             {
                 return this.Items.GetEnumerator();
             }
@@ -74,7 +72,7 @@ namespace Mechanical.Collections
             /// Gets the number of elements in the collection.
             /// </summary>
             /// <value>The number of elements in the collection.</value>
-            public override int Count
+            public sealed override int Count
             {
                 get { return this.Items.Count; }
             }
@@ -84,7 +82,7 @@ namespace Mechanical.Collections
             /// </summary>
             /// <param name="item">The object to locate in the <see cref="ICollection{T}"/>.</param>
             /// <returns><c>true</c> if <paramref name="item"/> is found in the <see cref="ICollection{T}"/>; otherwise, <c>false</c>.</returns>
-            public override bool Contains( T item )
+            public sealed override bool Contains( T item )
             {
                 return this.Items.Contains(item);
             }
@@ -93,8 +91,9 @@ namespace Mechanical.Collections
             /// Adds an item to the <see cref="ICollection{T}"/>.
             /// </summary>
             /// <param name="item">The object to add to the <see cref="ICollection{T}"/>.</param>
-            public override void Add( T item )
+            public sealed override void Add( T item )
             {
+                this.OnAdding(item);
                 this.Items.Add(item);
             }
 
@@ -103,17 +102,41 @@ namespace Mechanical.Collections
             /// </summary>
             /// <param name="item">The object to remove from the <see cref="ICollection{T}"/>.</param>
             /// <returns><c>true</c> if <paramref name="item"/> was successfully removed from the <see cref="ICollection{T}"/>; otherwise, <c>false</c>. This method also returns <c>false</c> if <paramref name="item"/> is not found in the original <see cref="ICollection{T}"/>.</returns>
-            public override bool Remove( T item )
+            public sealed override bool Remove( T item )
             {
+                this.OnRemoving(item);
                 return this.Items.Remove(item);
             }
 
             /// <summary>
             /// Removes all items from the <see cref="ICollection{T}"/>.
             /// </summary>
-            public override void Clear()
+            public sealed override void Clear()
             {
+                foreach( var item in this.Items )
+                    this.OnRemoving(item);
+
                 this.Items.Clear();
+            }
+
+            #endregion
+
+            #region Protected Virtual Members
+
+            /// <summary>
+            /// Called before an item is added to the wrapped collection.
+            /// </summary>
+            /// <param name="item">The item to add.</param>
+            protected virtual void OnAdding( T item )
+            {
+            }
+
+            /// <summary>
+            /// Called before an item is removed from the wrapped collection.
+            /// </summary>
+            /// <param name="item">The item to remove.</param>
+            protected virtual void OnRemoving( T item )
+            {
             }
 
             #endregion

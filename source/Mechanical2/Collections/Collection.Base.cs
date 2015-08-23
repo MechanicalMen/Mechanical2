@@ -9,12 +9,16 @@ namespace Mechanical.Collections
     /// Helps working with collections.
     /// </summary>
     /// <content>
-    /// A base class for implementing <see cref="ICollection{T}"/>.
+    /// An abstract base class for implementing <see cref="ICollection{T}"/>.
     /// </content>
     public static partial class Collection
     {
+        //// NOTE: Use a "Base" class, if you are implementing a new (general) data structure.
+        ////       Use a "Wrapper" class, if you need to alter the behaviour or interface
+        ////       of a specialized collection (e.g. 'Car.Wheels' should not accept more than 4 items)
+
         /// <summary>
-        /// A base class for implementing <see cref="ICollection{T}"/>.
+        /// An abstract base class for implementing <see cref="ICollection{T}"/>.
         /// </summary>
         /// <typeparam name="T">The type of the items in the collection.</typeparam>
         public abstract class Base<T> : ICollection<T>

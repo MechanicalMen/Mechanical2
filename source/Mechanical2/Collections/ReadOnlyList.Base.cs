@@ -14,12 +14,12 @@ namespace Mechanical.Collections
     /// Helps working with read-only lists.
     /// </summary>
     /// <content>
-    /// A base class for implementing <see cref="IReadOnlyList{T}"/>.
+    /// An abstract base class for implementing <see cref="IReadOnlyList{T}"/>.
     /// </content>
     public static partial class ReadOnlyList
     {
         /// <summary>
-        /// A base class for implementing <see cref="IReadOnlyList{T}"/>.
+        /// An abstract base class for implementing <see cref="IReadOnlyList{T}"/>.
         /// </summary>
         /// <typeparam name="T">The type of the items in the list.</typeparam>
         public abstract class Base<T> : ReadOnlyCollection.Base<T>, IReadOnlyList<T>, IList

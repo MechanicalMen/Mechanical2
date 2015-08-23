@@ -16,11 +16,11 @@ namespace Mechanical.DataStores.Nodes
         internal class NodesCollection : List.Wrapper<IDataStoreNode>
         {
             /// <summary>
-            /// Inserts an item to the <see cref="IList{T}"/> at the specified index.
+            /// Called before an item is added to the wrapped list.
             /// </summary>
             /// <param name="index">The zero-based index at which <paramref name="item"/> should be inserted.</param>
-            /// <param name="item">The object to insert into the <see cref="IList{T}"/>.</param>
-            public override void Insert( int index, IDataStoreNode item )
+            /// <param name="item">The item to add.</param>
+            protected override void OnAdding( int index, IDataStoreNode item )
             {
                 Ensure.That(item).NotNull();
                 Ensure.Debug(DataStore.IsValidName(item.Name), v => v.IsTrue(() => new ArgumentException("Invalid data store name!").Store("Name", item.Name)));
@@ -29,28 +29,6 @@ namespace Mechanical.DataStores.Nodes
                 {
                     if( DataStore.Comparer.Equals(node.Name, item.Name) )
                         throw new ArgumentException("A child having the specified name has already been added!").Store("Name", item.Name);
-                }
-
-                base.Insert(index, item);
-            }
-
-            /// <summary>
-            /// Gets or sets the element at the specified index.
-            /// </summary>
-            /// <param name="index">The zero-based index of the element to get or set.</param>
-            /// <returns>The element at the specified index.</returns>
-            public override IDataStoreNode this[int index]
-            {
-                get
-                {
-                    return this.Items[index];
-                }
-                set
-                {
-                    Ensure.That(index).InRange(0, this.Count);
-
-                    this.Insert(index + 1, value);
-                    this.RemoveAt(index);
                 }
             }
         }

@@ -8,12 +8,12 @@ namespace Mechanical.Collections
     /// Helps working with read-only collections.
     /// </summary>
     /// <content>
-    /// A base class for implementing <see cref="IReadOnlyCollection{T}"/>.
+    /// An abstract base class for implementing <see cref="IReadOnlyCollection{T}"/>.
     /// </content>
     public static partial class ReadOnlyCollection
     {
         /// <summary>
-        /// A base class for implementing <see cref="IReadOnlyCollection{T}"/>.
+        /// An abstract base class for implementing <see cref="IReadOnlyCollection{T}"/>.
         /// </summary>
         /// <typeparam name="T">The type of the items in the collection.</typeparam>
         public abstract class Base<T> : IReadOnlyCollection<T>

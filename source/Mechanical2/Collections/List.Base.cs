@@ -12,12 +12,12 @@ namespace Mechanical.Collections
     /// Helps working with lists.
     /// </summary>
     /// <content>
-    /// A base class for implementing <see cref="IList{T}"/>.
+    /// An abstract base class for implementing <see cref="IList{T}"/>.
     /// </content>
     public static partial class List
     {
         /// <summary>
-        /// A base class for implementing <see cref="IList{T}"/>.
+        /// An abstract base class for implementing <see cref="IList{T}"/>.
         /// </summary>
         /// <typeparam name="T">The type of the items in the list.</typeparam>
         public abstract class Base<T> : Collection.Base<T>, IList<T>, IList

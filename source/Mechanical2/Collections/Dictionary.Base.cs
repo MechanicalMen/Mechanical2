@@ -11,7 +11,7 @@ namespace Mechanical.Collections
     /// Helps working with dictionaries.
     /// </summary>
     /// <content>
-    /// A base class for implementing <see cref="IDictionary{TKey, TValue}"/>.
+    /// An abstract base class for implementing <see cref="IDictionary{TKey, TValue}"/>.
     /// </content>
     public static partial class Dictionary
     {
@@ -19,9 +19,10 @@ namespace Mechanical.Collections
         ////       at construction time, since inheriting types
         ////       may wish to use their own implementations.
 
-        //// NOTE: for the same reason we have the GetKeys, GetValues methods,
-        ////       which enable us to declare Keys, Values properties using our
-        ////       own types.
+        //// NOTE: for the same reason we have the GetKeys, GetValues abstract methods,
+        ////       which enable inheritors to both override what our Keys, Values properties
+        ////       return, as well as create "new" properties, with their own return types,
+        ////       to replace them.
 
         //// NOTE: IReadOnlyCollection is a better fit for the Keys and Values properties.
         ////       This is evident from the implementation of Dictionary<,>. It was not
@@ -30,7 +31,7 @@ namespace Mechanical.Collections
         ////       it silently for the IDictionary interface.
 
         /// <summary>
-        /// A base class for implementing <see cref="IDictionary{TKey, TValue}"/>.
+        /// An abstract base class for implementing <see cref="IDictionary{TKey, TValue}"/>.
         /// </summary>
         /// <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
         /// <typeparam name="TValue">The type of values in the dictionary.</typeparam>

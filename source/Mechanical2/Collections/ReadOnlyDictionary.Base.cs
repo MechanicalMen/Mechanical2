@@ -10,7 +10,7 @@ namespace Mechanical.Collections
     /// Helps working with read-only dictionaries.
     /// </summary>
     /// <content>
-    /// A base class for implementing <see cref="IReadOnlyDictionary{TKey, TValue}"/>.
+    /// An abstract base class for implementing <see cref="IReadOnlyDictionary{TKey, TValue}"/>.
     /// </content>
     public static partial class ReadOnlyDictionary
     {
@@ -23,7 +23,7 @@ namespace Mechanical.Collections
         ////       own types.
 
         /// <summary>
-        /// A base class for implementing <see cref="IReadOnlyDictionary{TKey, TValue}"/>.
+        /// An abstract base class for implementing <see cref="IReadOnlyDictionary{TKey, TValue}"/>.
         /// </summary>
         /// <typeparam name="TKey">The type of keys in the read-only dictionary.</typeparam>
         /// <typeparam name="TValue">The type of values in the read-only dictionary.</typeparam>
