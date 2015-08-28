@@ -81,6 +81,9 @@
     <Compile Include="..\Mechanical2\Bootstrap\LogExceptionSink.cs">
       <Link>Bootstrap\LogExceptionSink.cs</Link>
     </Compile>
+    <Compile Include="..\Mechanical2\Bootstrap\TaskSchedulerUIHandler.cs">
+      <Link>Bootstrap\TaskSchedulerUIHandler.cs</Link>
+    </Compile>
     <Compile Include="..\Mechanical2\Bootstrap\TraceExceptionSink.cs">
       <Link>Bootstrap\TraceExceptionSink.cs</Link>
     </Compile>

@@ -187,7 +187,7 @@ namespace Mechanical.Common
                         AppCore.Log = CreateAdvancedLogEntrySerializer(logDirectoryPath, logFilePrefix);
 
                     // UI
-                    AppCore.Register((IUIThreadHandler)null);
+                    AppCore.Register(new TaskSchedulerUIHandler(TaskScheduler.Default)); // not(!) the same as the main thread, but you can't use that without some manual message pumping (or similar)
 
                     fullyInitialized = true;
                     return true;
