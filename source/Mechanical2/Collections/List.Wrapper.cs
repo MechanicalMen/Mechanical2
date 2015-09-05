@@ -138,8 +138,8 @@ namespace Mechanical.Collections
             /// <param name="item">The object to insert into the <see cref="IList{T}"/>.</param>
             public sealed override void Insert( int index, T item )
             {
-                this.OnAdding(index, item);
-                this.Items.Insert(index, item);
+                if( this.OnAdding(index, item) )
+                    this.Items.Insert(index, item);
             }
 
             /// <summary>
@@ -152,8 +152,8 @@ namespace Mechanical.Collections
                  || index >= this.Items.Count )
                     throw new ArgumentOutOfRangeException().Store("index", index).Store("Count", this.Items.Count);
 
-                this.OnRemoving(index, this.Items[index]);
-                this.Items.RemoveAt(index);
+                if( this.OnRemoving(index, this.Items[index]) )
+                    this.Items.RemoveAt(index);
             }
 
             /// <summary>
@@ -169,15 +169,14 @@ namespace Mechanical.Collections
                 }
                 set
                 {
-                    // report item being overwritten as removed
+                    bool canSet;
                     if( index != this.Items.Count )
-                        this.OnRemoving(index, this.Items[index]);
+                        canSet = this.OnUpdating(index, oldItem: this.Items[index], newItem: value);
+                    else
+                        canSet = this.OnAdding(index, value);
 
-                    // report new value as added
-                    this.OnAdding(index, value);
-
-                    // actually overwrite
-                    this.Items[index] = value;
+                    if( canSet )
+                        this.Items[index] = value;
                 }
             }
 
@@ -190,8 +189,22 @@ namespace Mechanical.Collections
             /// </summary>
             /// <param name="index">The zero-based index at which <paramref name="item"/> should be inserted.</param>
             /// <param name="item">The item to add.</param>
-            protected virtual void OnAdding( int index, T item )
+            /// <returns><c>true</c> to indicate that the adding may continue; otherwise, <c>false</c> to silently cancel it.</returns>
+            protected virtual bool OnAdding( int index, T item )
             {
+                return true;
+            }
+
+            /// <summary>
+            /// Called before an existing item of the wrapped list is replaced with a new one.
+            /// </summary>
+            /// <param name="index">The zero-based index to assign a new item to.</param>
+            /// <param name="oldItem">The old item being overwritten.</param>
+            /// <param name="newItem">The new item being set.</param>
+            /// <returns><c>true</c> to indicate that the updating may continue; otherwise, <c>false</c> to silently cancel it.</returns>
+            protected virtual bool OnUpdating( int index, T oldItem, T newItem )
+            {
+                return true;
             }
 
             /// <summary>
@@ -199,8 +212,10 @@ namespace Mechanical.Collections
             /// </summary>
             /// <param name="index">The zero-based index of the item to remove.</param>
             /// <param name="item">The item to remove.</param>
-            protected virtual void OnRemoving( int index, T item )
+            /// <returns><c>true</c> to indicate that the removal may continue; otherwise, <c>false</c> to silently cancel it.</returns>
+            protected virtual bool OnRemoving( int index, T item )
             {
+                return true;
             }
 
             #endregion

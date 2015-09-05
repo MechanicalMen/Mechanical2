@@ -129,8 +129,8 @@ namespace Mechanical.Collections
             /// <param name="value">The object to use as the value of the element to add.</param>
             public sealed override void Add( TKey key, TValue value )
             {
-                this.OnAdding(key, value);
-                this.Items.Add(key, value);
+                if( this.OnAdding(key, value) )
+                    this.Items.Add(key, value);
             }
 
             /// <summary>
@@ -143,8 +143,10 @@ namespace Mechanical.Collections
                 if( !this.Items.ContainsKey(key) )
                     throw new KeyNotFoundException().Store("key", key);
 
-                this.OnRemoving(key, this.Items[key]);
-                return this.Items.Remove(key);
+                if( this.OnRemoving(key, this.Items[key]) )
+                    return this.Items.Remove(key);
+                else
+                    return false;
             }
 
             /// <summary>
@@ -181,16 +183,15 @@ namespace Mechanical.Collections
                 }
                 set
                 {
-                    // report item being overwritten as removed
+                    bool canSet;
                     TValue oldValue;
                     if( this.Items.TryGetValue(key, out oldValue) )
-                        this.OnRemoving(key, oldValue);
+                        canSet = this.OnUpdating(key, oldValue, newValue: value);
+                    else
+                        canSet = this.OnAdding(key, value);
 
-                    // report new value as added
-                    this.OnAdding(key, value);
-
-                    // actually overwrite
-                    this.Items[key] = value;
+                    if( canSet )
+                        this.Items[key] = value;
                 }
             }
 
@@ -205,8 +206,22 @@ namespace Mechanical.Collections
             /// </summary>
             /// <param name="key">The key of the element to add.</param>
             /// <param name="value">The value of the element to add.</param>
-            protected virtual void OnAdding( TKey key, TValue value )
+            /// <returns><c>true</c> to indicate that the adding may continue; otherwise, <c>false</c> to silently cancel it.</returns>
+            protected virtual bool OnAdding( TKey key, TValue value )
             {
+                return true;
+            }
+
+            /// <summary>
+            /// Called before an existing key-value pair of the wrapped dictionary is replaced with a new one.
+            /// </summary>
+            /// <param name="key">The key to update the value of.</param>
+            /// <param name="oldValue">The old value being overwritten.</param>
+            /// <param name="newValue">The new value being set.</param>
+            /// <returns><c>true</c> to indicate that the updating may continue; otherwise, <c>false</c> to silently cancel it.</returns>
+            protected virtual bool OnUpdating( TKey key, TValue oldValue, TValue newValue )
+            {
+                return true;
             }
 
             /// <summary>
@@ -214,8 +229,10 @@ namespace Mechanical.Collections
             /// </summary>
             /// <param name="key">The key of the element to remove.</param>
             /// <param name="value">The value of the element to remove.</param>
-            protected virtual void OnRemoving( TKey key, TValue value )
+            /// <returns><c>true</c> to indicate that the removal may continue; otherwise, <c>false</c> to silently cancel it.</returns>
+            protected virtual bool OnRemoving( TKey key, TValue value )
             {
+                return true;
             }
 
             #endregion

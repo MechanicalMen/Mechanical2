@@ -15,12 +15,7 @@ namespace Mechanical.DataStores.Nodes
 
         internal class NodesCollection : List.Wrapper<IDataStoreNode>
         {
-            /// <summary>
-            /// Called before an item is added to the wrapped list.
-            /// </summary>
-            /// <param name="index">The zero-based index at which <paramref name="item"/> should be inserted.</param>
-            /// <param name="item">The item to add.</param>
-            protected override void OnAdding( int index, IDataStoreNode item )
+            private void ThrowIfNameTaken( IDataStoreNode item )
             {
                 Ensure.That(item).NotNull();
                 Ensure.Debug(DataStore.IsValidName(item.Name), v => v.IsTrue(() => new ArgumentException("Invalid data store name!").Store("Name", item.Name)));
@@ -30,6 +25,33 @@ namespace Mechanical.DataStores.Nodes
                     if( DataStore.Comparer.Equals(node.Name, item.Name) )
                         throw new ArgumentException("A child having the specified name has already been added!").Store("Name", item.Name);
                 }
+            }
+
+            /// <summary>
+            /// Called before an item is added to the wrapped list.
+            /// </summary>
+            /// <param name="index">The zero-based index at which <paramref name="item"/> should be inserted.</param>
+            /// <param name="item">The item to add.</param>
+            /// <returns><c>true</c> to indicate that the adding may continue; otherwise, <c>false</c> to silently cancel it.</returns>
+            protected override bool OnAdding( int index, IDataStoreNode item )
+            {
+                this.ThrowIfNameTaken(item);
+                return true;
+            }
+
+            /// <summary>
+            /// Called before an existing item of the wrapped list is replaced with a new one.
+            /// </summary>
+            /// <param name="index">The zero-based index to assign a new item to.</param>
+            /// <param name="oldItem">The old item being overwritten.</param>
+            /// <param name="newItem">The new item being set.</param>
+            /// <returns><c>true</c> to indicate that the updating may continue; otherwise, <c>false</c> to silently cancel it.</returns>
+            protected override bool OnUpdating( int index, IDataStoreNode oldItem, IDataStoreNode newItem )
+            {
+                if( !DataStore.Comparer.Equals(oldItem.Name, newItem.Name) )
+                    this.ThrowIfNameTaken(newItem);
+
+                return true;
             }
         }
 
